@@ -1,4 +1,4 @@
- 
+//https://www.youtube.com/watch?v=ts_A9PcAOH0 
 #include <stdlib.h>
 #include <stdio.h>
 int main(void)
