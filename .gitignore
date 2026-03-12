@@ -1,0 +1,32 @@
+# Windows 可執行檔
+*.exe
+
+# 編譯產物
+*.o
+*.obj
+*.dll
+
+# 暫存檔
+*.log
+*.tmp
+
+# VSCode
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Java
+*.class
+target/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
