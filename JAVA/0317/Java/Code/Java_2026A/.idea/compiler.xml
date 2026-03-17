@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="P06_HomeWork" />
+        <module name="P12_TypeValueRange" />
+        <module name="P05_HelloWorld" />
+        <module name="P08_Var_Declare_Assigment" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="P09_Var_Applcation" target="25" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
