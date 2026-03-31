@@ -1,3 +1,4 @@
+//https://youtu.be/tQ2A9SoMUGs
 #include<stdio.h>
 #include<stdlib.h>
 #define SQUARE n*n
