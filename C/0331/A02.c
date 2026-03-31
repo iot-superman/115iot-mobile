@@ -1,3 +1,4 @@
+//https://youtu.be/v8ftMUmwt40
 #include<stdio.h>
 #include<stdlib.h>
 #define ABS(x) x>0?x:-x
