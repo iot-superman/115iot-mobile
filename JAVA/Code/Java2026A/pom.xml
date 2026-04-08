@@ -26,6 +26,28 @@
         <module>Ch03/P11-IF-ELESEIF-H2</module>
         <module>Ch03/P12-if-else-eles-both</module>
         <module>Ch03/P13_IF-ELSEIF-ELSE-RANGESCOPE</module>
+        <module>P15_Nested_If_Else</module>
+        <module>Ch03/P16_Nested_If_else</module>
+        <module>Ch03/P18_SWITCH_INTEGER</module>
+        <module>Ch03/P19_Switch_IN_String</module>
+        <module>Ch03/P20_Switch_In_Char</module>
+        <module>Java_Chapgpt/P3-19_Switch_IN_Lamea</module>
+        <module>Ch03/P21_For_While_doWhileLoop</module>
+        <module>Ch03/P22_Double_For_Loop</module>
+        <module>Ch03/P21_ForLoop_ConvertoToDoWhile_Practice</module>
+        <module>Ch03/P23_HW</module>
+        <module>Ch03/P24_9x9_Table</module>
+        <module>P25_Infinate_Loop</module>
+        <module>HW/HW0401-1</module>
+        <module>HW/HW0401-2</module>
+        <module>Ch03/P27_Q2_Triangle</module>
+        <module>Ch03/P26_Q1_T2</module>
+        <module>P31_foreach_break_continue</module>
+        <module>Ch04/P02_Ave_TEMPERATRUE_AarrayApp</module>
+        <module>Ch04/P09_Two_Dim_Array</module>
+        <module>Ch04/P05_Array_MIn_Max</module>
+        <module>Ch04/P07_ReferncceType_alias</module>
+        <module>Ch04/P08_Ref_to_Another_Object</module>
     </modules>
 
     <properties>
