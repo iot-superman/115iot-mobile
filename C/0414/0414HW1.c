@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 /* 
-3¡B5x5 star
+1.   5x5 star
 */
 void nxnstar(int);
 

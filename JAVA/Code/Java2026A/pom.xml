@@ -48,6 +48,31 @@
         <module>Ch04/P05_Array_MIn_Max</module>
         <module>Ch04/P07_ReferncceType_alias</module>
         <module>Ch04/P08_Ref_to_Another_Object</module>
+        <module>HW/0407EXAM01</module>
+        <module>HW/0407EXAM02</module>
+        <module>HW/0407EXAM1_2</module>
+        <module>HW/HW03_eeed</module>
+        <module>Ch05/P04_Max_Method</module>
+        <module>Ch05/P5_Obeerver_Stack</module>
+        <module>Ch05/P07_Arimetic_Exeception</module>
+        <module>Ch05/P08_Throws_Exception</module>
+        <module>Ch05/P_Method_Pass_By_Value</module>
+        <module>Ch05/P10_Swap_by_Value</module>
+        <module>Ch05/P13_StsicMEthod_StaticAttribbute</module>
+        <module>P18_Math_Satitc_Trigeometic_Methods</module>
+        <module>P22_Lottos_Game</module>
+        <module>Ch05/P23_String_Construct</module>
+        <module>untP28_String_ComparsionDemo</module>
+        <module>Ch06/P02_Class_Declare</module>
+        <module>Ch06/P06_Class_Circle</module>
+        <module>Ch06/P07_Class_Empployee</module>
+        <module>Ch06/P11_OverLoaded_Class</module>
+        <module>Ch06/P07_ATM_Practice</module>
+        <module>P06_Class2_Circle</module>
+        <module>Ch06/P14_Student_CTOR</module>
+        <module>Ch06/P18_Inheritance_this_super_CTOR</module>
+        <module>HW/iCAP_HW02</module>
+        <module>Java_Chapgpt/P7-30_Rectangle_Class</module>
     </modules>
 
     <properties>
