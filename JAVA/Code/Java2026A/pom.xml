@@ -73,6 +73,15 @@
         <module>Ch06/P18_Inheritance_this_super_CTOR</module>
         <module>HW/iCAP_HW02</module>
         <module>Java_Chapgpt/P7-30_Rectangle_Class</module>
+        <module>Java_Chapgpt/P7-30_Rectangel_Teacher</module>
+        <module>Ch06/P23_Sales_Demo</module>
+        <module>Ch06/P18_this_super_CTOR_practice</module>
+        <module>C06/P32_Employee_Salaty_Hourly_Demo</module>
+        <module>Java_Chapgpt/P8-28_Coustomer_Static_Demo</module>
+        <module>Ch06/P37_Gaemety_Fect_Circel_Strs_Polymotphidm</module>
+        <module>Ch06/P49_Final_Class_Mehod_Staitc_Demo</module>
+        <module>P52_Abstract_Class_Demo</module>
+        <module>Ch06/P57_InterFace_Demo</module>
     </modules>
 
     <properties>
