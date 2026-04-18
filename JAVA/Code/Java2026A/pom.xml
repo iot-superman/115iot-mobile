@@ -82,6 +82,15 @@
         <module>Ch06/P49_Final_Class_Mehod_Staitc_Demo</module>
         <module>P52_Abstract_Class_Demo</module>
         <module>Ch06/P57_InterFace_Demo</module>
+        <module>HW/iCAP_HW03</module>
+        <module>Ch06/P61_Comparable_Interface</module>
+        <module>ITS_A/A-3_Prob_9</module>
+        <module>ITS_A/A-3_prob_10</module>
+        <module>ITS_A/A-3_Prob_11</module>
+        <module>ITS_A/A-3_Prob12</module>
+        <module>ITS_A/A-3_Prob_13</module>
+        <module>ITS_A/A-3_Prob_14</module>
+        <module>ITS_A/A-3_Prob_14-2</module>
     </modules>
 
     <properties>
