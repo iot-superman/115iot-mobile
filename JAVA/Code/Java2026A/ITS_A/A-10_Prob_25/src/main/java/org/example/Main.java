@@ -4,6 +4,7 @@ package org.example;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     static void main() {
+        boolean a = true;
         int times = 60;
         while (times > 0) {
             System.out.println("倒數計時中..... " + times);
