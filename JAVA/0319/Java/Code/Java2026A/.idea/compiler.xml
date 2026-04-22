@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="P19_Unicode" />
+        <module name="P14" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="P01" target="26" />
+      <module name="P03_Operand_Expersion" target="26" />
+      <module name="P04_Operator_Operand_Expresion" target="26" />
+      <module name="P05_Math_Pow" target="26" />
+      <module name="P07_Compound_Assignment_Operator" target="26" />
+      <module name="P08_Relation_Operator" target="26" />
+      <module name="p09_logic_And_OR_Operator" target="26" />
+      <module name="P10_Short_Circuit_And_OR" target="26" />
+      <module name="P11_Three_Oprands" target="26" />
+      <module name="P12" target="26" />
+      <module name="P12_Two_Compement" target="26" />
+      <module name="P12_Two_Complement" target="26" />
+      <module name="P14_Complement_Operator" target="26" />
+      <module name="P20_Boolean_String" target="26" />
+      <module name="P21_Final_Constant_PI" target="26" />
+      <module name="P22_Printf_Accurate_Format_Output" target="26" />
+      <module name="untitled" target="26" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

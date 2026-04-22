@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="P22_Lottos_Game" />
+        <module name="P23_String_Construct" />
+        <module name="P26_Q1_T2" />
+        <module name="A-17_Prob_38" />
+        <module name="A-3_prob_10" />
+        <module name="B-5_Prob_11" />
+        <module name="A-3_Prob12" />
+        <module name="P2-18_Logic_Operaotor" />
+        <module name="P10_Swap_by_Value" />
+        <module name="P23_HW" />
+        <module name="P02_Ave_TEMPERATRUE_AarrayApp" />
+        <module name="P31_foreach_break_continue" />
+        <module name="P11_Three_OPRands" />
+        <module name="p05_if_else" />
+        <module name="P32_Employee_Salaty_Hourly_Demo" />
+        <module name="P13_IF-ELSEIF-ELSE-RANGESCOPE" />
+        <module name="P04_Max_Method" />
+        <module name="P11-IF-ELESEIF-H2" />
+        <module name="P24_9x9_Table" />
+        <module name="P04_GenericMethod_TP_Constrain" />
+        <module name="P8-28_Coustomer_Static_Demo" />
+        <module name="P21_For_While_doWhileLoop" />
+        <module name="P61_Comparable_Interface" />
+        <module name="A-9_Prob_22" />
+        <module name="P7-30_Rectangle_Class" />
+        <module name="0407EXAM01" />
+        <module name="0407EXAM02" />
+        <module name="P07_Arimetic_Exeception" />
+        <module name="P16_Bitwise_Operator" />
+        <module name="P20_Switch_In_Char" />
+        <module name="P25_Infinate_Loop" />
+        <module name="0407EXAM1_2" />
+        <module name="P24_AutoTypeConvert" />
+        <module name="P05_Array_MIn_Max" />
+        <module name="P05_Generic_Class_Demo" />
+        <module name="P7-30_Rectangel_Teacher" />
+        <module name="HW0401-1" />
+        <module name="HW0401-2" />
+        <module name="untP28_String_ComparsionDemo" />
+        <module name="P37_Gaemety_Fect_Circel_Strs_Polymotphidm" />
+        <module name="P07_ReferncceType_alias" />
+        <module name="P03_Method_with_TP" />
+        <module name="A-3_Prob_11" />
+        <module name="P49_Final_Class_Mehod_Staitc_Demo" />
+        <module name="A-3_Prob_14" />
+        <module name="A-3_Prob_13" />
+        <module name="P18_Inheritance_this_super_CTOR" />
+        <module name="P5_Obeerver_Stack" />
+        <module name="P07_Class_Empployee" />
+        <module name="P17_Bitwiss_R_L_Operator" />
+        <module name="P07_If_else_pitfail" />
+        <module name="HW03_eeed" />
+        <module name="A-3_Prob_9" />
+        <module name="P14" />
+        <module name="iCAP_HW02" />
+        <module name="P57_InterFace_Demo" />
+        <module name="P21_ForLoop_ConvertoToDoWhile_Practice" />
+        <module name="iCAP_HW03" />
+        <module name="P52_Abstract_Class_Demo" />
+        <module name="P05_GenericMethod_Comaparabe" />
+        <module name="P13_StsicMEthod_StaticAttribbute" />
+        <module name="P06_Class_Circle" />
+        <module name="P08_Ref_to_Another_Object" />
+        <module name="P19_Unicode" />
+        <module name="P24_Auto_Type_Convert" />
+        <module name="A-7_Prob_17" />
+        <module name="A-3_Prob_14-2" />
+        <module name="B-4_Prob_9" />
+        <module name="B-4_Prob_8" />
+        <module name="P06_Class2_Circle" />
+        <module name="P_Method_Pass_By_Value" />
+        <module name="P23_Sales_Demo" />
+        <module name="P08_Throws_Exception" />
+        <module name="B-4_Prob7" />
+        <module name="P19_Switch_IN_String" />
+        <module name="B-7_Prob_14" />
+        <module name="P16_Nested_If_else" />
+        <module name="A-10_Prob_25" />
+        <module name="P18_SWITCH_INTEGER" />
+        <module name="P11_OverLoaded_Class" />
+        <module name="P18_this_super_CTOR_practice" />
+        <module name="P-6_Prob_16" />
+        <module name="P3-19_Switch_IN_Lamea" />
+        <module name="P07_GenericClass_Declare" />
+        <module name="P27_Q2_Triangle" />
+        <module name="P18_Math_Satitc_Trigeometic_Methods" />
+        <module name="P14_Student_CTOR" />
+        <module name="P10_IF_ELSEIF_ELSE" />
+        <module name="A-8_Prob_19" />
+        <module name="P27_BMI_Calculate" />
+        <module name="P02_Class_Declare" />
+        <module name="P15_BIT-LOGIC_AND-OR_XOR" />
+        <module name="P15_Nested_If_Else" />
+        <module name="P07_ATM_Practice" />
+        <module name="P09_Two_Dim_Array" />
+        <module name="A-1-_Prob_36" />
+        <module name="P22_Double_For_Loop" />
+        <module name="P23_Operator_Prioirty" />
+        <module name="P12-if-else-eles-both" />
+        <module name="P26_F2C_C2F_Convert" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="P01" target="26" />
+      <module name="P03_Operand_Expersion" target="26" />
+      <module name="P04_Operator_Operand_Expresion" target="26" />
+      <module name="P05_Math_Pow" target="26" />
+      <module name="P07_Compound_Assignment_Operator" target="26" />
+      <module name="P08_Relation_Operator" target="26" />
+      <module name="p09_logic_And_OR_Operator" target="26" />
+      <module name="P10_Short_Circuit_And_OR" target="26" />
+      <module name="P11_Three_Oprands" target="26" />
+      <module name="P12" target="26" />
+      <module name="P12_Two_Compement" target="26" />
+      <module name="P12_Two_Complement" target="26" />
+      <module name="P14_Complement_Operator" target="26" />
+      <module name="P20_Boolean_String" target="26" />
+      <module name="P21_Final_Constant_PI" target="26" />
+      <module name="P22_Printf_Accurate_Format_Output" target="26" />
+      <module name="untitled" target="26" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

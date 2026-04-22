@@ -1,3 +1,14 @@
+# 忽略 Windows 執行檔
+*.exe
+
+# Java 常見
+*.class
+
+# 編譯輸出資料夾（建議）
+/target/
+/bin/
+/out/
+
 # Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
