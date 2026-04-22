@@ -98,6 +98,16 @@
         <module>ITS_A/A-10_Prob_25</module>
         <module>A-1-_Prob_36</module>
         <module>A-17_Prob_38</module>
+        <module>ITS_B/B-4_Prob7</module>
+        <module>ITS_B/B-4_Prob_8</module>
+        <module>ITS_B/B-4_Prob_9</module>
+        <module>ITS_B/B-5_Prob_11</module>
+        <module>ITS_B/B-7_Prob_14</module>
+        <module>Ch07/P03_Method_with_TP</module>
+        <module>Ch07/P04_GenericMethod_TP_Constrain</module>
+        <module>Ch07/P05_GenericMethod_Comaparabe</module>
+        <module>Ch07/P05_Generic_Class_Demo</module>
+        <module>Ch07/P07_GenericClass_Declare</module>
     </modules>
 
     <properties>
