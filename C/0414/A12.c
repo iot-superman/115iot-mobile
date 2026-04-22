@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-/*«Ø¥ßC»y¨¥ªº¨ç¼Æ*/
+/*ï¿½Ø¥ï¿½Cï¿½yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
-// float´N¥i¥H¥Î¤F
-int is_prime(int); // §PÂ_¬O§_¬°½è¼Æ
+// floatï¿½Nï¿½iï¿½Hï¿½Î¤F
+int is_prime(int); // ï¿½Pï¿½_ï¿½Oï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½
 
 int main(void) {
   int i;
@@ -17,7 +17,8 @@ int main(void) {
 }
 int is_prime(int num) {
   int i;
-  for (i = 2; i < num/2; i++) {            //num/2 ¬Ù®É 
+  if (num < 2) return 0;
+  for (i = 2; i * i <= num; i++) {
     if (num % i == 0) {
       return 0;
     }
