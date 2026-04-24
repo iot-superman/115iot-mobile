@@ -119,6 +119,10 @@
         <module>Ch07/P18_ArrrayLIs_Shallow_Copy</module>
         <module>Ch07/P22_ArrayList_Iterator_Demo</module>
         <module>Ch07/P23_ArrayList_Iterator_PrimeLeft_Demo</module>
+        <module>Ch07/P24_Interface_Lamdba_Demo</module>
+        <module>Ch08/P06_Create_Thread_via_Runnable_Interface</module>
+        <module>Java_Chapgpt/P14-1_Thread_RunnableTask</module>
+        <module>Java_Chapgpt/P14-1_MutliThread</module>
     </modules>
 
     <properties>

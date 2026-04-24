@@ -33,6 +33,7 @@
         <module name="P21_For_While_doWhileLoop" />
         <module name="P61_Comparable_Interface" />
         <module name="A-9_Prob_22" />
+        <module name="P14-1_MutliThread" />
         <module name="P7-30_Rectangle_Class" />
         <module name="0407EXAM01" />
         <module name="0407EXAM02" />
@@ -65,6 +66,7 @@
         <module name="P17_Bitwiss_R_L_Operator" />
         <module name="P07_If_else_pitfail" />
         <module name="HW03_eeed" />
+        <module name="P06_Create_Thread_via_Runnable_Interface" />
         <module name="A-3_Prob_9" />
         <module name="P14" />
         <module name="iCAP_HW02" />
@@ -73,6 +75,7 @@
         <module name="P13_Generic_ArrayList_String" />
         <module name="iCAP_HW03" />
         <module name="P52_Abstract_Class_Demo" />
+        <module name="P14-1_Thread_RunnableTask" />
         <module name="P17_Generic_Stack_Demo" />
         <module name="P05_GenericMethod_Comaparabe" />
         <module name="P13_StsicMEthod_StaticAttribbute" />
@@ -85,6 +88,7 @@
         <module name="A-3_Prob_14-2" />
         <module name="B-4_Prob_9" />
         <module name="B-4_Prob_8" />
+        <module name="P24_Interface_Lamdba_Demo" />
         <module name="P12_Generic_ArrayList" />
         <module name="P06_Class2_Circle" />
         <module name="P_Method_Pass_By_Value" />
