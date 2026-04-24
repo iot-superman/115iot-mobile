@@ -108,6 +108,17 @@
         <module>Ch07/P05_GenericMethod_Comaparabe</module>
         <module>Ch07/P05_Generic_Class_Demo</module>
         <module>Ch07/P07_GenericClass_Declare</module>
+        <module>Ch07/P10_Generic_Interface_Class</module>
+        <module>Ch07/P_11_ArrayList_Integer</module>
+        <module>HW/0421</module>
+        <module>Ch07/P12_Generic_ArrayList</module>
+        <module>Ch07/P13_Generic_ArrayList_String</module>
+        <module>Ch07/P14_Generic_ArrayList_String_Demo</module>
+        <module>Ch07/P17_Generic_Stack_Demo</module>
+        <module>Ch07/P18_ArrayList_Shallow_Copy</module>
+        <module>Ch07/P18_ArrrayLIs_Shallow_Copy</module>
+        <module>Ch07/P22_ArrayList_Iterator_Demo</module>
+        <module>Ch07/P23_ArrayList_Iterator_PrimeLeft_Demo</module>
     </modules>
 
     <properties>
