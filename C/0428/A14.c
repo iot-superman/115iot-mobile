@@ -1,8 +1,7 @@
 // https://chatgpt.com/s/m_69f053942eb88191b863bc92e46657d6
 #include <stdio.h>
 #include <stdlib.h>
-// 將兩個二維陣列的元素相加後，再將結果存入第三個二維陣列中
-// 然後利用指標輸出第三個二維陣列
+
 int main(void) {
 
   int i, j;
@@ -19,13 +18,13 @@ int main(void) {
       *(ptrC + j) =
           *(ptrA + j) +
           *(ptrB +
-            j); // 將兩個二維陣列的元素相加後，再將結果存入第三個二維陣列中
+            j);
     }
   }
   printf("A+B\n");
   for (i = 0; i < 2; i++) {
     ptrC = C[i];
-    for (j = 0; j < 3; j++) { // 然後利用指標輸出第三個二維陣列
+    for (j = 0; j < 3; j++) {
       printf("%3d ", *(ptrC + j));
     }
     printf("\n");
