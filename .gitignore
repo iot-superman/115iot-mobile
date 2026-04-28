@@ -1,0 +1,45 @@
+# 忽略 Windows 執行檔
+*.exe
+
+# Java 常見
+*.class
+
+# 編譯輸出資料夾（建議）
+/target/
+/bin/
+/out/
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Compiled
+*.class
+
+# Build
+build/
+
+# Kotlin
+.kotlin/
+
+# 不要忽略 Java（很重要）
+# *.java  ❌ 千萬不要寫
