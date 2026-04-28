@@ -1,3 +1,4 @@
+//https://chatgpt.com/s/m_69f01469b7248191b0566da5f0cd11b9
 #include <stdlib.h>   // 提供 system() 等函式
 #include <stdio.h>    // 提供 printf() 等輸入輸出函式
 int main(void) {
