@@ -8,6 +8,7 @@
 #define		DIP_Port	_pe
 #define		DIP_PortC	_pec
 #define		DIP_PortPU	_pepu
+
 const u8 SEG_TAB[] = {	0x3F,0x06,0x5B,0x4F,0x66,	//7-Segment Table
 			         	0x6D,0x7D,0x07,0x7F,0x67};
 void main()
@@ -22,6 +23,7 @@ void main()
 		 
 
         // ⭐ DIP0 = 1 → 暫停（停在當前數字）
+		//👉 DIP 往上（ON / 未接地）時，PE0 量到的是「高電位（VDD）」≈ 3.3V 或 5V（看你的系統供電）
         while(DIP_Port & 0x01); //1  =>off
         
 			k=(DIP_Port & 0b00001111)*3;       //0~15  =  *0*5 ~15*5
