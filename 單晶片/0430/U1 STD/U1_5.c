@@ -16,10 +16,10 @@ void main()
 	SW0C=1; SW0PU=1;                      			//規劃為輸入屬性並致能提升電阻
 	while(1)
 	{	SEGPort=SEG_TAB[index];						//查表並顯示
-		for(i=0;i<5;i++) GCC_DELAY(20000);			//延遲 50ms
+		for(i=0;i<10;i++) GCC_DELAY(20000);			//延遲 50ms
 	wait:
 		while(SW0);						     		//等待按鍵壓下
-		for(i=0;i<5;i++) GCC_DELAY(20000);			//延遲 50ms
+		for(i=0;i<10;i++) GCC_DELAY(20000);			//延遲 50ms
 		if(SW0) goto wait; 		            		//If Key Released, Bouncing
 		if(++index>9) index=0;						//指標值+1, 若大於9則歸零
 	}
