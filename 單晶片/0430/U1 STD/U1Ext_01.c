@@ -16,13 +16,14 @@ void main()
 	_wdtc=0b10101111;								//關閉看們狗計時器
 	SEG_PortC=0x0;									//Config Port as O/P Mode
 	DIP_PortC|=0b00001111;					      	//Config Port[4..0] as I/P
-	DIP_PortPU|=0b00001111;				         	//Enable Port[4..0] Pull-up
+	DIP_PortPU|=0b00001111;				         	//Enable Port[4..0] Pull-up(High) 
 	while(1)
 	{	for (j=0;j<=9;j++)	
 		{	SEG_Port=SEG_TAB[j];					//Read Table
 		 
 
         // ⭐ DIP0 = 1 → 暫停（停在當前數字）
+		//https://youtu.be/CuZE-HRiURc?si=2xm84goEXUS5JGQj&t=5084 ( Pull-High)
 		//👉 DIP 往上（ON / 未接地）時，PE0 量到的是「高電位（VDD）」≈ 3.3V 或 5V（看你的系統供電）
         while(DIP_Port & 0x01); //1  =>off
         
