@@ -1,4 +1,4 @@
-//https://chatgpt.com/s/m_69f940d14e8c8191a1431f2f99a54670
+// https://chatgpt.com/s/m_69f9420b32f081918699a6bbfe885020
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,6 +8,7 @@ int main() {
   scanf("%d", &x);
   printf("Decimal of x is: %d ,Binary of x is: %d\n", x, deicmalToBinary(x));
 
+  system("pause");
   return 0;
 }
 
