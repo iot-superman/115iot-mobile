@@ -4,6 +4,8 @@
 
 int main() {
   int x;
+  _Bool a=1;
+  printf("%d",a);
   printf("Please enter a decimal number: ");
   scanf("%d", &x);
   printf("Decimal of x is: %d ,Binary of x is: %d\n", x, deicmalToBinary(x));
