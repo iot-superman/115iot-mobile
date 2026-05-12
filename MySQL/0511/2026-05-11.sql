@@ -1,3 +1,4 @@
+-- https://youtu.be/0A9pjU0yRHw
 -- SQL = Stucture Query LAnguage結構化東詢語言)
 
 -- ISO / ANSI 92
