@@ -1,0 +1,150 @@
+
+Linker Version 8.8.1.250507
+Input Object File: C:\Users\User\Desktop\U3 STD\STARTUP1_L.OBJ
+Input Object File: C:\Users\User\Desktop\U3 STD\U3_1.OBJ
+
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
+
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0005h     0012h    000eh      CODE               _CROM2PROM (CROM2PROM)
+     00h     0024h     0027h    0004h      CODE               @ISR_TB0_code (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0028h     0067h    0040h      CODE               _ISR_TB0 (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0074h     0078h    0005h      CODE               @crom (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0079h     00abh    0033h      CODE               _main (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0080h     0080h    0001h      DATA     4         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0081h     0081h    0001h      DATA     4         @data_rb (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0082h     0082h    0001h      DATA     2         @data_r124 (isr:ra~rh)
+     00h     0083h     0083h    0001h      DATA     2         @data_r224 (isr:ra~rh)
+     00h     0084h     0084h    0001h      DATA     3         @data_rb24 (isr:ra~rh)
+     00h     0085h     0085h    0001h      DATA     3         @data_rc24 (isr:ra~rh)
+     00h     0086h     0086h    0001h      DATA     2         @data_ra24 (isr:ra~rh)
+     00h     0087h     0087h    0001h      DATA     5         @HCCINIT0_ScanCode (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0088h     0089h    0002h      DATA     4         @HCCINIT0_ptr (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     008ah     008dh    0004h      DATA     2.75      @HCCINIT0_Buffer (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     008eh     008eh    0001h      DATA     2         @data_r324 (isr:ra~rh)
+     00h     008fh     008fh    0001h      DATA     2         @data_r424 (isr:ra~rh)
+     00h     0090h     0090h    0001h      DATA     2         @data_r524 (isr:ra~rh)
+     00h     0091h     0091h    0001h      DATA     2         @data_r624 (isr:ra~rh)
+     00h     0092h     0092h    0001h      DATA     2         @data_r724 (isr:ra~rh)
+
+     Local Sections
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0087h     0087h    0000h      LOCAL    0         @dummy (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0087h     0087h    0000h      LOCAL    0         _main (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0087h     0087h    0000h      LOCAL    0         @dummy36 (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0087h     0087h    0000h      LOCAL    0         _ISR_TB0 (C:\Users\User\Desktop\U3 STD\U3_1.OBJ)
+     00h     0087h     0087h    0000h      LOCAL    0         _Crom2Prom (CROM2PROM)
+
+     Public Symbols Information
+     Address            Public by Name
+     008ah              _Buffer
+     0006h              _Crom2Prom
+     0005h              _Crom2PromNext
+     0028h              _ISR_TB0
+     0074h              _SEG_TAB
+     0087h              _ScanCode
+     0079h              _main
+     0088h              _ptr
+     0082h              r124
+     0083h              r224
+     008eh              r324
+     008fh              r424
+     0090h              r524
+     0091h              r624
+     0092h              r724
+     0080h              ra
+     0086h              ra24
+     0081h              rb
+     0084h              rb24
+     0085h              rc24
+
+     Address            Public by Value
+     0005h              _Crom2PromNext
+     0006h              _Crom2Prom
+     0028h              _ISR_TB0
+     0074h              _SEG_TAB
+     0079h              _main
+     0080h              ra
+     0081h              rb
+     0082h              r124
+     0083h              r224
+     0084h              rb24
+     0085h              rc24
+     0086h              ra24
+     0087h              _ScanCode
+     0088h              _ptr
+     008ah              _Buffer
+     008eh              r324
+     008fh              r424
+     0090h              r524
+     0091h              r624
+     0092h              r724
+
+
+ROM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       2000h     008fh    1%
+     01h       2000h     0000h    0%
+     02h       2000h     0000h    0%
+     03h       2000h     0000h    0%
+     04h       2000h     0000h    0%
+     05h       2000h     0000h    0%
+     06h       2000h     0000h    0%
+     07h       2000h     0000h    0%
+     Total     10000h     008fh    0%
+
+RAM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       0080h     0013h    14%
+     01h       0080h     0000h    0%
+     02h       0080h     0000h    0%
+     03h       0080h     0000h    0%
+     04h       0080h     0000h    0%
+     05h       0080h     0000h    0%
+     06h       0080h     0000h    0%
+     07h       0080h     0000h    0%
+     08h       0080h     0000h    0%
+     09h       0080h     0000h    0%
+     0ah       0080h     0000h    0%
+     0bh       0080h     0000h    0%
+     0ch       0080h     0000h    0%
+     0dh       0080h     0000h    0%
+     0eh       0080h     0000h    0%
+     0fh       0080h     0000h    0%
+     10h       0080h     0000h    0%
+     11h       0080h     0000h    0%
+     12h       0080h     0000h    0%
+     13h       0080h     0000h    0%
+     14h       0080h     0000h    0%
+     15h       0080h     0000h    0%
+     16h       0080h     0000h    0%
+     17h       0080h     0000h    0%
+     18h       0080h     0000h    0%
+     19h       0080h     0000h    0%
+     1ah       0080h     0000h    0%
+     1bh       0080h     0000h    0%
+     1ch       0080h     0000h    0%
+     1dh       0080h     0000h    0%
+     1eh       0080h     0000h    0%
+     1fh       0080h     0000h    0%
+     Total     1000h     0013h    0%
+
+Use Stack Count
+_main: 0
+_ISR_TB0: 1
+
+Call Tree
+    @dummy
+        _main (0)
+    @dummy36
+        _ISR_TB0 (0)
+            _Crom2Prom (1)
+
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Desktop\U3 STD\U3_1.OBJ'
+
+Total 0 error(s), Total 0 Warning(s)
