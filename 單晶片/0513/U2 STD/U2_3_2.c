@@ -1,4 +1,9 @@
 //https://chatgpt.com/s/m_6a03eb648c608191a4308c102188c5f9
+
+//vs FLOW:
+//https://chatgpt.com/s/m_6a04003538e8819195a0aa407c9dbb12
+
+
 // PROGRAM 	:U2_3_2.c							2017.0424
 // FUNCTION : SLEEP Mode with WDT Demo Program	By Steven
 #include <HT66F2390.h>
