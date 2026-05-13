@@ -1,0 +1,168 @@
+
+Linker Version 8.8.1.250507
+Input Object File: C:\Users\User\Desktop\U2 STD\STARTUP1_L.OBJ
+Input Object File: C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ
+
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
+
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0008h     000bh    0004h      CODE               @ISR_Int1_code (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     000ch     002bh    0020h      CODE               _ISR_Int1 (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     002ch     0030h    0005h      CODE               @crom (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0031h     003eh    000eh      CODE               _CROM2PROM (CROM2PROM)
+     00h     003fh     004ch    000eh      CODE               _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     004dh     0063h    0017h      CODE               _Delayms (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0064h     00a7h    0044h      CODE               _main (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     00a8h     00b5h    000eh      CODE               _builtin_holtek_delay_isr08 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0080h     0080h    0001h      DATA     3         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0081h     0081h    0001h      DATA     3         @data_rb (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0082h     0082h    0001h      DATA     3         @data_rc (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0083h     0083h    0001h      DATA     2         @data_r108 (isr:ra~rh)
+     00h     0084h     0084h    0001h      DATA     2         @data_r208 (isr:ra~rh)
+     00h     0085h     0085h    0001h      DATA     2         @data_ra08 (isr:ra~rh)
+     00h     008ch     008ch    0001h      DATA     3         @HCCINIT0___Index_2992 (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     008dh     008dh    0001h      DATA     2         @data_r308 (isr:ra~rh)
+
+     Local Sections
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0087h     0087h    0000h      LOCAL    0         @dummy8 (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0087h     0087h    0000h      LOCAL    0         _ISR_Int1 (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0086h     0086h    0001h      LOCAL    2         _builtin_holtek_delay_isr08 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     008ch     008ch    0000h      LOCAL    0         @dummy (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     008ah     008bh    0002h      LOCAL    2.5       _main (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0088h     0089h    0002h      LOCAL    4         _Delayms (C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ)
+     00h     0087h     0087h    0001h      LOCAL    2         _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0087h     0087h    0000h      LOCAL    0         _Crom2Prom (CROM2PROM)
+
+     Public Symbols Information
+     Address            Public by Name
+     0031h              _Crom2Prom
+     0031h              _Crom2PromNext
+     004dh              _Delayms
+     0088h              _Delayms_2
+     000ch              _ISR_Int1
+     002ch              _SEG_TAB
+     0041h              __DELAYY0_isr00
+     00aah              __DELAYY0_isr08
+     0041h              __DELAYY1_isr00
+     00aah              __DELAYY1_isr08
+     0040h              __DELAYY2_isr00
+     00a9h              __DELAYY2_isr08
+     0040h              __DELAYY3_isr00
+     00a9h              __DELAYY3_isr08
+     003fh              __DELAYY4_isr00
+     00a8h              __DELAYY4_isr08
+     003fh              __DELAYY5_isr00
+     00a8h              __DELAYY5_isr08
+     0087h              _builtin_holtek_delay_isr00_2
+     0086h              _builtin_holtek_delay_isr08_2
+     0064h              _main
+     0083h              r108
+     0084h              r208
+     008dh              r308
+     0080h              ra
+     0085h              ra08
+     0081h              rb
+     0082h              rc
+
+     Address            Public by Value
+     000ch              _ISR_Int1
+     002ch              _SEG_TAB
+     0031h              _Crom2Prom
+     0031h              _Crom2PromNext
+     003fh              __DELAYY4_isr00
+     003fh              __DELAYY5_isr00
+     0040h              __DELAYY2_isr00
+     0040h              __DELAYY3_isr00
+     0041h              __DELAYY0_isr00
+     0041h              __DELAYY1_isr00
+     004dh              _Delayms
+     0064h              _main
+     0080h              ra
+     0081h              rb
+     0082h              rc
+     0083h              r108
+     0084h              r208
+     0085h              ra08
+     0086h              _builtin_holtek_delay_isr08_2
+     0087h              _builtin_holtek_delay_isr00_2
+     0088h              _Delayms_2
+     008dh              r308
+     00a8h              __DELAYY4_isr08
+     00a8h              __DELAYY5_isr08
+     00a9h              __DELAYY2_isr08
+     00a9h              __DELAYY3_isr08
+     00aah              __DELAYY0_isr08
+     00aah              __DELAYY1_isr08
+
+
+ROM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       2000h     00b3h    2%
+     01h       2000h     0000h    0%
+     02h       2000h     0000h    0%
+     03h       2000h     0000h    0%
+     04h       2000h     0000h    0%
+     05h       2000h     0000h    0%
+     06h       2000h     0000h    0%
+     07h       2000h     0000h    0%
+     Total     10000h     00b3h    0%
+
+RAM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       0080h     000eh    10%
+     01h       0080h     0000h    0%
+     02h       0080h     0000h    0%
+     03h       0080h     0000h    0%
+     04h       0080h     0000h    0%
+     05h       0080h     0000h    0%
+     06h       0080h     0000h    0%
+     07h       0080h     0000h    0%
+     08h       0080h     0000h    0%
+     09h       0080h     0000h    0%
+     0ah       0080h     0000h    0%
+     0bh       0080h     0000h    0%
+     0ch       0080h     0000h    0%
+     0dh       0080h     0000h    0%
+     0eh       0080h     0000h    0%
+     0fh       0080h     0000h    0%
+     10h       0080h     0000h    0%
+     11h       0080h     0000h    0%
+     12h       0080h     0000h    0%
+     13h       0080h     0000h    0%
+     14h       0080h     0000h    0%
+     15h       0080h     0000h    0%
+     16h       0080h     0000h    0%
+     17h       0080h     0000h    0%
+     18h       0080h     0000h    0%
+     19h       0080h     0000h    0%
+     1ah       0080h     0000h    0%
+     1bh       0080h     0000h    0%
+     1ch       0080h     0000h    0%
+     1dh       0080h     0000h    0%
+     1eh       0080h     0000h    0%
+     1fh       0080h     0000h    0%
+     Total     1000h     000eh    0%
+
+Use Stack Count
+_ISR_Int1: 1
+_main: 2
+
+Call Tree
+    @dummy8
+        _ISR_Int1 (0)
+            _builtin_holtek_delay_isr08 (1)
+    @dummy
+        _main (0)
+            _Delayms (1)
+                _builtin_holtek_delay_isr00 (2)
+            _Crom2Prom (1)
+
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Desktop\U2 STD\U2_3_1.OBJ'
+
+Total 0 error(s), Total 0 Warning(s)
