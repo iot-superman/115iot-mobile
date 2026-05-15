@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hyperlink</title>
+</head>
+
+<!-- 
+    這個頁面是測試超連結的頁面
+    有多個超連結
+    分別會導向不同的 HTML 頁面
+-->
+
+<body>
+
+    <h2>Hyperlink Test</h2>
+
+    <!-- 修正：
+         原本 h3 沒有結尾
+         建議完整包起來
+    -->
+    <h3>
+        這個頁面是測試超連結的頁面
+        <br />
+    </h3>
+
+    <p>請點擊以下超連結，查看不同的頁面</p>
+
+    <ul>
+
+        <!-- 同層目錄 -->
+        <li>
+            <a href="a1.htm">
+                goto A1 area
+            </a>
+        </li>
+
+        <!-- 注意：
+             Linux 主機會區分大小寫
+             A2.htm 與 a2.htm 不同
+        -->
+        <li>
+            <a href="A2.htm">
+                goto A2 area
+            </a>
+        </li>
+
+        <!-- hot 資料夾 -->
+        <li>
+            <a href="hot/a3.htm">
+                goto A3 area
+            </a>
+        </li>
+
+        <li>
+            <a href="hot/a4.htm">
+                goto A4 area
+            </a>
+        </li>
+
+        <!-- hotter 子資料夾 -->
+        <li>
+            <a href="hot/hotter/a5.htm">
+                goto A5 area
+            </a>
+        </li>
+
+        <li>
+            <a href="hot/a6.htm">
+                goto A6 area
+            </a>
+        </li>
+
+        <!-- 外部網站 -->
+        <li>
+          
+
+            <!-- 
+                target="_blank"
+                表示開新分頁
+            -->
+            <a href="https://tw.yahoo.com" target="_blank">
+                搜尋網站 Yahoo（開新分頁）
+            </a>
+        </li>
+
+    </ul>
+
+</body>
+
+</html>
