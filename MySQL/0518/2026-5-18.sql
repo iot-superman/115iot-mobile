@@ -320,6 +320,94 @@ SELECT EXTRACT(YEAR FROM CURDATE());
 
 -- 取得員工到職日是星期幾  dayname sunday, monday, tuesday, wednesday, thursday, friday, saturday
 SELECT dayname(HIREDATE) FROM cmdev.EMP ;
+-- 加3天
+SELECT ADDDATE(CURDATE(), INTERVAL 3 DAY);
+
+
+
+
+SELECT ADDDATE(CURDATE(),3);
+
+
+-- 減3天
+SELECT SUBDATE(CURDATE(),3);
+
+SELECT SUBDATE(CURDATE(), INTERVAL 3 DAY);
+
+-- 判斷員工是否是資深員工或新進員工
+SELECT  ENAME,HIREDATE,IF(YEAR(HIREDATE)<1985,'資深員工','新進員工') AS GRADE FROM cmdev.EMP ORDER BY  GRADE;
+
+
+
+-- 判斷員工的薪資等級
+-- 判斷員等級
+SELECT  ENAME,salary,
+-- 判斷員工是A,b,c 等級
+CASE WHEN salary>=3000 THEN 'A GRADE'
+     WHEN salary BETWEEN 1000 AND 2999 THEN 'B GRADE'
+     WHEN salary <1000 THEN 'C GRADE'
+     ELSE 'unknow'
+END GRADE
+FROM cmdev.EMP
+ORDER BY salary desc
+
+
+
+-- 判斷員工的職務名稱
+-- 判斷員工是業務部或接待部
+SELECT ENAME,salary,
+-- 判斷員工是業務部或接待部
+    CASE JOB
+        WHEN 'SLSMAN' THEN '業務部'
+        WHEN 'CLERK' THEN '接待部'
+    END 部門
+FROM CMDEV.emp;
+
+
+-- 
+-- 判斷員工的獎金
+-- 判斷員工的薪金是否超過3000，超過則獎金為2.5倍，否則為1.2倍
+
+SELECT ENAME,salary,salary *
+    CASE 
+        WHEN salary>=3000 THEN 2.5
+        ELSE 1.2
+    END Bonus
+FROM cmdev.EMP
+ORDER BY salary desc
+
+
+
+
+-- ***群組函數***
+-- 取得員工的平均薪資
+SELECT AVG(salary) FROM cmdev.EMP;
+
+-- 取得員工的最高薪資
+SELECT MAX(salary) FROM cmdev.EMP;
+
+-- 取得員工的最少薪資
+SELECT MIN(salary) FROM cmdev.EMP;
+
+-- 取得員工的薪資總和
+SELECT SUM(salary) FROM cmdev.EMP;
+
+-- 取得員工的數量
+-- 取得員工的職務名稱數量
+-- 取得員工的獎金數量
+-- 取得員工的部門數量
+SELECT count(*),count(JOB),COUNT(COMM),COUNT(DEPTNO) FROM cmdev.EMP;
+
+-- 取得員工的薪資總和
+SELECT SUM(salary) FROM cmdev.EMP;
+SELECT *  FROM cmdev.EMP;
+
+-- 取得員工的職務名稱數量
+-- 取得員工的部門數量
+SELECT COUNT(DISTINCT JOB) FROM CMDEV.emp;
+
+
+
 
 
 
