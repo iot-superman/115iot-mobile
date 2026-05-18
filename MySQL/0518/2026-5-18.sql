@@ -99,3 +99,53 @@ SELECT Continent,CODE,NAME FROM world.country WHERE Continent IN("EUROPE","ASIA"
 SELECT CODE,NAME,Population FROM WORLD.country WHERE REGION ="MIDDLE EAST" ORDER BY Population ; 
 
 
+-- =============================================下午=============================================
+-- 數值
+-- 字串(字元)
+-- 日期／時間
+-- 空值
+-- 布林值 TRUE 或 FALSE (1/0)
+ 
+ -- 查詢國家人口，並依人口由大到小排序
+ SELECT POPULATION *100000000 ,POPULATION*100000000 FROM WORLD.country WHERE CODE ="CHN";
+
+-- MySQL DOUBLE 類型說明：DOUBLE 是一種浮點數值類型，用於儲存近似的十進位數值，可支援大範圍與小範圍的數值，精度最多可達約30位小數
+-- Double 類型 最多30位小數點
+SELECT 0.09876543210098765432100987654321 /2;
+
+-- MySQL　１０Ｅ２　＝１00
+SELECT 10E2;
+
+-- MySQL　０．１＋０．１　＝０．２
+SELECT 0.1+0.1
+
+-- MySQL　０．１＋０．１　＝０．２
+SELECT 0.1e0+0.1e0;
+
+SELECT 1+'2'
+
+-- MySQL　０．１＋０．１　＝０．２
+-- 1.1e0+0.1e0=1.2e0 (True)
+SELECT 0.1+0.2=0.3;
+
+-- MySQL　１＋２　＝３
+SELECT 1+'2';
+
+-- MySQL　２．１＋１．２　＝３．３
+-- Calculate the sum of string-converted numeric value and scientific notation numeric value
+SELECT '2E1' + 1E2;
+-- MySQL converts non-numeric string 'A' to 0 in numeric calculation, resulting in 1 + 0 = 1
+SELECT 1 + 'A';
+SELECT 1 +'A';
+
+-- MySQL　'ABC' || 'EFG' =　 0
+SELECT  'ABC' || 'EFG';
+
+
+-- 啟用字符串拼接功能，使 || 運算子可正確拼接字符串，若未設定此參數，MySQL 會將 || 視為邏輯或運算子，返回數值 0
+SET SQL_MODE ="PIPES_AS_CONCAT";
+SELECT  'ABC' || 'EFG';
+
+ 
+ 
+ 
