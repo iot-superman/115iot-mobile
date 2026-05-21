@@ -123,6 +123,12 @@
         <module>Ch08/P06_Create_Thread_via_Runnable_Interface</module>
         <module>Java_Chapgpt/P14-1_Thread_RunnableTask</module>
         <module>Java_Chapgpt/P14-1_MutliThread</module>
+        <module>Y-Teacher/Main</module>
+        <module>tony/CH09_05</module>
+        <module>ch09_05</module>
+        <module>Ch07/P24_Functional_interface_Lambda_Expresion</module>
+        <module>Ch07/P27_Java_Builtin_Consumer_Supplier_Function_Predicate</module>
+        <module>Ch07/P29_Comsumer_andThen_Cumsumer</module>
     </modules>
 
     <properties>

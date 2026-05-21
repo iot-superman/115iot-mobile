@@ -141,8 +141,14 @@
     <file url="file://$PROJECT_DIR$/Ch07/P22_ArrayList_Iterator_Demo/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P23_ArrayList_Iterator_PrimeLeft_Demo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P23_ArrayList_Iterator_PrimeLeft_Demo/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P24_Functional_interface_Lambda_Expresion/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P24_Functional_interface_Lambda_Expresion/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P24_Interface_Lamdba_Demo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P24_Interface_Lamdba_Demo/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P27_Java_Builtin_Consumer_Supplier_Function_Predicate/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P27_Java_Builtin_Consumer_Supplier_Function_Predicate/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P29_Comsumer_andThen_Cumsumer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P29_Comsumer_andThen_Cumsumer/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P_11_ArrayList_Integer/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P_11_ArrayList_Integer/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch08/P06_Create_Thread_via_Runnable_Interface/src/main/java" charset="UTF-8" />
@@ -229,8 +235,14 @@
     <file url="file://$PROJECT_DIR$/P31_foreach_break_continue/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P52_Abstract_Class_Demo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P52_Abstract_Class_Demo/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Y-Teacher/Main/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Y-Teacher/Main/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ch09_05/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ch09_05/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tony/CH09_05/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tony/CH09_05/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/untP28_String_ComparsionDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/untP28_String_ComparsionDemo/src/main/resources" charset="UTF-8" />
   </component>
