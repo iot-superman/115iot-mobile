@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>mulitmedia</title>
+ 
+</head>
+
+<body>
+    <h1>我的小可愛</h1>
+    <video src="bird.mp4" controls></video>
+    <!-- 视频元素 controls (视频控制器)  poster (视频封面) AVI不支援-->
+    <video src="bird.AVI" controls></video>
+ <!-- 视频元素 controls (视频控制器)  poster (视频封面) -->
+    <video src="bird.mp4"  controls poster="jp3.jpg"> </video>
+    <video src="bird.mp4"  controls poster="jp3.jpg" width="960"> </video>
+    <!-- 视频元素 controls (视频控制器)  poster (视频封面)  width (视频宽度)  muted (静音) -->
+    <video src="bird.mp4"  controls poster="jp3.jpg" width="960" muted> </video>
+    <!-- 视频元素 controls (视频控制器)  poster (视频封面)  width (视频宽度)  muted (静音)  preload (预加载) -->
+     <!-- preload="auto" 预加载自动 -->
+    <video src="bird.mp4"  controls poster="jp3.jpg" width="960" preload="auto" muted> </video>
+    <!-- preload="metadata" 预加载元数据 -->
+    <video src="bird.mp4"  controls poster="jp3.jpg" width="960" preload="metadata" muted loop> </video>
+    <!-- preload="none" 预加载无 -->
+    <video src="bird.mp4"  controls poster="jp3.jpg" width="960" preload="none" muted loop> </video>
+
+    
+    
+</body>
+</html>

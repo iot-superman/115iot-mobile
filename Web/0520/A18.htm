@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title> textarea 文字域範例</title>
+
+</head>
+
+<body>
+    <form>
+        <!-- fieldset 欄位集 繤組化 -->
+        <fieldset>
+            <legend>用戶個人資料</legend>
+            <p>姓&nbsp;&nbsp;名：<input type="text" name="userName"" size=" 60"></p>
+            <p>email：<input type="email" name="userMail"" value=" user@mailserver.com"></p>
+            <p>性&nbsp;&nbsp;別：<input type="radio" name="userSex" value="1">男
+                <input type="radio" name="userSex" value="0">女
+            
+
+            </p>
+        </fieldset>
+
+
+        <fieldset>
+            <legend>用戶使用過的手機</legend>
+            <input type="checkbox" name="userPhone[]" value="htc" />HTC
+            <input type="checkbox" name="userPhone[]" value="apple" />Apple
+            <input type="checkbox" name="userPhone[]" value="sony" />SONY
+            <input type="checkbox" name="userPhone[]" value="samsumg" />SAMSUMG
+            <input type="checkbox" name="userPhone[]" value="google" />GOOGLE
+
+        </fieldset>
+
+        <fieldset>
+            <legend>您使用手機時常遇到哪些問題？</legend>
+            </p>
+            <!-- 文字域 可輸入多行文字  -->
+            <textarea name="userProblem" id="" cols="45" rows="8">
+            </textarea>
+
+
+
+        </fieldset>
+        <div align="center">
+            <p><input type="submit">
+                <input type="reset">
+            </p>
+        </div>
+    </form>
+</body>
+
+</html>
