@@ -136,6 +136,7 @@
         <module>P07_Create_Thread_via_Lambda_Expression</module>
         <module>P07_Create_Thread_via_Lambda_Expression_TrueUSE</module>
         <module>P08_Create_Thread_Contasined_in_Class</module>
+        <module>Ch08/P12_Create_Thread_via_Extends_Thread</module>
     </modules>
 
     <properties>

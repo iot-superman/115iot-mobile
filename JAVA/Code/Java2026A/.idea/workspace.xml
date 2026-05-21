@@ -72,7 +72,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "C:/Java/Code/Java2026A/P08_Create_Thread_Contasined_in_Class/src/main/java/org/example/Main.java",
+    "onboarding.tips.debug.path": "C:/Java/Code/Java2026A/Ch08/P12_Create_Thread_via_Extends_Thread/src/main/java/org/example/Main.java",
     "project.structure.last.edited": "Problems",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
@@ -741,6 +741,11 @@
           <url>file://$PROJECT_DIR$/P07_Create_Thread_via_Lambda_Expression_TrueUSE/src/main/java/org/example/Main.java</url>
           <line>32</line>
           <option name="timeStamp" value="209" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Ch08/P12_Create_Thread_via_Extends_Thread/src/main/java/org/example/Main.java</url>
+          <line>14</line>
+          <option name="timeStamp" value="212" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/HW/0407EXAM1_2/src/main/java/org/example/Main.java</url>
