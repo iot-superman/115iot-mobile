@@ -53,11 +53,13 @@
         <module name="P7-30_Rectangel_Teacher" />
         <module name="0421" />
         <module name="HW0401-1" />
+        <module name="P40_HashMap_ListMap_TreeMap" />
         <module name="HW0401-2" />
         <module name="untP28_String_ComparsionDemo" />
         <module name="P23_ArrayList_Iterator_PrimeLeft_Demo" />
         <module name="P37_Gaemety_Fect_Circel_Strs_Polymotphidm" />
         <module name="P07_ReferncceType_alias" />
+        <module name="P08_Create_Thread_Contasined_in_Class" />
         <module name="P03_Method_with_TP" />
         <module name="P18_ArrayList_Shallow_Copy" />
         <module name="A-3_Prob_11" />
@@ -77,6 +79,7 @@
         <module name="P57_InterFace_Demo" />
         <module name="P21_ForLoop_ConvertoToDoWhile_Practice" />
         <module name="P13_Generic_ArrayList_String" />
+        <module name="P07_Create_Thread_via_Lambda_Expression_TrueUSE" />
         <module name="iCAP_HW03" />
         <module name="P52_Abstract_Class_Demo" />
         <module name="P14-1_Thread_RunnableTask" />
@@ -94,7 +97,10 @@
         <module name="B-4_Prob_8" />
         <module name="P24_Interface_Lamdba_Demo" />
         <module name="P12_Generic_ArrayList" />
+        <module name="P32_Method_Ref_Delegate_to_CTOR" />
         <module name="P06_Class2_Circle" />
+        <module name="P33_Vector_Collection" />
+        <module name="P07_Create_Thread_via_Lambda_Expression" />
         <module name="P_Method_Pass_By_Value" />
         <module name="P23_Sales_Demo" />
         <module name="P08_Throws_Exception" />
@@ -116,6 +122,7 @@
         <module name="P10_IF_ELSEIF_ELSE" />
         <module name="A-8_Prob_19" />
         <module name="P27_BMI_Calculate" />
+        <module name="P39_ArrayList_LinkList_Vector" />
         <module name="P02_Class_Declare" />
         <module name="P15_BIT-LOGIC_AND-OR_XOR" />
         <module name="P15_Nested_If_Else" />

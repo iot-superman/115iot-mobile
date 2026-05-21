@@ -149,6 +149,10 @@
     <file url="file://$PROJECT_DIR$/Ch07/P27_Java_Builtin_Consumer_Supplier_Function_Predicate/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P29_Comsumer_andThen_Cumsumer/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P29_Comsumer_andThen_Cumsumer/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P33_Vector_Collection/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P33_Vector_Collection/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P39_ArrayList_LinkList_Vector/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch07/P39_ArrayList_LinkList_Vector/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P_11_ArrayList_Integer/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch07/P_11_ArrayList_Integer/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Ch08/P06_Create_Thread_via_Runnable_Interface/src/main/java" charset="UTF-8" />
@@ -219,8 +223,14 @@
     <file url="file://$PROJECT_DIR$/Java_Chapgpt/P8-28_Coustomer_Static_Demo/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P06_Class2_Circle/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P06_Class2_Circle/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P07_Create_Thread_via_Lambda_Expression/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P07_Create_Thread_via_Lambda_Expression/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P07_Create_Thread_via_Lambda_Expression_TrueUSE/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P07_Create_Thread_via_Lambda_Expression_TrueUSE/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P07_If_else_pitfail/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P07_If_else_pitfail/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P08_Create_Thread_Contasined_in_Class/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P08_Create_Thread_Contasined_in_Class/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P15_Nested_If_Else/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P15_Nested_If_Else/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P18_Math_Satitc_Trigeometic_Methods/src/main/java" charset="UTF-8" />
@@ -233,6 +243,10 @@
     <file url="file://$PROJECT_DIR$/P25_Infinate_Loop/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P31_foreach_break_continue/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P31_foreach_break_continue/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P32_Method_Ref_Delegate_to_CTOR/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P32_Method_Ref_Delegate_to_CTOR/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P40_HashMap_ListMap_TreeMap/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/P40_HashMap_ListMap_TreeMap/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P52_Abstract_Class_Demo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/P52_Abstract_Class_Demo/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Y-Teacher/Main/src/main/java" charset="UTF-8" />

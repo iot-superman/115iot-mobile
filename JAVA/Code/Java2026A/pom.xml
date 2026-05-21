@@ -129,6 +129,13 @@
         <module>Ch07/P24_Functional_interface_Lambda_Expresion</module>
         <module>Ch07/P27_Java_Builtin_Consumer_Supplier_Function_Predicate</module>
         <module>Ch07/P29_Comsumer_andThen_Cumsumer</module>
+        <module>P32_Method_Ref_Delegate_to_CTOR</module>
+        <module>Ch07/P33_Vector_Collection</module>
+        <module>Ch07/P39_ArrayList_LinkList_Vector</module>
+        <module>P40_HashMap_ListMap_TreeMap</module>
+        <module>P07_Create_Thread_via_Lambda_Expression</module>
+        <module>P07_Create_Thread_via_Lambda_Expression_TrueUSE</module>
+        <module>P08_Create_Thread_Contasined_in_Class</module>
     </modules>
 
     <properties>
