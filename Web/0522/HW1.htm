@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>醉翁亭記 CSS 練習</title>
+
+    <style>
+        /* =========================
+           整體頁面設定
+        ========================= */
+        body {
+            font-family: "標楷體";
+            margin: 40px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           a 題
+           標題：
+           微軟正黑體、置中
+        ========================= */
+        h1 {
+            font-family: "微軟正黑體";
+            text-align: center;
+            color: #222;
+        }
+
+        /* =========================
+           b 題
+           段落：
+           首行縮排 1 公分
+           1.5 倍行高
+           標楷體
+           22 像素
+        ========================= */
+        .p {
+            text-indent: 1cm;
+            line-height: 1.5;
+            font-family: "標楷體";
+            font-size: 22px;
+        }
+
+         
+        /* =========================
+           c 題
+           底線 + 斜體
+        ========================= */
+        .style-c {
+            text-decoration: underline;
+            font-style: italic;
+           
+        }
+
+        /* =========================
+           d 題
+           頂線 + 粗體
+        ========================= */
+        .style-d {
+            text-decoration: overline;
+            font-weight: bold;
+            
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- a 題 -->
+    <h1>醉翁亭記</h1>
+
+    <!-- b 題 -->
+    <p style="style-b;">
+        環滁皆山也。其西南諸峰，林壑尤美，
+        望之蔚然而深秀</span>者，
+       <span class="style-c">琅琊</span>也，
+        <span class="style-c">釀泉</span>也。峰迴路轉，有亭翼然臨於泉上者，
+        <span class="style-c">醉翁亭</span>也。作亭者誰？
+        山之僧<span class="style-d">智遷</span>也。
+        名之者誰？<span class="style-d">太守</span>自自謂之也。
+    
+    
+        太守與客來飲於此，飲少輒醉，而年又最高，
+        故自號曰<span class="style-d">醉翁</span>也。醉翁之意不在酒，
+        在乎山水之間也。山水之樂，
+        得之心而寓之酒也。
+    </p>
+
+    <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;若夫日出而林霏開，雲歸而巖穴暝，
+        晦明變化者，山間之朝暮也。
+        野芳發而幽香，佳木秀而繁陰，
+        風霜高潔，水落而石出者，
+        山間之四時也。朝而往，暮而歸，
+        四時之景不同，而樂亦無窮也。
+    </p>
+
+</body>
+
+</html>
