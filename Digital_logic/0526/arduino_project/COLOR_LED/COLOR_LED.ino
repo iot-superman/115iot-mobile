@@ -48,6 +48,11 @@ void setup() {
   delay(1000);
 }
 
+void loop() {
+
+  color_change();
+}
+
 // =====================================
 // RGB Binary Counter
 // =====================================
@@ -98,9 +103,4 @@ void color_change() {
 
     delay(1000);
   }
-}
-
-void loop() {
-
-  color_change();
 }
