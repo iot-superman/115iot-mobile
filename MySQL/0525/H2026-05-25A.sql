@@ -1,0 +1,253 @@
+USE World
+-- 顯示所有城市的人口總和
+SELECT sum(Population) From World.city
+-- 顯示所有城市的人口平均數
+SELECT avg(Population) From World.city;
+
+-- 顯示每個地區的人口總和
+SELECT Region,SUM(POPULATION) FROM World.Country  GROUP BY Region
+
+
+-- 顯示每個洲的人口平均數, 並保留1位小數    
+SELECT CONTINENT,round(avg(POPULATION),1) FROM World.Country  GROUP BY CONTINENT;
+
+-- 顯示每個政府形式的人口總和 , 並計算平均數
+SELECT GOVERNMENTFORM,SUM(POPULATION) FROM World.Country  GROUP BY GOVERNMENTFORM with rollup;
+
+-- 顯示每個洲的國家數量
+SELECT CONTINENT,count(*) FROM World.Country  GROUP BY CONTINENT with rollup;
+
+-- 顯示每個洲的國家數量, 並計算總數量
+SELECT CONTINENT,count(*)/(SELECT  COUNT(*) from  World.Country ) TotalCountries FROM World.Country  GROUP BY CONTINENT with rollup;
+
+-- 只顯示人口數量大於100000000的地區, 只能用HAVING
+SELECT  region,count(*),SUM(POPULATION) FROM World.Country   GROUP BY region HAVING SUM(POPULATION) > 100000000;
+
+-- 顯示每個洲的地區數量, 並計算總數量, ROLLUP 會顯示每個地區的數量(小計), 並計算總數量
+SELECT CONTINENT ,Region,COUNT(*)  FROM  world.country   GROUP BY Continent,REGION WITH ROLLUP;
+
+
+-- https://chatgpt.com/s/m_6a13a7263c0c8191a1bcd348b3ef9048
+SET  SQL_MODE=''
+SELECT CONTINENT ,Region,COUNT(*)  FROM  world.country   GROUP BY Continent;
+
+SET  SQL_MODE='ONLY_FULL_GROUP_BY'
+SELECT CONTINENT ,Region,COUNT(*)  FROM  world.country   GROUP BY Continent,Region;
+ 
+ --
+ SELECT  JOB, SUM(SALARY),avg(SALARY) average ,max(SALARY ) MAXimum,min(SALARY) MINIMUM   FROM cmdev.EMP  GROUP BY JOB WITH ROLLUP;
+ 
+ 
+ CREATE DATABASE db1;
+ USE DB1;
+ CREATE TABLE IF NOT EXISTS person(
+	ID CHAR(4) comment '編號',
+    NAME VARCHAR(50) comment '名子',
+    ADDRESS VARCHAR(50) comment '地址',
+    BIRTHDATE DATE comment '出生日期',
+    HEIGHT FLOAT(5,1) comment '身高',
+    WEIGHT FLOAT(5,1) comment '体重',
+    PRIMARY KEY(ID) NOT NULL
+ )
+ 
+CREATE TABLE IF NOT EXISTS T1(
+	ID SERIAL comment '編號',   -- SERIAL is(PRIMARY KEY+BIGINT AUTO_INCREMENT+NO NULL+UNSIGNED)
+    NAME VARCHAR(50) comment '名子',
+    TEL VARCHAR(20) comment '電話'
+ )
+  
+CREATE TABLE IF NOT EXISTS T2(
+	ID SERIAL comment '編號',   -- SERIAL is(PRIMARY KEY+BIGINT AUTO_INCREMENT+NO NULL+UNSIGNED)
+    NAME VARCHAR(50) comment '名子',
+    TEL VARCHAR(20) comment '電話'
+ )ENGINE=InnoDB , CHARACTER SET=big5;
+
+CREATE TABLE IF NOT EXISTS Product_Main (
+    Product_ID INT NOT NULL AUTO_INCREMENT COMMENT '廠商編號',
+    Product_name VARCHAR(60) NULL COMMENT '產品名稱',
+    Product_list DECIMAL(10,1) NULL COMMENT '產品定價',
+    Product_cost DOUBLE NULL COMMENT '產品成本',
+    ProductRemark01 TEXT NULL,
+    ProductRemark02 TEXT NULL,
+    PRIMARY KEY (Product_ID)
+) 	
+
+CREATE TABLE IF NOT EXISTS Product_Main2 (
+
+    Product_ID INT NOT NULL AUTO_INCREMENT COMMENT '產品編號',
+
+    Product_name VARCHAR(60) NULL COMMENT '產品名稱',
+
+    Product_price DECIMAL(10,1) NULL COMMENT '產品定價',
+
+    Product_cost DECIMAL(10,2) NULL COMMENT '產品成本',
+
+    ProductRemark01 TEXT COMMENT '備註1',
+
+    ProductRemark02 TEXT COMMENT '備註2',
+
+    PRIMARY KEY (Product_ID)
+
+) 
+
+create table if not exists  T3 (
+    ID INT ,
+    NAME VARCHAR(20),
+    CONTINENT  ENUM('Asia','Europe','Africa','Europe'),
+    AREA DOUBLE (10,2),
+    PRIMARY KEY(ID,NAME) -- 複合主鍵(PK)
+)
+
+-- PRIMARY KEY 主鍵(PK) 不能重複
+ 
+CREATE TABLE IF NOT EXISTS  T4 (
+    ID INT NOT NULL ,
+    NAME VARCHAR(20),
+    ADDRESS VARCHAR(20) DEFAULT 'TAINAN',
+    PRIMARY KEY(ID,NAME) 
+)
+
+CREATE TABLE IF NOT EXISTS  T5 (
+    ID INT NOT NULL ,
+    NAME VARCHAR(20),
+    ADDRESS VARCHAR(20) DEFAULT 'TAINAN',
+    -- primary key id+ 只取NAME的前5個字元
+    PRIMARY KEY(ID,NAME(5)) 
+)
+
+CREATE TABLE IF NOT EXISTS  T6 (
+    ID SERIAL ,
+    NAME VARCHAR(20),
+    SALARY INT ZEROFILL UNSIGNED,  -- 0填充, 無符号整數
+    BIRTHDATE DATE,
+    PRIMARY KEY(ID)
+)
+
+SELECT * FROM DB1.T6;
+
+INSERT INTO `DB1`.`T6` (`ID`, `NAME`, `SALARY`, `BIRTHDATE`) VALUES ('1', 'AAAAA', '1000', '1988-03-03');
+INSERT INTO `DB1`.`T6` (`ID`, `NAME`, `SALARY`, `BIRTHDATE`) VALUES ('2', 'BBBB', '-1001', '1988-03-05');  
+
+
+DELETE FROM `DB1`.`T6` WHERE (`ID` = '12');
+
+
+
+INSERT INTO `DB1`.`T6` (`ID`, `NAME`, `SALARY`, `BIRTHDATE`) VALUES ('10', 'CCCC', '9999', '1999/01/01');
+
+INSERT INTO `DB1`.`T6` ( `NAME`, `SALARY`, `BIRTHDATE`) VALUES ( 'BBBB', '23213', '1988-03-05');  
+
+SHOW VARIABLES LIKE '%AUTO_INCREMENT%'
+-- 每次加5
+SET AUTO_INCREMENT_INCREMENT = 5;
+
+-- AUTO_INCREMENT 1000 開始自動遞增
+CREATE TABLE IF NOT EXISTS  T7 (
+    ID SERIAL ,
+   NAME VARCHAR(20)
+) AUTO_INCREMENT=1000;
+
+SET AUTO_INCREMENT_INCREMENT = 1;
+SHOW VARIABLES LIKE '%AUTO_INCREMENT%'
+
+--值域正確性
+CREATE TABLE IF NOT EXISTS  PERSONS (
+    ID INT NOT NULL PRIMARY KEY,
+    NAME VARCHAR(30) NOT NULL,
+    AGE INT ,
+    CHECK(AGE >=18) -- 年齡必須大於等於18歲
+    
+) 
+--值域正確性
+CREATE TABLE IF NOT EXISTS  NEW_PERSONS (
+    ID INT NOT NULL PRIMARY KEY,
+    NAME VARCHAR(30) NOT NULL,
+    AGE INT ,
+    CITY VARCHAR(30),
+    CONSTRAINT CHECK_PERSON_CITY CHECK(AGE>=18 AND CITY ='TAOYUAN') -- CONSTRAINT 約束條件 年齡必須大於等於18歲, 且城市必須是TAOYUAN
+) 
+
+
+ALTER TABLE 17 AUTO_INCREMENT=3000;
+
+--A-001 A-002 B-001 B-002 ...Z-001 Z-002
+
+
+
+
+--值域正確性
+CREATE TABLE IF NOT EXISTS  NEW_MPLOYEE (
+    ID INT NOT NULL PRIMARY KEY,
+    EMAIL VARCHAR(30) NOT NULL,
+    EMP_PHOTO BLOB  -- 員工照片用BLOB(儲存二進位資料)
+)
+
+-- FILE I／O   INPUT STREAM
+-- FILE I／O   OUTPUT STREAM／OUTPUT STREAM  -> 2進位資料串流儲存資料庫中
+
+ 
+ 
+--  CREATE TABLE IF NOT EXISTS TSTABLE2(
+--     TS TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+--     TS2 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     AREA VARCHAR(20) NOT NULL,
+--     TEMP INT NOT NULL
+-- )
+ 
+--  但 MySQL 8 預設開啟了：
+
+-- NO_ZERO_DATE
+-- STRICT_TRANS_TABLES
+
+-- 所以：
+
+-- '0000-00-00 00:00:00'
+
+-- 已經不允許當 TIMESTAMP 預設值。
+  
+CREATE TABLE IF NOT EXISTS TSTABLE2(
+    TS TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    TS2 TIMESTAMP NOT NULL 
+    DEFAULT CURRENT_TIMESTAMP 
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    AREA VARCHAR(20) NOT NULL,
+
+    TEMP INT NOT NULL
+);
+
+ALTER TABLE TSTABLE
+ADD PRIMARY KEY (AREA);
+
+
+SELECT * FROM db1.tstable;
+INSERT INTO DB1.TSTABLE(AREA,TEMP) VALUES('TAIWAN',32);
+-- 更新TAIWAN的溫度為28
+ 
+USE DB1;
+
+
+-- Workbench：
+-- Edit
+-- → Preferences
+-- → SQL Editor
+-- 把：
+-- Safe Updates
+-- (Rejects UPDATEs and DELETEs with no restrictions)
+-- 取消勾選。
+-- 之後：
+-- 關掉WORKBENCH, 再重進WORKBENCH, 重新連線 MySQL
+-- 很重要。
+
+-- 這樣才可以，更新TAIWAN的溫度為28
+UPDATE TSTABLE SET TEMP = 28  WHERE AREA = 'TAIWAN';
+
+INSERT INTO TSTABLE2 (AREA, TEMP) VALUES ('TAIWAN', 32);
+
+UPDATE TSTABLE2 SET TEMP=20 WHERE AREA = 'TAIWAN';
+
+
+ SELECT * FROM db1.tstable2 
+ 
+ 
+ 
