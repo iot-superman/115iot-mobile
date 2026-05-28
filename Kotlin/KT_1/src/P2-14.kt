@@ -29,4 +29,8 @@ fun main() {
     println()
     //trimMargin 會將每行的前置空白去掉，直到最少的前置空白為止，並且會將指定的邊界符號（@）去掉。
     println(str6.trimMargin("@"))
+
+
+
+
 }
