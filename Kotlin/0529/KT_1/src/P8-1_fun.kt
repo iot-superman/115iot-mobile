@@ -8,7 +8,11 @@ fun main() {
     // 匿名函數是一種沒有名稱的函數，是labama表達式的一種形式
     val sum1= {a:Int,b:Int -> a+b}
     println("8 + 12 = ${sum1(8,12)}")
+// sayHello 函數接受兩個參數 name 和 age，並打印出一條問候消息，該函數在 main 函數中被調用，傳入了 "Alice" 和 30 作為參數
+   sayHello("Alice", 30)
+   sayHello(age=35,name="Bob") // 使用命名參數的方式調用 sayHello 函數，這樣可以不按照參數的順序傳遞值，提高了代碼的可讀性
 
+    sayHello("Jane") // 使用默認參數值調用 sayHello 函數，這裡只傳遞了 name 參數，age 參數將使用默認值 25
 
 //    unitaddAddAB() //unit function 沒有返回值，直接調用即可，該函數會提示用戶輸入兩個整數，然後計算並打印它們的和
     C2F() //C2F 函數將攝氏溫度轉換為華氏溫度，並打印結果。該函數會提示用戶輸入攝氏溫度，然後進行計算並輸出華氏溫度。
@@ -36,3 +40,6 @@ c= readLine()?.toFloatOrNull() ?: 0F
 f = c * 9/5 + 32
 println("Temp in Fahrenheit: $f F")
 }
+
+fun  sayHello(name: String, age: Int=10) {
+    println("Hello, $name! You are $age years old.") }
