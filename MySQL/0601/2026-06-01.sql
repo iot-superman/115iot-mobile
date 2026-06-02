@@ -1,3 +1,4 @@
+-- https://youtu.be/xzDpOlSyL_U
 CREATE DATABASE IF NOT EXISTS DB1;
 USE DB1;
 
