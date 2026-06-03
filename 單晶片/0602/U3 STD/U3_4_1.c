@@ -1,3 +1,5 @@
+//https://youtu.be/tsRoqsXoxB0
+
 // https://chatgpt.com/s/m_6a1e7e14f0408191847417b35995e7b6
 // PROGRAM	: U3_4_1.c						2017.0427
 // FUNCTION	: CP1 Control Demo Program    	By Steven
