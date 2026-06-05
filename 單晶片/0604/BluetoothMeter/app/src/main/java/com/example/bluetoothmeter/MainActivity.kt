@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,16 +32,22 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.bluetoothmeter.ui.theme.BluetoothMeterTheme
 import java.io.InputStream
 import java.util.UUID
@@ -183,16 +190,44 @@ class MainActivity : ComponentActivity() {
                             }
 
                             // =====================================
-                            // RSSI 排序
-                            // 強 → 弱
+                            // 排序規則
+                            // 1. 有名稱裝置排前面
+                            // 2. 未知裝置排最後
+                            // 3. RSSI 強 → 弱
                             // =====================================
 
                             val sorted =
 
-                                deviceList.sortedByDescending { item ->
+                                deviceList.sortedWith(
 
-                                    item.rssi
-                                }
+                                    compareBy<DeviceItem> {
+
+                                        val name =
+
+                                            if (
+                                                Build.VERSION.SDK_INT >=
+                                                Build.VERSION_CODES.S
+                                            ) {
+
+                                                it.device.name
+
+                                            } else {
+
+                                                @Suppress("DEPRECATION")
+
+                                                it.device.name
+                                            }
+
+                                        name.isNullOrBlank() ||
+                                                name == "Unknown Device" ||
+                                                name == "未知裝置"
+                                    }
+
+                                        .thenByDescending {
+
+                                            it.rssi
+                                        }
+                                )
 
                             deviceList.clear()
 
@@ -244,8 +279,7 @@ class MainActivity : ComponentActivity() {
 
                     modifier = Modifier.fillMaxSize(),
 
-                    color =
-                        MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background
 
                 ) {
 
@@ -278,7 +312,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // =====================================================
-    // 權限
+    // 權限要求
     // =====================================================
 
     private fun requestBluetoothPermission() {
@@ -382,14 +416,22 @@ class MainActivity : ComponentActivity() {
     // =====================================================
 
     private fun connectBluetooth(
-
         device: BluetoothDevice
     ) {
 
         try {
 
+            if (
+                ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+
             connectStatus =
-                "連線中: ${device.name}"
+                "連線中: ${device.name ?: "Unknown"}"
 
             thread {
 
@@ -402,15 +444,6 @@ class MainActivity : ComponentActivity() {
                     bluetoothAdapter?.cancelDiscovery()
 
                     Thread.sleep(1000)
-
-                    if (
-                        ActivityCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        return@thread
-                    }
 
                     // =====================================
                     // 尚未配對 → 先配對
@@ -427,10 +460,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         device.createBond()
-
-                        // =================================
-                        // 等待配對完成
-                        // =================================
 
                         var waitCount = 0
 
@@ -516,7 +545,7 @@ class MainActivity : ComponentActivity() {
 
                                 Toast.makeText(
 
-                                    this,
+                                    this@MainActivity,
 
                                     "此裝置可能不是標準 HC-05",
 
@@ -536,14 +565,13 @@ class MainActivity : ComponentActivity() {
                     inputStream =
                         bluetoothSocket?.inputStream
 
-                    // =====================================
-                    // 已連線
-                    // =====================================
-
                     isConnected = true
 
-                    connectStatus =
-                        "已連線: ${device.name}"
+                    runOnUiThread {
+
+                        connectStatus =
+                            "已連線: ${device.name ?: "Unknown"}"
+                    }
 
                     // =====================================
                     // 開始讀 ADC
@@ -560,7 +588,7 @@ class MainActivity : ComponentActivity() {
                         connectStatus = "連線失敗"
 
                         Toast.makeText(
-                            this,
+                            this@MainActivity,
                             e.message,
                             Toast.LENGTH_LONG
                         ).show()
@@ -575,7 +603,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // =====================================================
-    // 讀取 ADC
+    // 讀取 ADC 數據
     // =====================================================
 
     private fun readADCData() {
@@ -586,19 +614,20 @@ class MainActivity : ComponentActivity() {
 
                 while (isConnected) {
 
-                    // =====================================
-                    // 低位元
-                    // =====================================
-
                     val low =
-                        inputStream?.read() ?: 0
-
-                    // =====================================
-                    // 高位元
-                    // =====================================
+                        inputStream?.read() ?: break
 
                     val high =
-                        inputStream?.read() ?: 0
+                        inputStream?.read() ?: break
+
+                    // =====================================
+                    // 串流中斷
+                    // =====================================
+
+                    if (
+                        low == -1 ||
+                        high == -1
+                    ) break
 
                     // =====================================
                     // 合成 ADC
@@ -635,10 +664,10 @@ class MainActivity : ComponentActivity() {
 }
 
 // =========================================================
-// Compose UI
+// Compose UI 主介面
 // =========================================================
 
-@androidx.compose.runtime.Composable
+@Composable
 fun BluetoothScreen(
 
     adc: Int,
@@ -652,14 +681,20 @@ fun BluetoothScreen(
     onDisconnectClick: () -> Unit,
 
     onDeviceClick: (BluetoothDevice) -> Unit
-) {
 
-    // =====================================================
-    // ADC 轉電壓
-    // =====================================================
+) {
 
     val voltage =
         adc * 5.0 / 4095.0
+
+    // =====================================================
+    // 搜尋文字
+    // =====================================================
+
+    var searchText by remember {
+
+        mutableStateOf("")
+    }
 
     Column(
 
@@ -669,35 +704,31 @@ fun BluetoothScreen(
 
     ) {
 
-        // =================================================
-        // Title
-        // =================================================
-
         Text(
-
             text = "藍牙電表",
-
             fontSize = 34.sp
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // =================================================
         // 按鈕列
         // =================================================
 
-        Row {
+        Row(
 
-            // =============================================
-            // 掃描按鈕
-            // =============================================
+            modifier = Modifier.fillMaxWidth()
+
+        ) {
 
             Button(
 
                 onClick = {
 
                     onScanClick()
-                }
+                },
+
+                modifier = Modifier.weight(1f)
 
             ) {
 
@@ -708,16 +739,14 @@ fun BluetoothScreen(
                 modifier = Modifier.width(20.dp)
             )
 
-            // =============================================
-            // 斷線按鈕
-            // =============================================
-
             Button(
 
                 onClick = {
 
                     onDisconnectClick()
-                }
+                },
+
+                modifier = Modifier.weight(1f)
 
             ) {
 
@@ -725,43 +754,92 @@ fun BluetoothScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // =================================================
-        // 狀態
-        // =================================================
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-
             text = status,
+            fontSize = 20.sp
+        )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "附近藍牙裝置",
             fontSize = 22.sp
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // =================================================
+        // 搜尋框
+        // =================================================
+
+        OutlinedTextField(
+
+            value = searchText,
+
+            onValueChange = {
+
+                searchText = it
+            },
+
+            modifier = Modifier.fillMaxWidth(),
+
+            label = {
+
+                Text("搜尋藍牙名稱")
+            },
+
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // =================================================
         // 藍牙列表
         // =================================================
 
-        Text(
-
-            text = "附近藍牙裝置",
-
-            fontSize = 24.sp
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
         LazyColumn(
 
             modifier = Modifier
                 .fillMaxWidth()
-                .height(260.dp)
+                .weight(1f)
 
         ) {
 
-            items(deviceList) { item ->
+            items(
+
+                deviceList.filter { item ->
+
+                    val deviceName =
+
+                        if (
+                            Build.VERSION.SDK_INT >=
+                            Build.VERSION_CODES.S
+                        ) {
+
+                            item.device.name ?: ""
+
+                        } else {
+
+                            @Suppress("DEPRECATION")
+
+                            item.device.name ?: ""
+                        }
+
+                    // =====================================
+                    // 搜尋過濾
+                    // =====================================
+
+                    searchText.isBlank() ||
+
+                            deviceName.contains(
+                                searchText,
+                                ignoreCase = true
+                            )
+                }
+
+            ) { item ->
 
                 BluetoothDeviceItem(
 
@@ -775,28 +853,22 @@ fun BluetoothScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         HorizontalDivider()
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // =================================================
         // ADC
         // =================================================
 
         Text(
-
             text = "ADC: $adc",
-
-            fontSize = 40.sp
+            fontSize = 38.sp
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // =================================================
-        // Voltage
-        // =================================================
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
 
@@ -805,14 +877,10 @@ fun BluetoothScreen(
                 voltage
             ),
 
-            fontSize = 30.sp
+            fontSize = 28.sp
         )
 
-        Spacer(modifier = Modifier.height(30.dp))
-
-        // =================================================
-        // ProgressBar
-        // =================================================
+        Spacer(modifier = Modifier.height(16.dp))
 
         LinearProgressIndicator(
 
@@ -823,7 +891,7 @@ fun BluetoothScreen(
 
             modifier = Modifier
                 .fillMaxWidth()
-                .height(20.dp)
+                .height(16.dp)
         )
     }
 }
@@ -832,102 +900,217 @@ fun BluetoothScreen(
 // Device Card
 // =========================================================
 
-@androidx.compose.runtime.Composable
+@Composable
 fun BluetoothDeviceItem(
 
     item: DeviceItem,
 
     onClick: () -> Unit
+
 ) {
 
     Card(
 
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
+            .padding(vertical = 3.dp)
             .clickable {
 
                 onClick()
             }
-
     ) {
 
         Column(
 
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(
 
+                horizontal = 12.dp,
+                vertical = 8.dp
+            )
         ) {
 
-            Text(
+            // =============================================
+            // 裝置名稱
+            // =============================================
 
-                text =
-                    item.device.name
-                        ?: "Unknown Device",
+            val deviceName =
 
-                fontSize = 22.sp
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-
-                text =
-                    item.device.address,
-
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-
-                text =
-                    "RSSI: ${item.rssi} dBm",
-
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-
-                text = when {
-
-                    item.rssi >= -55 ->
-                        "訊號極強"
-
-                    item.rssi >= -70 ->
-                        "訊號良好"
-
-                    item.rssi >= -85 ->
-                        "訊號普通"
-
-                    else ->
-                        "訊號弱"
-                }
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-
-                text = when (
-
-                    item.device.bondState
-
+                if (
+                    Build.VERSION.SDK_INT >=
+                    Build.VERSION_CODES.S
                 ) {
 
-                    BluetoothDevice.BOND_BONDED ->
-                        "已配對"
+                    item.device.name ?: "未知裝置"
 
-                    BluetoothDevice.BOND_BONDING ->
-                        "配對中"
+                } else {
 
-                    else ->
-                        "未配對"
+                    @Suppress("DEPRECATION")
+
+                    item.device.name ?: "未知裝置"
                 }
+
+            // =============================================
+            // 第一行
+            // 名稱 + 配對狀態
+            // =============================================
+
+            Row(
+
+                modifier = Modifier.fillMaxWidth(),
+
+                horizontalArrangement =
+                    Arrangement.SpaceBetween,
+
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+
+                // =========================================
+                // 名稱
+                // =========================================
+
+                Text(
+
+                    text = deviceName,
+
+                    fontSize = 18.sp,
+
+                    modifier = Modifier.weight(1f),
+
+                    maxLines = 1
+                )
+
+                // =========================================
+                // 配對狀態
+                // =========================================
+
+                Text(
+
+                    text = when (
+
+                        item.device.bondState
+
+                    ) {
+
+                        BluetoothDevice.BOND_BONDED ->
+                            "已配對"
+
+                        BluetoothDevice.BOND_BONDING ->
+                            "配對中"
+
+                        else ->
+                            "未配對"
+                    },
+
+                    fontSize = 14.sp,
+
+                    color = when (
+
+                        item.device.bondState
+
+                    ) {
+
+                        BluetoothDevice.BOND_BONDED ->
+                            Color(0xFF388E3C)
+
+                        else ->
+                            Color.Gray
+                    }
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(2.dp)
             )
+
+            // =============================================
+            // 第二行
+            // MAC + RSSI
+            // =============================================
+
+            Row(
+
+                modifier = Modifier.fillMaxWidth(),
+
+                horizontalArrangement =
+                    Arrangement.SpaceBetween,
+
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+
+                // =========================================
+                // MAC
+                // =========================================
+
+                Text(
+
+                    text = item.device.address,
+
+                    fontSize = 12.sp,
+
+                    color = Color.Gray
+                )
+
+                // =========================================
+                // RSSI
+                // =========================================
+
+                Row {
+
+                    Text(
+
+                        text = "${item.rssi} dBm",
+
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(
+                        modifier = Modifier.width(6.dp)
+                    )
+
+                    Text(
+
+                        text = when {
+
+                            item.rssi >= -55 ->
+                                "極強"
+
+                            item.rssi >= -70 ->
+                                "良好"
+
+                            item.rssi >= -85 ->
+                                "普通"
+
+                            else ->
+                                "弱"
+                        },
+
+                        fontSize = 12.sp,
+
+                        color = Color.Gray
+                    )
+                }
+            }
         }
     }
 }
 
+// =========================================================
+// Preview
+// =========================================================
+
+@Preview(showBackground = true)
+@Composable
+fun BluetoothScreenPreview() {
+    BluetoothMeterTheme {
+        BluetoothScreen(
+            adc = 2048,
+            status = "已連線 (預覽模式)",
+            deviceList = emptyList(),
+            onScanClick = {},
+            onDisconnectClick = {},
+            onDeviceClick = {}
+        )
+    }
+}
