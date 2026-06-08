@@ -51,7 +51,7 @@ fun main() {
 
     // name: Jack, id: 10，使用總分 Lambda
     println("開始輸入 Jack 的成績（將計算總分）...")
-    student("Jack", 10, sumLambda)
+    student("Jack", 10 , sumLambda)
 
     // name: Mary, id: 20，使用平均 Lambda
     println("開始輸入 Mary 的成績（將計算平均）...")

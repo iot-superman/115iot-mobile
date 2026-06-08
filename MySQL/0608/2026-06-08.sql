@@ -1,5 +1,8 @@
 -- https://chatgpt.com/s/m_6a26190507388191a74575c8f1910e0a
 
+-- https://chatgpt.com/s/m_6a261bf20ce08191b6e205570a1198ef
+
+
 -- inner join 內部結合
 
 -- corss join 交叉結合
@@ -98,7 +101,61 @@ FROM WORLD.COUNTRY CO INNER　JOIN WORLD.CITY CI ON CASPITASL=ID;
     
 SELECT EMPNO,ENAME,DEPTNO FROM CMDEV.EMP;
 
+-- 合併查詢 (查詢的欄位名稱要相同)
+SELECT REGION,NAME,POPULATION FROM WORLD.COUNTRY WHERE REGION='SOUTHEAST ASIA' AND POPULATION<20000000
+UNION
+SELECT REGION,NAME,POPULATION FROM WORLD.COUNTRY WHERE REGION='EASTERN ASIA' AND POPULATION<10000000
+UNION  
+SELECT REGION,NAME,POPULATION FROM WORLD.COUNTRY WHERE REGION='EASTERN AFRICA' AND POPULATION<10000000;
+
+
     
     
-    
+SELECT REGION, NAME, POPULATION
+FROM WORLD.COUNTRY
+WHERE REGION='SOUTHEAST ASIA'
+AND POPULATION <2000000
+
+UNION ALL
+
+SELECT REGION, NAME, POPULATION
+FROM WORLD.COUNTRY
+WHERE REGION='EASTERN ASIA'
+AND POPULATION <1000000
+
+UNION ALL
+
+SELECT REGION, NAME, POPULATION
+FROM WORLD.COUNTRY
+WHERE REGION='EASTERN AFRICA'
+AND POPULATION <1000000;    
+
+-- 實作題
+-- 習題1
+-- 前兩題的欄位名稱不需要用中文字型別名（AS 員工編號 等），直接使用原本的欄位代號 empno, ename, job, deptno, dname 即可。
+-- 第三題的輸出畫面中，欄位名稱被改成了 Asia 與 Population，且左邊多了一個分類標籤。這在 SQL 中通常需要配合 MIN() 與 MAX() 的別名，或是透過 UNION 來達成畫面上的
+-- 1
+SELECT e.empno, e.ename, e.job, e.deptno, d.dname
+FROM cmdev.emp e
+INNER JOIN cmdev.dept d ON e.deptno = d.deptno
+USING(DEPTNO);
+
+
+-- 2
+-- 2. 查詢所有員工資料（包含部門編號為 NULL 的員工）
+-- 畫面的倒數第二行出現了員工 BLAKE（其 deptno 與 dname 皆顯示為 NULL），這證實了必須使用左外連接。
+SELECT e.empno, e.ename, e.job, e.deptno, d.dname
+FROM cmdev.emp e
+LEFT OUTER JOIN cmdev.dept d ON e.deptno = d.deptno;
+
+
+-- 3
+-- 3. 查詢亞洲國家最小與最大人口數
+-- 從輸出畫面來看，它將「最小」與「最大」拆成了兩列（Rows）顯示，而不是傳統的兩欄。
+-- 要做出這種「橫變直」的呈現效果，最標準且符合題意的做法是使用 UNION 將兩個查詢結果上下拼接，並刻意塞入字串 'Minimum' 與 'Maximum' 作為分類：
+
+SELECT 'Minimum' AS Asia, MIN(Population) AS Population FROM world.country WHERE Continent = 'Asia'
+UNION
+SELECT 'Maximum' AS Asia, MAX(Population) AS Population FROM world.country WHERE Continent = 'Asia';
+
     
