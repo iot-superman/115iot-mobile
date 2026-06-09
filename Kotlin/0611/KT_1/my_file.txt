@@ -1,0 +1,2 @@
+Hello, Kotlin!
+This is Kotlin class.It is rainy.
