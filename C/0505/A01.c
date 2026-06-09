@@ -25,6 +25,7 @@ int deicmalToBinary(int n) {
     n = n / 2;
     binary += rem * times;
     times = times * 10;
+
   }
   return binary;
 }
