@@ -1,41 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-tw">
 <head>
-    <meta charset="UTF-8">
-    <title>CSS練習</title>
+    <meta charset="utf-8"/>
+    <title>CSS 字間距範例</title>
     <style>
-    /* 定義連結的四種狀態顏色 */
-    a:link {
-        color: black; /* 未瀏覽過的連結預設顏色 */
-    }
-    
-    a:visited {
-        color:green; /* 已瀏覽過的連結顏色 */
-    }
-    
-    a:hover {
-        color: blue; /* 滑鼠懸停在連結上的顏色 */
-    }
-    
-    a:active {
-        color: orange; /* 連結被點擊時的作用中狀態顏色 */
-    }
 
     </style>
 </head>
 
 <body>
+    <h1>CSS letter-spacing 屬性範例</h1>
+    <p class="intro">以下展示不同字間距設定的效果，幫助理解 letter-spacing 屬性的使用方式</p>
 
- <UI>
+    <div class="example-group">
+        <div class="example-label">預設值：normal</div>
+        <p style="letter-spacing: normal;">   祝你生日快樂 Happy birthday to you </p>
+        <p class="example-desc">使用瀏覽器預設的字元間距，不會額外增加間距</p>
+    </div>
 
-    <LI><a href="A01.htm">書剣恩仇錄</a></LI>
-    <LI><a href="A02.htm">連城訣</a></LI>
-    <LI><a href="A03.htm">神鵰俠侶</a></LI>
-    <LI><a href="A04.htm">鹿鼎記</a></LI>
- </UI>
+    <div class="example-group">
+        <div class="example-label">像素單位：3px</div>
+        <p style="letter-spacing: 3px;">祝你生日快樂 Happy birthday to you</p>
+        <p class="example-desc">每個字元之間增加3像素的間距，是網頁設計最常用的單位</p>
+    </div>
 
+    <div class="example-group">
+        <div class="example-label">公分單位：0.25cm</div>
+        <p style="letter-spacing: 0.25cm;">祝你生日快樂 Happy birthday to you</p>
+        <p class="example-desc">每個字元之間增加0.25公分的間距，常用於列印樣式的設計</p>
+    </div>
 
+    <div class="example-group">
+        <div class="example-label">公厘單位：5mm</div>
+        <p style="letter-spacing: 5mm;">祝你生日快樂 Happy birthday to you</p>
+        <p class="example-desc">每個字元之間增加5公厘的間距，適合需要大間距的展示場景</p>
+    </div>
 </body>
-
 </html>

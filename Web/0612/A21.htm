@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="utf-8"/>
+    <title>CSS</title>
+    <style>
+        tr:nth-child(1) {
+            background-color: lightcoral;
+        }
+        tr:nth-child(2n+2) {   // 偶數行  
+            background-color: rgb(250, 200, 40);
+        }
+        tr:nth-child(2n+3) {  // 奇數行    
+            background-color: rgb(130, 230, 163);
+        }
+        /* 另一種寫法 */
+        /* tr:nth-child(odd) {  // 偶數行
+            background-color: rgb(230, 230, 130);
+        }
+        tr:nth-child(even) {  // 奇數行
+            background-color: rgb(163, 230, 130);
+        } */
+            
+        
+    </style>
+</head>
+<body>
+<table>
+    <tr>
+        <th>歌曲名稱</th>
+        <th>演唱者</th>
+    </tr>
+    <tr>
+        <td>加州陽光</td>
+        <td>張清芳</td>
+    </tr>
+    <tr>
+        <td>表白</td>
+        <td>蕭亞軒</td>
+    </tr>
+    <tr>
+        <td>情殤</td>
+        <td>楊宗緯</td>
+    </tr>
+    <tr>
+        <td>追追追</td>
+        <td>黃妃</td>
+    </tr>
+    <tr>
+        <td>追追追</td>
+        <td>黃妃</td>
+    </tr>
+    <tr>
+        <td>秋雨那一眠</td>
+        <td>江蕙feat.伍思凱</td>
+    </tr>
+    <tr>
+        <td>愛你</td>
+        <td>陳語芳</td>
+    </tr>
+    <tr>
+        <td>屋頂</td>
+        <td>吳宗憲</td>
+    </tr>
+    <tr>
+        <td>一場遊戲一場夢</td>
+        <td>陳語芳</td>
+    </tr>
+    <tr>
+        <td>獨上西樓</td>
+        <td>鄧麗君</td>
+    </tr>
+</table>
+</body>
+</html>
