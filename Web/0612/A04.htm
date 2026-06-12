@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSS練習</title>
+    <style>
+        /* 通用選擇器：選擇所有有class屬性 的元素，並將其顏色設為藍色 */
+        [class="apple"] {
+            color: blue;
+        }
+        /* 類選擇器：選擇所有class屬性為content的元素，並將其顏色設為紅色
+        .content會蓋過[class]的顏色 */
+        .content {
+            color: orangered;
+        }
+    </style>
+</head>
+<body>
+    <h1>果汁牛奶</h1>
+    <ul>
+        <li class="apple">蘋果牛奶</li>
+        <li class="apple-banana">香蕉蘋果牛奶</li>
+        <li class="grape applebanana">特調牛奶</li>
+        <li class="fruit apple">招牌牛奶</li>
+        <li class="fruit pineapple">鳳梨蘋果牛奶</li>
+     </ul>
+
+<p class="content">
+    勞動部勞動力發展署
+</p>
+</body>
+</html>
