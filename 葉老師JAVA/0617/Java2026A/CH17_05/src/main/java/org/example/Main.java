@@ -1,0 +1,38 @@
+package org.example;
+
+interface Bird {
+    void birdFly();
+}
+
+interface Airplane {
+    void airplaneFly();
+}
+
+class Fly implements Bird, Airplane {
+
+    @Override
+    public void airplaneFly() {
+        System.out.println("飛機用引擎飛");
+    }
+
+    @Override
+    public void birdFly() {
+        System.out.println("鳥用翅膀飛");
+    }
+
+    public void pediaFly() {
+        System.out.println("飛行百科");
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Fly f = new Fly();
+
+        f.airplaneFly();
+        f.birdFly();
+        f.pediaFly();
+    }
+}
