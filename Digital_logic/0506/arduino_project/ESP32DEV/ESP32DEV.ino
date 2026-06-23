@@ -27,8 +27,8 @@ PSRAM               Disabled
 // WiFi 設定
 //==================================================
 
-const char* WIFI_SSID = "iPhone12m";
-const char* WIFI_PASSWORD = "12345678";
+const char* WIFI_SSID = "thmrb306";
+const char* WIFI_PASSWORD = "thmrbthmrb";
 
 //==================================================
 // MQTT 設定
