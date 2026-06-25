@@ -1,3 +1,10 @@
+/*
+ 2026-06-25 
+ 重構了 applyWiFiCommand 的邏輯，將其更名為更符合功能的 handleCommand。
+ 現在，無論你是透過「序列埠 (Serial)」、「手機藍牙 (BLE)」、還是「MQTT 遠端」傳送文字指令 tare，程式都會統一同步執行去皮歸零。
+ 如果輸入的不是 tare 且包含冒號 :，則會自動解析為 WiFi 帳密設定。
+ * 
+ */
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <HX711.h>
@@ -98,6 +105,25 @@ void appPrint(String text)
 }
 
 //====================================================
+// 執行去皮歸零實作 (Tare)
+//====================================================
+void executeTare()
+{
+    if(scale.is_ready())
+    {
+        appPrint("執行去皮歸零 (Tare)...");
+        scale.tare();
+        delay(300);
+        zeroOffset = scale.read_average(30);
+        appPrint("新基準零點偏置 = " + String(zeroOffset));
+    }
+    else
+    {
+        appPrint("錯誤：HX711 未就緒，忽略歸零指令。");
+    }
+}
+
+//====================================================
 // 從 NVS 快取讀取 WiFi 設定
 //====================================================
 void loadWiFiFromNVS()
@@ -125,16 +151,27 @@ void saveWiFiToNVS()
 }
 
 //====================================================
-// 解析並套用 WiFi 指令（格式：SSID:PASSWORD）
+// 核心指令解析中心 (處理公用指令與 WiFi 設定)
 //====================================================
-void applyWiFiCommand(String input)
+void handleCommand(String input)
 {
     input.trim();
+
+    if(input.length() == 0) return;
+
+    // 1. 優先識別與處理所有管道傳入的歸零指令
+    if(input == "tare")
+    {
+        executeTare();
+        return;
+    }
+
+    // 2. 若非歸零指令，則判斷是否為 WiFi 設定格式 (SSID:PASSWORD)
     int colonIndex = input.indexOf(':');
 
     if(colonIndex <= 0)
     {
-        appPrint("格式錯誤，請輸入正確格式：SSID:PASSWORD");
+        appPrint("未知指令或格式錯誤。更改 WiFi 請輸入：SSID:PASSWORD");
         return;
     }
 
@@ -194,7 +231,7 @@ class MyServerCallbacks : public BLEServerCallbacks
 };
 
 //====================================================
-// BLE 接收資料回呼（收到手機端指令）
+// BLE 接收資料回呼（支援 tare 指令與 WiFi 設定）
 //====================================================
 class MyRXCallbacks : public BLECharacteristicCallbacks
 {
@@ -210,7 +247,7 @@ class MyRXCallbacks : public BLECharacteristicCallbacks
             Serial.print("指令內容 : ");
             Serial.println(rxValue);
 
-            applyWiFiCommand(rxValue);
+            handleCommand(rxValue); // 送入統一指令解析中心
         }
     }
 };
@@ -256,7 +293,7 @@ void setupBLE()
 }
 
 //====================================================
-// MQTT 訊息接收回呼
+// MQTT 訊息接收回呼（支援遠端 tare 指令）
 //====================================================
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
@@ -273,27 +310,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
     Serial.print("內容 Message : ");
     Serial.println(message);
 
-    // 遠端去皮歸零指令
-    if(message == "tare")
-    {
-        if(scale.is_ready())
-        {
-            Serial.println("執行遠端去皮 (Tare)...");
-            scale.tare();
-            delay(300);
-            zeroOffset = scale.read_average(30);
-            Serial.print("新基準零點零點偏置 = ");
-            Serial.println(zeroOffset);
-        }
-        else
-        {
-            Serial.println("HX711 未就緒，忽略歸零指令。");
-        }
-    }
+    handleCommand(message); // 送入統一指令解析中心
 }
 
 //====================================================
-// 處理 Serial 序列埠輸入指令
+// 處理 Serial 序列埠輸入指令（支援 tare 指令與 WiFi 設定）
 //====================================================
 void handleSerialCommand()
 {
@@ -311,7 +332,7 @@ void handleSerialCommand()
                 Serial.print("指令內容 : ");
                 Serial.println(serialInput);
 
-                applyWiFiCommand(serialInput);
+                handleCommand(serialInput); // 送入統一指令解析中心
             }
             serialInput = "";
         }
@@ -489,7 +510,6 @@ float movingAverage(float value)
 //====================================================
 void autoZero(float weight)
 {
-    // 注意：必須是極度微小的真實重量變化（例如小於 0.15g）才視為慢速溫飄並進行微調追隨
     if(abs(weight) < 0.15 && scale.is_ready())
     {
         long raw = scale.read_average(5);
@@ -509,6 +529,7 @@ void setup()
     Serial.println();
     Serial.println("=================================");
     Serial.println("  HX711 MQTT BLE SCALE 已啟動    ");
+    Serial.println("  支援功能：三個管道發送 tare 指令 ");
     Serial.println("  序列埠 / 藍牙 更改 WiFi 格式:   ");
     Serial.println("  SSID:PASSWORD                  ");
     Serial.println("=================================");
