@@ -1,6 +1,6 @@
 import os
 f"""
-Dictionary 字典型態  
+Dictionary 字典型態  {}
 """
 os.system('cls')
 print("...................1..............")
