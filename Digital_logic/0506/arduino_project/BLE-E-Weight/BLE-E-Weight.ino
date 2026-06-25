@@ -1,10 +1,3 @@
-/*
- 2026-06-25 
- 重構了 applyWiFiCommand 的邏輯，將其更名為更符合功能的 handleCommand。
- 現在，無論你是透過「序列埠 (Serial)」、「手機藍牙 (BLE)」、還是「MQTT 遠端」傳送文字指令 tare，程式都會統一同步執行去皮歸零。
- 如果輸入的不是 tare 且包含冒號 :，則會自動解析為 WiFi 帳密設定。
- * 
- */
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <HX711.h>
@@ -59,6 +52,11 @@ PubSubClient mqttClient(espClient);
 
 BLECharacteristic* txCharacteristic = nullptr;
 bool bleDeviceConnected = false;
+
+// 藍牙異步拼湊快取
+String bleRxBuffer = "";
+unsigned long lastBleRxTime = 0;
+const unsigned long BLE_PACKET_TIMEOUT = 50; // 50毫秒內沒新字元，視為傳送完畢
 
 //====================================================
 // 電子秤校正參數
@@ -141,7 +139,7 @@ void loadWiFiFromNVS()
 }
 
 //====================================================
-// 儲存 WiFi 設定至 NVS 快取
+// 儲儲 WiFi 設定至 NVS 快取
 //====================================================
 void saveWiFiToNVS()
 {
@@ -171,7 +169,7 @@ void handleCommand(String input)
 
     if(colonIndex <= 0)
     {
-        appPrint("未知指令或格式錯誤。更改 WiFi 請輸入：SSID:PASSWORD");
+        appPrint("未知指令或格式錯誤： '" + input + "'. 更改 WiFi 請輸入：SSID:PASSWORD");
         return;
     }
 
@@ -219,6 +217,7 @@ class MyServerCallbacks : public BLEServerCallbacks
     {
         bleDeviceConnected = true;
         Serial.println("BLE 已連線");
+        bleRxBuffer = ""; // 連線時清空快取
     }
 
     void onDisconnect(BLEServer* server)
@@ -231,23 +230,19 @@ class MyServerCallbacks : public BLEServerCallbacks
 };
 
 //====================================================
-// BLE 接收資料回呼（支援 tare 指令與 WiFi 設定）
+// BLE 接收資料回呼（解決 iOS LightBlue 斷字/分包問題）
 //====================================================
 class MyRXCallbacks : public BLECharacteristicCallbacks
 {
     void onWrite(BLECharacteristic* characteristic)
     {
         String rxValue = characteristic->getValue().c_str();
-        rxValue.trim();
-
+        
         if(rxValue.length() > 0)
         {
-            Serial.println();
-            Serial.println("========== 收到 BLE 指令 ==========");
-            Serial.print("指令內容 : ");
-            Serial.println(rxValue);
-
-            handleCommand(rxValue); // 送入統一指令解析中心
+            // 將收到的碎片字元塞進全域緩衝區
+            bleRxBuffer += rxValue;
+            lastBleRxTime = millis(); // 更新最後接收時間
         }
     }
 };
@@ -293,7 +288,7 @@ void setupBLE()
 }
 
 //====================================================
-// MQTT 訊息接收回呼（支援遠端 tare 指令）
+// MQTT 訊息接收回呼
 //====================================================
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
@@ -310,11 +305,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
     Serial.print("內容 Message : ");
     Serial.println(message);
 
-    handleCommand(message); // 送入統一指令解析中心
+    handleCommand(message);
 }
 
 //====================================================
-// 處理 Serial 序列埠輸入指令（支援 tare 指令與 WiFi 設定）
+// 處理 Serial 序列埠輸入指令
 //====================================================
 void handleSerialCommand()
 {
@@ -332,7 +327,7 @@ void handleSerialCommand()
                 Serial.print("指令內容 : ");
                 Serial.println(serialInput);
 
-                handleCommand(serialInput); // 送入統一指令解析中心
+                handleCommand(serialInput);
             }
             serialInput = "";
         }
@@ -413,7 +408,7 @@ void connectMQTTNonBlocking()
 }
 
 //====================================================
-// HX711 初始化（非阻塞，避免硬體沒插好導致整機卡死）
+// HX711 初始化
 //====================================================
 void initHX711NonBlocking()
 {
@@ -423,13 +418,12 @@ void initHX711NonBlocking()
     unsigned long startTime = millis();
     while(!scale.is_ready())
     {
-        handleSerialCommand(); // 即使硬體未好，依然允許接收 Serial 設定
+        handleSerialCommand();
 
-        if(millis() - startTime > 3000) // 超過 3 秒判定為離線
+        if(millis() - startTime > 3000)
         {
             hx711Ready = false;
             Serial.println("HX711 未就緒。");
-            Serial.println("秤體處於離線狀態，但 WiFi/BLE 仍可正常設定。");
             return;
         }
         delay(10);
@@ -480,7 +474,7 @@ void checkHX711Reconnect()
 }
 
 //====================================================
-// 移動平均濾波（平滑震盪數據）
+// 移動平均濾波
 //====================================================
 float movingAverage(float value)
 {
@@ -506,14 +500,12 @@ float movingAverage(float value)
 
 //====================================================
 // 自動零點微調追隨（Auto Zero Tracking）
-// 目的：補償環境溫度或小雜訊引起的零點微小飄移
 //====================================================
 void autoZero(float weight)
 {
     if(abs(weight) < 0.15 && scale.is_ready())
     {
         long raw = scale.read_average(5);
-        // 極高權重的低通濾波，使零點非常緩慢地跟隨真實物理變化
         zeroOffset = (zeroOffset * 9999 + raw) / 10000;
     }
 }
@@ -529,9 +521,7 @@ void setup()
     Serial.println();
     Serial.println("=================================");
     Serial.println("  HX711 MQTT BLE SCALE 已啟動    ");
-    Serial.println("  支援功能：三個管道發送 tare 指令 ");
-    Serial.println("  序列埠 / 藍牙 更改 WiFi 格式:   ");
-    Serial.println("  SSID:PASSWORD                  ");
+    Serial.println("  已修復 iOS 藍牙斷字歸零問題     ");
     Serial.println("=================================");
 
     loadWiFiFromNVS();
@@ -539,8 +529,6 @@ void setup()
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
-
-    Serial.println("\nWiFi 開始非阻塞連線，秤體允許離線工作。");
 
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
     mqttClient.setCallback(mqttCallback);
@@ -554,7 +542,7 @@ void setup()
 //====================================================
 void loop()
 {
-    // 1. 優先處理序列埠指令與連線狀態（確保不卡死）
+    // 1. 優先處理序列埠與連線狀態
     handleSerialCommand();
     connectWiFiNonBlocking();
     connectMQTTNonBlocking();
@@ -564,10 +552,26 @@ void loop()
         mqttClient.loop();
     }
 
-    // 2. 檢查感測器是否斷線重連
+    // 2. 【核心修正】檢查藍牙快取緩衝區是否接收完畢
+    if (bleRxBuffer.length() > 0)
+    {
+        // 如果距離最後一次收到字元已經超過 50ms，或者發現有換行符號，就判定這串字傳完了！
+        if ((millis() - lastBleRxTime > BLE_PACKET_TIMEOUT) || 
+            (bleRxBuffer.indexOf('\n') >= 0) || (bleRxBuffer.indexOf('\r') >= 0))
+        {
+            bleRxBuffer.trim();
+            Serial.println();
+            Serial.println("========== 收到完整 BLE 指令 ==========");
+            Serial.print("組裝後內容 : ");
+            Serial.println(bleRxBuffer);
+
+            handleCommand(bleRxBuffer); // 送去統一解析（這時候就是完美的 "tare" 了）
+            bleRxBuffer = "";           // 清空快取供下次使用
+        }
+    }
+
     checkHX711Reconnect();
 
-    // 若感測器離線，跳過重量計算，但不影響 BLE/WiFi 設定功能
     if(!hx711Ready || !scale.is_ready())
     {
         Serial.println("HX711 離線中... WiFi/藍牙設定仍可正常運作。");
@@ -575,45 +579,28 @@ void loop()
         return;
     }
 
-    // 3. 讀取感測器 RAW 原始值（採樣 10 次）
+    // 3. 重量計算與濾波邏輯
     long raw = scale.read_average(10);
-
-    // 4. 計算真實重量 (尚未經過零點死區截斷)
     float weight = (raw - zeroOffset) / calibration_factor;
-    
-    // 5. 進行平滑濾波
     weight = movingAverage(weight);
 
-    // 6. 重要修正：【先】拿真實未截斷的重量進行自動零點微調追隨
-    // 如果重量在 0.15g 以內，代表是慢速溫飄，程式會自動追隨更新零點基準
     if (abs(weight) < 0.15) 
     {
         autoZero(weight);
     }
 
-    // 7. 【後】進行顯示死區（小數值遮罩）處理
-    // 為了視覺美觀，若濾波與追隨後的重量小於死區門檻（0.3g），顯示與發送直接歸零
     if(abs(weight) < 0.3)
     {
         weight = 0;
     }
 
-    // 8. Serial 終端機格式化輸出
+    // 顯示輸出
     Serial.print("RAW = ");
     Serial.print(raw);
     Serial.print("    Weight = ");
     Serial.print(weight, 2);
-    Serial.print(" g");
+    Serial.println(); // 👈 換回 println，讓資料乖乖一行一行往下滾動
 
-    if(WiFi.status() == WL_CONNECTED) { Serial.print("    WiFi OK"); }
-    else { Serial.print("    WiFi OFFLINE"); }
-
-    if(mqttClient.connected()) { Serial.print("    MQTT OK"); }
-    else { Serial.print("    MQTT OFFLINE"); }
-    
-    Serial.println();
-
-    // 9. MQTT 資料發送
     if(mqttClient.connected())
     {
         char rawText[20];
@@ -625,5 +612,5 @@ void loop()
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
     }
 
-    delay(200); // 每次主循環延時 200ms
+    delay(200); 
 }
