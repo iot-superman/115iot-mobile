@@ -37,6 +37,8 @@ const int MQTT_PORT = 1883;
 const char* TOPIC_WEIGHT = "esp32/weight";
 const char* TOPIC_RAW = "esp32/raw";
 const char* TOPIC_CMD = "esp32/cmd";
+const char* TOPIC_MED_TAKEN = "esp32/medication/taken"; // 新增：吃藥紀錄主題
+const char* TOPIC_WAT_TAKEN = "esp32/water/taken";      // 新增：飲水紀錄主題
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -53,16 +55,14 @@ PubSubClient mqttClient(espClient);
 BLECharacteristic* txCharacteristic = nullptr;
 bool bleDeviceConnected = false;
 
-// 藍牙異步拼湊快取
 String bleRxBuffer = "";
 unsigned long lastBleRxTime = 0;
-const unsigned long BLE_PACKET_TIMEOUT = 50; // 50毫秒內沒新字元，視為傳送完畢
+const unsigned long BLE_PACKET_TIMEOUT = 50; 
 
 //====================================================
 // 電子秤校正參數
 //====================================================
-float calibration_factor = 387.2;
-long zeroOffset = 0;
+float calibration_factor = 387.2; // 請確保此數值與你的感測器匹配
 
 //====================================================
 // 移動平均濾波器參數
@@ -73,20 +73,30 @@ int avgIndex = 0;
 bool avgReady = false;
 
 //====================================================
+// 長輩行為追蹤狀態機 (長照專用免按鈕設計)
+//====================================================
+float initial_weight = 0;   // 拿起前的重量
+bool has_item = false;      // 秤上目前是否有東西
+bool is_lifted = false;     // 東西是否被拿起來了
+float last_stable_weight = 0;
+int stable_count = 0;
+const int STABLE_THRESHOLD = 4; // 連續 4 次讀數接近（約 0.8 秒）視為數值穩定
+
+//====================================================
 // Serial 暫存輸入
 //====================================================
 String serialInput = "";
 
 //====================================================
-// 非阻塞式定時器（重連時間間隔）
+// 非阻塞式定時器
 //====================================================
 unsigned long lastWiFiTryTime = 0;
 unsigned long lastMQTTTryTime = 0;
 unsigned long lastHX711TryTime = 0;
 
-const unsigned long WIFI_RETRY_INTERVAL = 5000;  // WiFi 重連間隔 5 秒
-const unsigned long MQTT_RETRY_INTERVAL = 5000;  // MQTT 重連間隔 5 秒
-const unsigned long HX711_RETRY_INTERVAL = 2000; // HX711 重連間隔 2 秒
+const unsigned long WIFI_RETRY_INTERVAL = 5000;  
+const unsigned long MQTT_RETRY_INTERVAL = 5000;  
+const unsigned long HX711_RETRY_INTERVAL = 2000; 
 
 //====================================================
 // BLE 與 Serial 同時輸出訊息
@@ -94,7 +104,6 @@ const unsigned long HX711_RETRY_INTERVAL = 2000; // HX711 重連間隔 2 秒
 void appPrint(String text)
 {
     Serial.println(text);
-
     if(bleDeviceConnected && txCharacteristic != nullptr)
     {
         txCharacteristic->setValue(text.c_str());
@@ -110,10 +119,8 @@ void executeTare()
     if(scale.is_ready())
     {
         appPrint("執行去皮歸零 (Tare)...");
-        scale.tare();
-        delay(300);
-        zeroOffset = scale.read_average(30);
-        appPrint("新基準零點偏置 = " + String(zeroOffset));
+        scale.tare(10); // 取 10 次平均建立基準點
+        appPrint("去皮完成。");
     }
     else
     {
@@ -127,12 +134,10 @@ void executeTare()
 void loadWiFiFromNVS()
 {
     preferences.begin("wifi", false);
-
     currentSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);
     currentPassword = preferences.getString("pwd", DEFAULT_WIFI_PASSWORD);
 
-    Serial.println();
-    Serial.println("========== 載入 WIFI 設定 ==========");
+    Serial.println("\n========== 載入 WIFI 設定 ==========");
     Serial.print("SSID : ");
     Serial.println(currentSSID);
     Serial.println("Password : ********");
@@ -149,24 +154,20 @@ void saveWiFiToNVS()
 }
 
 //====================================================
-// 核心指令解析中心 (處理公用指令與 WiFi 設定)
+// 核心指令解析中心
 //====================================================
 void handleCommand(String input)
 {
     input.trim();
-
     if(input.length() == 0) return;
 
-    // 1. 優先識別與處理所有管道傳入的歸零指令
     if(input == "tare")
     {
         executeTare();
         return;
     }
 
-    // 2. 若非歸零指令，則判斷是否為 WiFi 設定格式 (SSID:PASSWORD)
     int colonIndex = input.indexOf(':');
-
     if(colonIndex <= 0)
     {
         appPrint("未知指令或格式錯誤： '" + input + "'. 更改 WiFi 請輸入：SSID:PASSWORD");
@@ -175,7 +176,6 @@ void handleCommand(String input)
 
     currentSSID = input.substring(0, colonIndex);
     currentPassword = input.substring(colonIndex + 1);
-
     currentSSID.trim();
     currentPassword.trim();
 
@@ -185,31 +185,23 @@ void handleCommand(String input)
         return;
     }
 
-    Serial.println();
-    Serial.println("========== 設定新 WIFI ==========");
+    Serial.println("\n========== 設定新 WIFI ==========");
     Serial.print("新 SSID : ");
     Serial.println(currentSSID);
-    Serial.println("新 Password : ********");
-
     saveWiFiToNVS();
 
     appPrint("正在重新連線 WiFi...");
-
-    if(mqttClient.connected())
-    {
-        mqttClient.disconnect();
-    }
+    if(mqttClient.connected()) mqttClient.disconnect();
 
     WiFi.disconnect(true);
     delay(300);
-
     WiFi.mode(WIFI_STA);
     WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
     lastWiFiTryTime = millis();
 }
 
 //====================================================
-// BLE 伺服器狀態回呼（連線/斷線）
+// BLE 伺服器狀態回呼
 //====================================================
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -217,39 +209,33 @@ class MyServerCallbacks : public BLEServerCallbacks
     {
         bleDeviceConnected = true;
         Serial.println("BLE 已連線");
-        bleRxBuffer = ""; // 連線時清空快取
+        bleRxBuffer = ""; 
     }
-
     void onDisconnect(BLEServer* server)
     {
         bleDeviceConnected = false;
         Serial.println("BLE 已斷線");
         delay(300);
-        BLEDevice::startAdvertising(); // 重新開啟廣播供後續連線
+        BLEDevice::startAdvertising(); 
     }
 };
 
 //====================================================
-// BLE 接收資料回呼（解決 iOS LightBlue 斷字/分包問題）
+// BLE 接收資料回呼
 //====================================================
 class MyRXCallbacks : public BLECharacteristicCallbacks
 {
     void onWrite(BLECharacteristic* characteristic)
     {
         String rxValue = characteristic->getValue().c_str();
-        
         if(rxValue.length() > 0)
         {
-            // 將收到的碎片字元塞進全域緩衝區
             bleRxBuffer += rxValue;
-            lastBleRxTime = millis(); // 更新最後接收時間
+            lastBleRxTime = millis(); 
         }
     }
 };
 
-//====================================================
-// BLE 初始化設定
-//====================================================
 void setupBLE()
 {
     BLEDevice::init(BLE_DEVICE_NAME);
@@ -258,33 +244,23 @@ void setupBLE()
 
     BLEService* service = server->createService(SERVICE_UUID);
 
-    // 建立 TX 特徵值（用來發送數據給手機）
-    txCharacteristic = service->createCharacteristic(
-        TX_CHARACTERISTIC_UUID,
-        BLECharacteristic::PROPERTY_NOTIFY
-    );
+    txCharacteristic = service->createCharacteristic(TX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_NOTIFY);
     txCharacteristic->addDescriptor(new BLE2902());
     txCharacteristic->setValue("BLE TX Ready");
 
-    // 建立 RX 特徵值（用來接收手機端設定）
     BLECharacteristic* rxCharacteristic = service->createCharacteristic(
-        RX_CHARACTERISTIC_UUID,
-        BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
+        RX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
     );
     rxCharacteristic->setValue("");
     rxCharacteristic->setCallbacks(new MyRXCallbacks());
 
     service->start();
-
-    // 開始 BLE 廣播
     BLEAdvertising* advertising = BLEDevice::getAdvertising();
     advertising->addServiceUUID(SERVICE_UUID);
     advertising->setScanResponse(true);
     BLEDevice::startAdvertising();
 
     Serial.println("BLE UART 服務已啟動");
-    Serial.print("藍牙名稱 : ");
-    Serial.println(BLE_DEVICE_NAME);
 }
 
 //====================================================
@@ -293,40 +269,26 @@ void setupBLE()
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
     String message;
-    for(unsigned int i = 0; i < length; i++)
-    {
-        message += (char)payload[i];
-    }
+    for(unsigned int i = 0; i < length; i++) message += (char)payload[i];
 
-    Serial.println();
-    Serial.println("========== 收到 MQTT 訊息 ==========");
-    Serial.print("主題 Topic : ");
-    Serial.println(topic);
-    Serial.print("內容 Message : ");
-    Serial.println(message);
+    Serial.println("\n========== 收到 MQTT 訊息 ==========");
+    Serial.print("主題 Topic : ");  Serial.println(topic);
+    Serial.print("內容 Message : "); Serial.println(message);
 
     handleCommand(message);
 }
 
-//====================================================
-// 處理 Serial 序列埠輸入指令
-//====================================================
 void handleSerialCommand()
 {
     while(Serial.available() > 0)
     {
         char c = Serial.read();
-
         if(c == '\n' || c == '\r')
         {
             serialInput.trim();
             if(serialInput.length() > 0)
             {
-                Serial.println();
-                Serial.println("========== 收到序列埠指令 ==========");
-                Serial.print("指令內容 : ");
-                Serial.println(serialInput);
-
+                Serial.println("\n========== 收到序列埠指令 ==========");
                 handleCommand(serialInput);
             }
             serialInput = "";
@@ -338,58 +300,29 @@ void handleSerialCommand()
     }
 }
 
-//====================================================
-// WiFi 非阻塞式連線檢查與重連
-//====================================================
 void connectWiFiNonBlocking()
 {
-    if(WiFi.status() == WL_CONNECTED)
-    {
-        return;
-    }
+    if(WiFi.status() == WL_CONNECTED) return;
 
     unsigned long now = millis();
-    if(now - lastWiFiTryTime < WIFI_RETRY_INTERVAL)
-    {
-        return;
-    }
+    if(now - lastWiFiTryTime < WIFI_RETRY_INTERVAL) return;
     lastWiFiTryTime = now;
 
-    Serial.println();
-    Serial.println("嘗試連線 WiFi...");
-    Serial.print("SSID : ");
-    Serial.println(currentSSID);
-
+    Serial.println("\n嘗試連線 WiFi...");
     WiFi.disconnect();
     WiFi.mode(WIFI_STA);
     WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
 }
 
-//====================================================
-// MQTT 非阻塞式連線檢查與重連
-//====================================================
 void connectMQTTNonBlocking()
 {
-    if(WiFi.status() != WL_CONNECTED)
-    {
-        return;
-    }
-
-    if(mqttClient.connected())
-    {
-        return;
-    }
+    if(WiFi.status() != WL_CONNECTED || mqttClient.connected()) return;
 
     unsigned long now = millis();
-    if(now - lastMQTTTryTime < MQTT_RETRY_INTERVAL)
-    {
-        return;
-    }
+    if(now - lastMQTTTryTime < MQTT_RETRY_INTERVAL) return;
     lastMQTTTryTime = now;
 
-    Serial.println();
-    Serial.println("嘗試連線 MQTT 伺服器...");
-
+    Serial.println("\n嘗試連線 MQTT 伺服器...");
     String clientId = "ESP32S3-";
     clientId += String(random(0xffff), HEX);
 
@@ -397,29 +330,19 @@ void connectMQTTNonBlocking()
     {
         Serial.println("MQTT 已連線");
         mqttClient.subscribe(TOPIC_CMD);
-        Serial.print("已訂閱主題 : ");
-        Serial.println(TOPIC_CMD);
-    }
-    else
-    {
-        Serial.print("MQTT 連線失敗 rc=");
-        Serial.println(mqttClient.state());
     }
 }
 
-//====================================================
-// HX711 初始化
-//====================================================
 void initHX711NonBlocking()
 {
     Serial.println("HX711 初始化中...");
     scale.begin(HX711_DT, HX711_SCK);
+    scale.set_scale(calibration_factor); // 直接在初始化時設定校正因子
 
     unsigned long startTime = millis();
     while(!scale.is_ready())
     {
         handleSerialCommand();
-
         if(millis() - startTime > 3000)
         {
             hx711Ready = false;
@@ -431,45 +354,24 @@ void initHX711NonBlocking()
 
     hx711Ready = true;
     Serial.println("開機自動去皮 (Tare)...");
-    scale.tare();
-    delay(300);
-    zeroOffset = scale.read_average(30);
-    
-    Serial.print("初始零點偏置 = ");
-    Serial.println(zeroOffset);
+    scale.tare(20);
     Serial.println("HX711 初始化成功並已就緒");
 }
 
-//====================================================
-// HX711 斷線重新檢查機制
-//====================================================
 void checkHX711Reconnect()
 {
-    if(hx711Ready)
-    {
-        return;
-    }
+    if(hx711Ready) return;
 
     unsigned long now = millis();
-    if(now - lastHX711TryTime < HX711_RETRY_INTERVAL)
-    {
-        return;
-    }
+    if(now - lastHX711TryTime < HX711_RETRY_INTERVAL) return;
     lastHX711TryTime = now;
 
     if(scale.is_ready())
     {
-        Serial.println();
-        Serial.println("偵測到 HX711 已重新連接。");
+        Serial.println("\n偵測到 HX711 已重新連接。重新去皮...");
+        scale.set_scale(calibration_factor);
+        scale.tare(20);
         hx711Ready = true;
-
-        Serial.println("重新去皮 (Tare)...");
-        scale.tare();
-        delay(300);
-        zeroOffset = scale.read_average(30);
-        Serial.print("重新整理後的零點偏置 = ");
-        Serial.println(zeroOffset);
-        Serial.println("HX711 恢復就緒");
     }
 }
 
@@ -480,93 +382,64 @@ float movingAverage(float value)
 {
     avgBuffer[avgIndex] = value;
     avgIndex++;
-
     if(avgIndex >= AVG_SIZE)
     {
         avgIndex = 0;
         avgReady = true;
     }
-
     int count = avgReady ? AVG_SIZE : avgIndex;
     float sum = 0;
-
-    for(int i = 0; i < count; i++)
-    {
-        sum += avgBuffer[i];
-    }
-
+    for(int i = 0; i < count; i++) sum += avgBuffer[i];
     return sum / count;
 }
 
 //====================================================
-// 自動零點微調追隨（Auto Zero Tracking）
+// 判斷重量是否穩定
 //====================================================
-void autoZero(float weight)
-{
-    if(abs(weight) < 0.15 && scale.is_ready())
-    {
-        long raw = scale.read_average(5);
-        zeroOffset = (zeroOffset * 9999 + raw) / 10000;
+bool checkStable(float current) {
+    if (abs(current - last_stable_weight) < 0.4) { 
+        stable_count++;
+    } else {
+        stable_count = 0;
     }
+    last_stable_weight = current;
+    return (stable_count >= STABLE_THRESHOLD);
 }
 
 //====================================================
-// Arduino Setup 初始化主程式
+// 主程式 Setup 與 Loop
 //====================================================
 void setup()
 {
     Serial.begin(115200);
     delay(1000);
 
-    Serial.println();
-    Serial.println("=================================");
-    Serial.println("  HX711 MQTT BLE SCALE 已啟動    ");
-    Serial.println("  已修復 iOS 藍牙斷字歸零問題     ");
-    Serial.println("=================================");
-
     loadWiFiFromNVS();
     setupBLE();
-
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
 
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
     mqttClient.setCallback(mqttCallback);
 
     initHX711NonBlocking();
-    Serial.println("系統就緒！");
 }
 
-//====================================================
-// Arduino Loop 主要循環主程式
-//====================================================
 void loop()
 {
-    // 1. 優先處理序列埠與連線狀態
     handleSerialCommand();
     connectWiFiNonBlocking();
     connectMQTTNonBlocking();
 
-    if(mqttClient.connected())
-    {
-        mqttClient.loop();
-    }
+    if(mqttClient.connected()) mqttClient.loop();
 
-    // 2. 【核心修正】檢查藍牙快取緩衝區是否接收完畢
+    // BLE 藍牙指令分包阻斷組裝
     if (bleRxBuffer.length() > 0)
     {
-        // 如果距離最後一次收到字元已經超過 50ms，或者發現有換行符號，就判定這串字傳完了！
         if ((millis() - lastBleRxTime > BLE_PACKET_TIMEOUT) || 
             (bleRxBuffer.indexOf('\n') >= 0) || (bleRxBuffer.indexOf('\r') >= 0))
         {
             bleRxBuffer.trim();
-            Serial.println();
-            Serial.println("========== 收到完整 BLE 指令 ==========");
-            Serial.print("組裝後內容 : ");
-            Serial.println(bleRxBuffer);
-
-            handleCommand(bleRxBuffer); // 送去統一解析（這時候就是完美的 "tare" 了）
-            bleRxBuffer = "";           // 清空快取供下次使用
+            handleCommand(bleRxBuffer);
+            bleRxBuffer = ""; 
         }
     }
 
@@ -574,41 +447,91 @@ void loop()
 
     if(!hx711Ready || !scale.is_ready())
     {
-        Serial.println("HX711 離線中... WiFi/藍牙設定仍可正常運作。");
-        delay(500);
+        delay(200);
         return;
     }
 
-    // 3. 重量計算與濾波邏輯
-    long raw = scale.read_average(10);
-    float weight = (raw - zeroOffset) / calibration_factor;
+    // 【核心優化】改用 get_units(1) 非阻塞讀取，不拖慢整個 MCU 的 Loop 速度
+    float weight = scale.get_units(1); 
     weight = movingAverage(weight);
+    long raw = scale.read(); // 僅讀取單次 raw 供 MQTT 監看
 
-    if (abs(weight) < 0.15) 
+    // 零點追蹤 (AZT)：小於 0.2g 且沒放東西時，偷偷進行極微幅 Tare
+    if (!has_item && abs(weight) < 0.20) 
     {
-        autoZero(weight);
-    }
-
-    if(abs(weight) < 0.3)
-    {
+        scale.tare(1); // 僅用 1 筆樣本微幅修正
         weight = 0;
     }
+    
+    if (abs(weight) < 0.4) weight = 0; // 顯示盲區
 
-    // 顯示輸出
-    Serial.print("RAW = ");
-    Serial.print(raw);
-    Serial.print("    Weight = ");
-    Serial.print(weight, 2);
-    Serial.println(); // 👈 換回 println，讓資料乖乖一行一行往下滾動
+    // 顯示當前數值
+    Serial.print("RAW = "); Serial.print(raw);
+    Serial.print("    Weight = "); Serial.print(weight, 2);
+    Serial.println(" g");
 
+    // ====================================================
+    // 長輩吃藥/飲水 動態行為演算法（核心新增）
+    // ====================================================
+    bool isStableNow = checkStable(weight);
+
+    if (isStableNow) {
+        // 動作一：照顧者或長輩放上容器（水杯或藥碗）
+        if (!has_item && weight > 8.0) { 
+            has_item = true;
+            is_lifted = false;
+            initial_weight = weight;
+            appPrint("【長照通知】放上容器，初始重: " + String(initial_weight, 2) + " g");
+        }
+        
+        // 動作三：長輩服用完畢，把容器放回秤上
+        else if (has_item && is_lifted && weight > 8.0) {
+            float consumed = initial_weight - weight; // 計算減少的差值
+
+            // 判斷 1: 減少量在 0.4g ~ 12g 之間，通常是藥丸被拿走了
+            if (consumed >= 0.4 && consumed <= 12.0) {
+                appPrint("【紀錄】偵測到長輩服用藥物！減少: " + String(consumed, 2) + " g");
+                if(mqttClient.connected()) {
+                    char msg[10]; dtostrf(consumed, 0, 2, msg);
+                    mqttClient.publish(TOPIC_MED_TAKEN, msg, true); // 發送至吃藥主題
+                }
+            }
+            // 判斷 2: 減少量大於 12g，判定為喝水
+            else if (consumed > 12.0) {
+                appPrint("【紀錄】偵測到長輩飲水！減少: " + String(consumed, 2) + " cc");
+                if(mqttClient.connected()) {
+                    char msg[10]; dtostrf(consumed, 0, 2, msg);
+                    mqttClient.publish(TOPIC_WAT_TAKEN, msg, true); // 發送至飲水主題
+                }
+            }
+
+            initial_weight = weight; // 將目前的重量設為新基準，防止重複計算
+            is_lifted = false;
+        }
+    } 
+    else {
+        // 動作二：長輩拿起杯子或藥碗（重量明顯下降）
+        if (has_item && !is_lifted && weight < (initial_weight - 6.0)) {
+            is_lifted = true;
+            appPrint("【狀態】長輩已拿起容器...");
+        }
+    }
+
+    // 動作四：容器被徹底移開（秤面空了超過 2 秒）
+    if (has_item && weight < 4.0) {
+        has_item = false;
+        is_lifted = false;
+        scale.tare(5); // 自動歸零，迎接下一次使用
+        appPrint("【狀態】容器已收走，秤面重置歸零。");
+    }
+
+    // 定時將即時數據發佈至原本的監看主題
     if(mqttClient.connected())
     {
-        char rawText[20];
-        sprintf(rawText, "%ld", raw);
+        char rawText[20]; sprintf(rawText, "%ld", raw);
         mqttClient.publish(TOPIC_RAW, rawText, true);
 
-        char weightText[20];
-        dtostrf(weight, 0, 2, weightText);
+        char weightText[20]; dtostrf(weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
     }
 

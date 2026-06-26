@@ -1,0 +1,98 @@
+<!-- 
+ . **px** - 絕對像素單位
+2. **in** - 英寸單位
+3. **em** - 相對於父元素的字體大小（會累積嵌套
+4. **rem** - 相對於根元素的字體大小（不受嵌套影響
+5. **%** - 相對於父元素的百分比（會累積嵌套，與 em 類似
+
+-->
+
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="utf-8">
+    <title>CSS</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div style="font-size: 20px;">
+        20px
+        <div style="font-size: 26px;">
+            26px
+            <div style="font-size: 32px;">
+                32px
+                <div style="font-size: 38px;">
+                    38px
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="font-size: 0.5in;">
+        0.5in
+        <div style="font-size: 0.65in;">
+            0.65in
+            <div style="font-size: 0.8in;">
+                0.8in
+                <div style="font-size: 0.95in;">
+                    0.95in
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="font-size: 20px;">
+        <!--  em相對父元素的font-size -->
+        20px
+        <!-- 1.2em 等於 20px * 1.2 = 24px  -->
+        <div style="font-size: 1.2em;">
+            1.2em
+            <!-- 1.2em 等於 24px * 1.2 = 28px  -->
+            <div style="font-size: 1.2em;">
+                1.2em
+                <!-- 1.2em 等於 28px * 1.2 = 33.6px  -->
+                <div style="font-size: 1.2em;">
+                    1.2em
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--  特性 em rem 參照基準 相對於 父元素 的字體大小 相對於**根元素（html）
+ 　　　　影響 會逐層累積，嵌套越多越大 不受嵌套影響，始終以根元素為基準＼-->
+       <div style="font-size: 20px;">
+        <!--  rem相對根元素的font-size -->
+        20px
+        <!-- 1.6rem 等於 20px * 1.6 = 32px  -->
+        <div style="font-size: 1.6rem;">
+            1.6rem
+                <!-- 1.6rem 等於 20px * 1.6 = 32px  -->
+            <div style="font-size: 1.6rem;">
+                1.6rem
+                    <!-- 1.6rem 等於 20px * 1.6 = 32px  -->
+                <div style="font-size: 1.6rem;">
+                    1.6rem
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="font-size: 20px;">
+        <!--  %相對於父元素的font-size -->
+        20px
+        <!-- 125% 等於 20px * 1.25 = 25px  -->
+        <div style="font-size: 125%;">
+            125%
+            <!-- 125% 等於 25px * 1.25 = 31.25px  -->
+            <div style="font-size: 125%;">
+                125%
+                <!-- 125% 等於 31.25px * 1.25 = 39.06px  -->
+                <div style="font-size: 125%;">
+                    125%
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

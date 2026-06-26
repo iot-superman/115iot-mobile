@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CSS</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <style>
+        /* 選取所有以col-開頭的類別    */
+        [class^="col-"]{
+            border: 1px solid #c2c2c2;
+            background-color: #e2e2e2;
+            height: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-3">欄位A</div>
+            <div class="col-9">欄位B</div>
+        </div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

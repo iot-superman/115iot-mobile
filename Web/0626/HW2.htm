@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>唐詩三首</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: lightpink;
+            min-height: 100vh;
+        }
+
+        /* 每格最小高度，讓九宮格有空間感 */
+        .cell {
+            min-height: 160px;
+            display: flex;
+            align-items: flex-start;
+            padding: 10px;
+        }
+
+        .poem-card {
+            background-color: rgb(231, 230, 220);
+            border: 5px solid orange;
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .poem-card h2 {
+            color: lightslategray;
+        }
+
+        .poem-card h5 {
+            font-family: 標楷體, KaiTi, serif;
+            line-height: 1.8;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid px-0">
+
+        <!-- 第一列：空 | 空 | 尋隱者不遇 -->
+        <div class="row g-0">
+            <div class="col-4 cell"></div>
+            <div class="col-4 cell"></div>
+            <div class="col-4 cell">
+                <div class="poem-card">
+                    <h2>尋隱者不遇</h2>
+                    <h5>
+                        松下問童子，言師採藥去。<br>
+                        只在此山中，雲深不知處。
+                    </h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二列：空 | 獨坐敬亭山 | 空 -->
+        <div class="row g-0">
+            <div class="col-4 cell"></div>
+            <div class="col-4 cell">
+                <div class="poem-card">
+                    <h2>獨坐敬亭山</h2>
+                    <h5>
+                        眾鳥高飛盡，孤雲獨去閒。<br>
+                        相看兩不厭，只有敬亭山。
+                    </h5>
+                </div>
+            </div>
+            <div class="col-4 cell"></div>
+        </div>
+
+        <!-- 第三列：相思 | 空 | 空 -->
+        <div class="row g-0">
+            <div class="col-4 cell">
+                <div class="poem-card">
+                    <h2>相思</h2>
+                    <h5>
+                        紅豆生南國，春來發幾枝。<br>
+                        願君多採擷，此物最相思。
+                    </h5>
+                </div>
+            </div>
+            <div class="col-4 cell"></div>
+            <div class="col-4 cell"></div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <style>
+
+        body{
+            background:#ffffff;
+        }
+
+        /*=============================
+            所有欄位外框
+        =============================*/
+        [class^="col"]{
+            border:1px solid orange;
+        }
+
+        /*=============================
+            標題
+        =============================*/
+        .header{
+
+            background:cornsilk;
+
+            color:black;
+
+            font-size:38px;
+
+            font-family:"DFKai-SB","標楷體";
+
+            height:100px;
+
+            padding:20px;
+
+            text-align:center;
+
+        }
+
+        /*=============================
+            第一列
+        =============================*/
+        .block-1{
+            background:lightblue;
+        }
+
+        .block-2{
+            background:#eeeeee;
+        }
+
+        .block-3{
+            background:lightgreen;
+        }
+
+        /*=============================
+            第二列
+        =============================*/
+        .block-a{
+            background:pink;
+        }
+
+        .block-b{
+            background:cyan;
+        }
+
+        .block-c{
+            background:pink;
+        }
+
+        /*=============================
+            六個區塊共用
+        =============================*/
+        .block-1,
+        .block-2,
+        .block-3,
+        .block-a,
+        .block-b,
+        .block-c{
+
+            height:200px;
+
+            font-size:32px;
+
+            padding:15px;
+
+        }
+
+        /*=============================
+            第二列往上重疊
+        =============================*/
+        .second-row{
+
+            margin-top:-90px;
+
+            position:relative;
+
+            z-index:10;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <!-- ===========================
+         Header
+    ============================ -->
+
+    <div class="row">
+
+        <div class="col-12 header">
+
+            網頁排版
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+         第一列
+         左2 中8 右2
+    ============================ -->
+
+    <div class="row">
+
+        <div class="col-1 block-1">
+
+            Block_1
+
+        </div>
+
+        <div class="col-4 block-2">
+
+            Block_2
+
+        </div>
+
+        <div class="col-1 block-3">
+
+            Block_3
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+         第二列
+         左2 中8 右2
+    ============================ -->
+
+    <div class="row second-row">
+
+        <div class="col-2 block-a">
+
+            Block_A
+
+        </div>
+
+        <div class="col-8 block-b">
+
+            Block_B
+
+        </div>
+
+        <div class="col-2 block-c">
+
+            Block_C
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
