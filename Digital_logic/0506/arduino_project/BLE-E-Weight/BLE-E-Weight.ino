@@ -1,6 +1,6 @@
-//2026 6-27優化偵測方式
-//程式解說與流程圖： https://chatgpt.com/share/6a3f7f6a-cdac-83e9-9b67-98ee48b0e40b
-//算法狀態圖： https://share.gemini.google/B1mAqx4qO58B
+//====================================================
+// 2026 最新終極修正版：加入「放回防彈跳」與「空秤拿開攔截」機制
+//====================================================
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <HX711.h>
@@ -12,7 +12,7 @@
 #include <BLE2902.h>
 
 //====================================================
-// HX711 腳位設定（避開 Flash 佔用的 GPIO 6-11）
+// HX711 腳位設定（已避開 Flash 佔用的 GPIO 6-11）
 //====================================================
 #define HX711_DT   4  
 #define HX711_SCK  5  
@@ -21,9 +21,9 @@ HX711 scale;
 bool hx711Ready = false;
 
 //====================================================
-// 🎯 核心智慧演算法參數設定區（已微調至最精準狀態）
+// 🎯 核心智慧演算法參數設定區
 //====================================================
-const float MED_THRESHOLD = 0.25;      // 吃藥觸發門檻 (g)
+const float MED_THRESHOLD = 0.25;      // 吃藥觸發門檻 (g)(藥最小顕為幾克？ )
 const float WAT_THRESHOLD = 3.00;      // 飲水觸發門檻 (cc)：防止微幅漂移誤判
 
 // ✨【智慧身分識別門檻】：基準總重大於此值視為【水杯模式】，小於此值視為【藥盒模式】
@@ -36,11 +36,11 @@ const float DISPLAY_DEADBAND = 0.10;   // 儀表板零點死區 (g)：當前重�
 
 // 🔥【放回精密結算參數】：收緊雜訊比，確保藥盒徹底停穩才算單次吃藥克數
 const float STABLE_NOISE_LIMIT = 0.06; // 靜態判定雜訊上限 (g)：收緊到 0.06g 讓手離判定更嚴格
-const int   STABLE_THRESHOLD = 12;     // 靜態判定連續次數：連續符合 25 次（約 3.7 秒）回穩才結算 12=1.8S
+const int   STABLE_THRESHOLD = 12;     // 靜態判定連續次數：連續符合 12 次（約 1.8 秒）回穩才結算
 
-// ✨ 新增：網頁數據美化（拿起凍結畫面）功能開關
-// true = 開啟美化（拿起時指針凍結在原位）；false = 關閉美化（預設，拿起時立刻變 0g）
-const bool ENABLE_DISPLAY_SMOOTHING = false;
+// ✨【網頁數據美化獨立功能開關】
+// true = 開啟美化（拿起時指針凍結在原位）；false = 關閉美化（預設，第一個儀表誠實反映目前實際重量）関掉會吃藥偵測比較穩
+const bool enBeautiful = false;
 
 //====================================================
 // NVS 記憶體快取（用於儲存 WiFi 設定）
@@ -105,7 +105,7 @@ float last_loop_weight = 0;     // 上一個 Loop 的重量
 int stable_count = 0;           // 穩定計數器
 bool is_initialized = false;    // 是否已建立初始重量基準
 
-// ✨ 新增：明確鎖定當前模式狀態，防止空秤歸零後失去水杯/藥盒記憶
+// ✨ 明確鎖定當前模式狀態，防止空秤歸零後失去水杯/藥盒記憶
 bool is_cup_mode = false;       // true: 水杯模式, false: 藥盒模式
 
 // ✨ 水杯與藥盒模式防止錯位、記憶拿起前狀態必備的狀態機旗標
@@ -128,6 +128,9 @@ const unsigned long WIFI_RETRY_INTERVAL = 5000;
 const unsigned long MQTT_RETRY_INTERVAL = 5000;  
 const unsigned long HX711_RETRY_INTERVAL = 2000; 
 
+//====================================================
+// 功能性函式
+//====================================================
 void appPrint(String text)
 {
     Serial.println(text);
@@ -345,11 +348,18 @@ void loop()
     if (!is_initialized) {
         last_reported_weight = weight;
         last_loop_weight = weight;
-        is_cup_mode = (weight >= MODE_CUP_THRESHOLD); // 動態建立初始識別模式
+        is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
         is_initialized = true;
     }
 
-    // 印出目前即時狀態 (新增顯示目前的 Mode 鎖定狀態)
+    // ✨【動態加速濾波】：若瞬間變化量極大（大動作拿起放下），強制刷新緩衝區，消除延遲
+    if (abs(weight - last_loop_weight) > 15.0) {
+        for(int i = 0; i < AVG_SIZE; i++) avgBuffer[i] = weight;
+        avgReady = true;
+        Serial.println("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
+    }
+
+    // 印出目前即時狀態
     Serial.print("RAW = "); Serial.print(raw);
     Serial.print("    Weight = "); Serial.print(weight, 2);
     Serial.print(" g    [Base: "); Serial.print(last_reported_weight, 2);
@@ -365,7 +375,7 @@ void loop()
         stable_count = 0; 
     }
 
-    // ✨【藥盒動態離手偵測】：只有在「藥盒模式」下且有物件時，發生重量劇烈掉落（>1.5g）才死鎖歷史重量
+    // ✨【藥盒動態離手偵測】：藥盒模式下發生重量劇烈掉落，鎖定歷史重量
     if (!is_cup_mode && last_reported_weight > EMPTY_LIMIT) {
         if ((last_reported_weight - weight) > 1.50 && !box_was_picked_up) {
             weight_before_pickup = last_reported_weight; 
@@ -385,12 +395,11 @@ void loop()
                 if (weight_before_pickup == 0.0) {
                     weight_before_pickup = last_reported_weight; 
                 }
-                last_reported_weight = weight; // 允許 Base 歸零更新
-                box_was_picked_up = false;
-                // ✨ 關鍵修正：保持 is_cup_mode 記憶為 true，防止空秤零點雜訊誤觸藥盒流程
+                last_reported_weight = weight; 
+                box_was_picked_up = false; 
                 Serial.println("【狀態通知】偵測到水杯被拿離，基準已歸零。保持水杯模式記憶。");
             } 
-            // -----------------【狀況 B：藥盒模式下移開/負數漂移】-----------------
+            // -----------------【狀況 B：藥盒模式下移開/環境漂移】-----------------
             else {
                 static unsigned long last_msg_time = 0;
                 if (millis() - last_msg_time > 5000) {
@@ -400,8 +409,7 @@ void loop()
             }
         } 
         else {
-            // 2. 有東西在秤上（數值達到長時間完全穩定）
-            // ✨ 當重量重新回穩在秤上時，動態判斷並切換目前的運作模式
+            // 2. 有東西在秤上且完全穩定
             bool previous_mode = is_cup_mode;
             is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
             
@@ -415,7 +423,6 @@ void loop()
                 float consumed = 0.0;
                 if (weight_before_pickup >= MODE_CUP_THRESHOLD) {
                     consumed = weight_before_pickup - weight;
-                    weight_before_pickup = 0.0; 
                 } else {
                     consumed = last_reported_weight - weight;
                 }
@@ -426,58 +433,88 @@ void loop()
                         char msg[10]; dtostrf(consumed, 0, 2, msg); 
                         mqttClient.publish(TOPIC_WAT_TAKEN, msg, true);
                     }
+                    weight_before_pickup = 0.0; 
                 } 
                 else if (consumed < -3.0) {
                     Serial.println("【狀態】偵測到水杯水量增加，已更新基準重.");
+                    weight_before_pickup = 0.0; 
+                } else {
+                    if (weight_before_pickup > 0.0 && abs(consumed) < WAT_THRESHOLD) {
+                        weight_before_pickup = 0.0;
+                    }
                 }
                 last_reported_weight = weight; 
             } 
             else {
-                // =================【藥盒模式】=================
+                // =================【藥盒模式：防空秤與放回物理防抖機制】=================
                 if (box_was_picked_up && weight_before_pickup > EMPTY_LIMIT) {
-                    float consumed = weight_before_pickup - weight;
-
-                    if (consumed >= MED_THRESHOLD) {
-                        appPrint("【智慧紀錄】偵測服用藥物！單次減少: " + String(consumed, 2) + " g");
-                        if(mqttClient.connected()) {
-                            char msg[10]; dtostrf(consumed, 0, 2, msg); 
-                            mqttClient.publish(TOPIC_MED_TAKEN, msg, true);
-                        }
-                    } else {
-                        Serial.println("【防誤觸】放回後重量無顯著減少，不發送紀錄。");
-                    }
                     
-                    weight_before_pickup = 0.0;
-                    box_was_picked_up = false;
+                    // 🛡️【全新特徵防護網】：計算「如果現在結算，會減少多少克？」
+                    float test_consumed = weight_before_pickup - weight;
+                    
+                    // 1. [攔截空秤]：若計算出的差值過大（> 5g）且目前秤上殘餘重量極低（< 4.00g），
+                    //    代表整盒藥盒根本還沒放回來，這只是移開藥盒後的空秤漂移數據，拒絕錯誤結算！
+                    if (weight < 4.00 && test_consumed > 5.00) {
+                        Serial.print("🛡️【攔截空秤誤判】目前重量 (");
+                        Serial.print(weight);
+                        Serial.println("g) 判定為空秤零點漂移，藥盒尚未放回，暫緩結算。");
+                        
+                        // 保持鎖定狀態，不重置旗標，繼續等待真正的實體放回
+                        stable_count = 0; 
+                    }
+                    // 2. [放回防彈跳]：必須確實脫離空秤閾值，回到實體放回區域，才執行吃藥公克數結算
+                    else if (weight > EMPTY_LIMIT) {
+                        float consumed = weight_before_pickup - weight;
+
+                        if (consumed >= MED_THRESHOLD) {
+                            appPrint("【智慧紀錄】偵測服用藥物！單次減少: " + String(consumed, 2) + " g");
+                            if(mqttClient.connected()) {
+                                char msg[10]; dtostrf(consumed, 0, 2, msg); 
+                                mqttClient.publish(TOPIC_MED_TAKEN, msg, true);
+                            }
+                        } else {
+                            Serial.println("【防誤觸】放回後重量無顯著減少，不發送紀錄。");
+                        }
+                        
+                        // 成功放回並精準結算後，才重置拿起旗標
+                        weight_before_pickup = 0.0;
+                        box_was_picked_up = false;
+                        last_reported_weight = weight; 
+                    }
                 } 
                 else {
+                    // 處理「未拿起、但在秤面上直接變重（如手壓到）」的突發狀況
                     float consumed = last_reported_weight - weight;
-                    if (consumed < -0.20) {
-                        Serial.println("【狀態】偵測到藥盒重量顯著增加，更新基準重。");
+                    
+                    if (consumed < -0.20) { 
+                        Serial.println("【防誤觸】偵測到藥盒重量顯著增加，強制刷新基準，不作吃藥結算。");
+                        weight_before_pickup = 0.0;
+                        box_was_picked_up = false;
                     }
+                    else if (consumed >= 0.0 && consumed < MED_THRESHOLD) {
+                        Serial.println("【防誤觸】微幅自然環境漂移，不作吃藥結算。");
+                    }
+                    last_reported_weight = weight; 
                 }
-                
-                last_reported_weight = weight; 
             }
         }
     }
 
     last_loop_weight = weight; 
 
-   // ====================================================
-    // 網頁數據美化與即時發佈（支援獨立開關 Flag）
+    // ====================================================
+    // 網頁數據美化與即時發佈（使用 enBeautiful 控制）
     // ====================================================
     if(mqttClient.connected())
     {
-        // 發佈原始 ADC 數值
         char rawText[20]; sprintf(rawText, "%ld", raw);
         mqttClient.publish(TOPIC_RAW, rawText, true);
 
         float display_weight = weight;
 
-        // 💡 根據 Flag 決定是否啟用「拿起凍結」功能
-        if (ENABLE_DISPLAY_SMOOTHING) {
-            // 【開啟美化模式】：東西移開時，畫面凍結在拿起前的重量
+        // ✨ 這裡完全由 enBeautiful 變數獨立掌控美化邏輯
+        if (enBeautiful) {
+            // 【開啟美化模式】：物體移開時，畫面凍結在拿起前的重量
             if (display_weight <= EMPTY_LIMIT) {
                 if (weight_before_pickup > EMPTY_LIMIT) {
                     display_weight = weight_before_pickup;
@@ -485,23 +522,21 @@ void loop()
                     display_weight = last_reported_weight;
                 }
             }
-            // 只有在完全清空且基準也歸零時，才真正強制作 0
             if (abs(display_weight) < DISPLAY_DEADBAND || (display_weight <= EMPTY_LIMIT && last_reported_weight <= EMPTY_LIMIT)) {
                 display_weight = 0.00;
             }
         } 
         else {
-            // 【關閉美化模式（預設）】：即時反映秤上重量，低於防呆門檻就直接歸 0
-            if (display_weight <= EMPTY_LIMIT || abs(display_weight) < DISPLAY_DEADBAND) {
+            // 【關閉美化模式（預設）】：第一個儀表板完全誠實反映即時重量！
+            if (abs(display_weight) < DISPLAY_DEADBAND) {
                 display_weight = 0.00;
             }
         }
 
-        // 發佈最終處理後的網頁顯示重量
+        // 發佈最終處理後的網頁即時顯示重量（第一個儀表板）
         char weightText[20]; dtostrf(display_weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
     }
 
     delay(150); 
 }
-
