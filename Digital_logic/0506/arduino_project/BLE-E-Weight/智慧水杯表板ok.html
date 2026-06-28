@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧健康照護終端面板 - RAW + SerialRAW Log</title>
+
+    <!-- ✅ 參考 bad_fixed_serialrawok1.html 的 MQTT 載入方式 -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-line: #334155;
+            --box-bg: #111827;
+            --box-line: #475569;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --primary: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --cyan: #38bdf8;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: 30px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 26px;
+            letter-spacing: 1px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            margin-bottom: 30px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .panel-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            width: 100%;
+            max-width: 960px;
+        }
+
+        /* 📊 上方三個儀表板卡片 */
+        .dash-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .gauge-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-line);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 240px;
+        }
+
+        .gauge-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            background: transparent;
+        }
+
+        /* 📋 中間控制區 */
+        .controls-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-line);
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .display-box {
+            font-size: 15px;
+            color: #fff;
+            text-align: center;
+            margin: 6px 0 14px 0;
+            background: rgba(0,0,0,0.25);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--box-line);
+            min-height: 20px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        /* ✅ RAW 即時值：只顯示數字，例如 109852 */
+        .raw-number-box {
+            font-family: "Courier New", Consolas, monospace;
+            color: var(--cyan);
+            font-size: 22px;
+            line-height: 1.2;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        /* 🟢 連線狀態與按鈕 */
+        .status-badge {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-align: center;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .state-ok {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .state-no {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .state-pause {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-blue {
+            background: var(--primary);
+        }
+
+        .btn-blue:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-red {
+            background: var(--danger);
+        }
+
+        .btn-red:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-orange {
+            background: var(--warning);
+        }
+
+        .btn-orange:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            background: #475569 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        /* ✅ 下方 SerialRAW Text List：固定高度、不抖動、約 10 行 */
+        .serial-log-card {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px 20px 20px 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-line);
+            overflow: hidden;
+        }
+
+        .serial-log-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            min-height: 32px;
+        }
+
+        .serial-log-title {
+            font-size: 13px;
+            color: var(--text-sub);
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* ✅ SerialRAW 複製按鈕：放在標題旁邊，明顯可見 */
+        .copy-log-btn {
+            height: 30px;
+            min-width: 86px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 1px solid var(--cyan);
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--cyan);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: background 0.15s, transform 0.15s, color 0.15s, border-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .copy-log-btn:hover {
+            background: rgba(56, 189, 248, 0.22);
+            transform: translateY(-1px);
+        }
+
+        .copy-log-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .copy-log-btn.copied {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.16);
+        }
+
+        /* ✅ SerialRAW 清除按鈕：清空目前畫面上的所有 SerialRAW 文字列 */
+        .copy-log-btn.clear-log-btn {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+            min-width: 76px;
+        }
+
+        .copy-log-btn.clear-log-btn:hover {
+            background: rgba(239, 68, 68, 0.22);
+            color: #fecaca;
+        }
+
+        .copy-log-btn.clear-log-btn.cleared {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.16);
+        }
+
+
+        /* ✅ SerialRAW 時間籤開關：類似 Arduino Serial Monitor 的小 checkbox */
+        .timestamp-toggle {
+            height: 30px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--box-line);
+            background: rgba(15, 23, 42, 0.55);
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .timestamp-toggle input {
+            width: 13px;
+            height: 13px;
+            accent-color: var(--cyan);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .serial-log-box {
+            height: 236px;                 /* ✅ 固定高度避免畫面抖動 */
+            max-height: 236px;
+            overflow-y: auto;
+            overflow-x: auto;
+            background: var(--box-bg);
+            border: 1px solid var(--box-line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: "Courier New", Consolas, monospace;
+            font-size: 18px;              /* ✅ 密集但可讀，約 10 行 */
+            line-height: 1.28;
+            color: var(--cyan);
+            white-space: pre;             /* ✅ 保留空格對齊 */
+            word-break: normal;
+            overflow-wrap: normal;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-gutter: stable;     /* ✅ 捲軸保留空間，避免寬度跳動 */
+        }
+
+        .serial-log-box .placeholder {
+            color: #64748b;
+        }
+
+        .serial-log-line {
+            min-height: 23px;             /* ✅ 每行固定高度 */
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            .gauge-card {
+                min-width: 100%;
+            }
+
+            .serial-log-box {
+                font-size: 14px;
+                height: 220px;
+                max-height: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>智慧健康照護終端面板</h1>
+    <div class="subtitle">IoT 長者吃藥與飲水即時監測系統</div>
+
+    <div class="panel-layout">
+        <div class="dash-container">
+            <div class="gauge-card">
+                <div class="gauge-title">⚖️ 目前即時重量</div>
+                <canvas id="canvas-weight" width="220" height="200"></canvas>
+            </div>
+
+            <div class="gauge-card">
+                <div class="gauge-title">💊 當次吃藥劑量</div>
+                <canvas id="canvas-medication" width="220" height="200"></canvas>
+            </div>
+
+            <div class="gauge-card">
+                <div class="gauge-title">💧 當次飲水容量</div>
+                <canvas id="canvas-water" width="220" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="controls-container">
+            <div class="info-card">
+                <div class="card-label">🔔 系統狀態通知</div>
+                <div id="display-msg" class="display-box">等待設備通報...</div>
+
+                <div class="card-label">🔌 感測器原始數據 (RAW)</div>
+                <div id="display-raw-number" class="display-box raw-number-box">--</div>
+            </div>
+
+            <div class="info-card" style="text-align:center;">
+                <div id="status-badge" class="status-badge state-no">連線狀態：中斷連線</div>
+                <div class="card-label" style="margin-bottom:12px;font-size:13px;">設備遠端控制指令（遠端直連）</div>
+
+                <div class="btn-group">
+                    <button id="btn-tare" class="action-btn btn-blue" onclick="sendCmd('tare')" disabled>執行去皮 (TARE)</button>
+                    <button id="btn-clear" class="action-btn btn-red" onclick="sendCmd('clear')" disabled>紀錄清零 (CLEAR)</button>
+                    <button id="btn-pause-mqtt" class="action-btn btn-orange" onclick="toggleMqttPause()">⏸ 暫停 MQTT</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="serial-log-card">
+            <div class="serial-log-header">
+                <div class="serial-log-title">📋 完整 SERIALRAW 文字字串訊息</div>
+                <button id="btn-copy-serialraw" class="copy-log-btn" onclick="copySerialRawLog()" title="複製所有 SerialRAW 文字" aria-label="複製所有 SerialRAW 文字">📋 複製</button>
+                <button id="btn-clear-serialraw" class="copy-log-btn clear-log-btn" onclick="clearSerialRawLog()" title="清除所有 SerialRAW 文字" aria-label="清除所有 SerialRAW 文字">🗑 清除</button>
+                <label class="timestamp-toggle" title="像 Arduino Serial Monitor 一樣在每筆資料前加入時間籤">
+                    <input id="chk-timestamp" type="checkbox">
+                    時間籤
+                </label>
+            </div>
+            <div id="serialraw-list" class="serial-log-box"><span class="placeholder">等待 SerialRAW 資料...</span></div>
+        </div>
+    </div>
+
+<script>
+    // ============================================================
+    // 🎨 Canvas 儀表板繪圖
+    // ============================================================
+    function drawGauge(canvasId, value, min, max, unit, color, decimals) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 + 15;
+        const radius = 75;
+
+        // 背景圓弧軌道
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 8;
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // 動態進度軌道
+        const safeValue = Number.isFinite(value) ? value : 0;
+        const clampedVal = Math.min(Math.max(safeValue, min), max);
+        const valPercent = (clampedVal - min) / (max - min);
+        const endAngle = 0.75 * Math.PI + valPercent * (1.5 * Math.PI);
+
+        if (valPercent > 0) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 8;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+
+        // 刻度與標籤
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#475569";
+        ctx.font = "10px sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (let i = 0; i <= 5; i++) {
+            const p = i / 5;
+            const angle = 0.75 * Math.PI + p * (1.5 * Math.PI);
+
+            const x1 = cx + (radius - 4) * Math.cos(angle);
+            const y1 = cy + (radius - 4) * Math.sin(angle);
+            const x2 = cx + (radius + 4) * Math.cos(angle);
+            const y2 = cy + (radius + 4) * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            const tx = cx + (radius - 16) * Math.cos(angle);
+            const ty = cy + (radius - 16) * Math.sin(angle);
+            const lblVal = min + p * (max - min);
+            ctx.fillText(lblVal.toFixed(0), tx, ty);
+        }
+
+        // 指針
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(endAngle - 1.5 * Math.PI);
+        ctx.beginPath();
+        ctx.moveTo(0, 8);
+        ctx.lineTo(3, 0);
+        ctx.lineTo(0, -radius + 10);
+        ctx.lineTo(-3, 0);
+        ctx.closePath();
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fill();
+        ctx.restore();
+
+        // 中心圓鈕
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#64748b";
+        ctx.fill();
+
+        // 數位顯示
+        ctx.font = "bold 22px monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(safeValue.toFixed(decimals) + unit, cx, cy + radius - 45);
+    }
+
+    function initAllGauges() {
+        drawGauge("canvas-weight", 0.0, 0, 300, " g", "#818cf8", 1);
+        drawGauge("canvas-medication", 0.00, 0, 20, " g", "#ef4444", 2);
+        drawGauge("canvas-water", 0.0, 0, 500, " cc", "#22d3ee", 1);
+    }
+
+    initAllGauges();
+
+    // ============================================================
+    // ✅ SerialRAW Text List：append 連續列資料，不覆蓋、不閃爍
+    // ============================================================
+    const MAX_LOG_LINES = 200;
+    const serialRawLines = [];
+
+    function getTimestampText() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        const ss = String(now.getSeconds()).padStart(2, "0");
+        const ms = String(now.getMilliseconds()).padStart(3, "0");
+        return `${hh}:${mm}:${ss}.${ms}`;
+    }
+
+    function cleanSerialRawLine(line) {
+        const text = String(line || "").trim();
+        if (!text) return "";
+
+        // ✅ 2026-06-28 修改：
+        // 不再限制一定要符合 RAW = 或 Weight = ... g 格式。
+        // 你的 ESP32 / MQTT 訊息可能會有 TARE OK、CLEAR、WiFi Reconnected、
+        // Calibration Start、Error、Mode、Base Updated 等不同格式，
+        // 這裡全部保留，收到什麼就顯示什麼，像 Arduino Serial Monitor 一樣。
+        return text;
+    }
+
+    function appendSerialRawLine(text) {
+        const box = document.getElementById("serialraw-list");
+        if (!box) return;
+
+        const line = String(text || "").trim();
+        if (!line) return;
+
+        // ✅ 若 payload 內已經有多行，逐行加入；不限制格式，任何文字都會顯示
+        const incomingLines = line.split(/\r?\n/).map(cleanSerialRawLine).filter(Boolean);
+        if (incomingLines.length === 0) return;
+
+        const timestampEnabled = document.getElementById("chk-timestamp")?.checked === true;
+
+        for (const cleanLine of incomingLines) {
+            const finalLine = timestampEnabled ? `[${getTimestampText()}] ${cleanLine}` : cleanLine;
+
+            // ✅ 避免同一筆資料連續重複塞入
+            if (serialRawLines[serialRawLines.length - 1] !== finalLine) {
+                serialRawLines.push(finalLine);
+            }
+        }
+
+        while (serialRawLines.length > MAX_LOG_LINES) {
+            serialRawLines.shift();
+        }
+
+        // ✅ 使用一次性 textContent 更新，避免逐個 DOM append 造成抖動
+        box.textContent = serialRawLines.join("\n");
+
+        // ✅ 固定高度內捲到最新資料，不改變外層版面高度
+        box.scrollTop = box.scrollHeight;
+    }
+
+
+    // ============================================================
+    // ✅ 複製完整 SerialRAW Text List 到剪貼簿
+    // ============================================================
+    async function copySerialRawLog() {
+        const copyBtn = document.getElementById("btn-copy-serialraw");
+        const text = serialRawLines.join("\n");
+
+        if (!text.trim()) {
+            if (copyBtn) {
+                const oldText = copyBtn.textContent;
+                copyBtn.textContent = "無資料";
+                setTimeout(() => { copyBtn.textContent = oldText; }, 900);
+            }
+            return;
+        }
+
+        try {
+            // ✅ 優先使用 Clipboard API；本機 file:// 若被瀏覽器限制，會自動改用 textarea fallback
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.setAttribute("readonly", "readonly");
+                tempTextArea.style.position = "fixed";
+                tempTextArea.style.left = "-9999px";
+                tempTextArea.style.top = "0";
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempTextArea);
+            }
+
+            if (copyBtn) {
+                copyBtn.classList.add("copied");
+                copyBtn.textContent = "✓";
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                    copyBtn.textContent = "📋 複製";
+                }, 1200);
+            }
+        } catch (error) {
+            console.error("複製 SerialRAW 失敗：", error);
+            alert("複製失敗，請手動選取 SerialRAW 文字複製。");
+        }
+    }
+
+    // ============================================================
+    // ✅ 清除所有 SerialRAW Text List 文字列
+    // ============================================================
+    function clearSerialRawLog() {
+        const box = document.getElementById("serialraw-list");
+        const clearBtn = document.getElementById("btn-clear-serialraw");
+
+        // ✅ 清空記憶體中的所有 SerialRAW 紀錄，新的 MQTT 資料仍會繼續進來
+        serialRawLines.length = 0;
+
+        // ✅ 還原提示文字，維持固定高度，不造成版面抖動
+        if (box) {
+            box.innerHTML = '<span class="placeholder">等待 SerialRAW 資料...</span>';
+            box.scrollTop = 0;
+        }
+
+        // ✅ 按鈕短暫顯示完成狀態
+        if (clearBtn) {
+            clearBtn.classList.add("cleared");
+            clearBtn.textContent = "✓ 已清除";
+            setTimeout(() => {
+                clearBtn.classList.remove("cleared");
+                clearBtn.textContent = "🗑 清除";
+            }, 1000);
+        }
+    }
+
+    // ============================================================
+    // ✅ RAW 即時值：只抓 RAW = 後面的數字
+    // ============================================================
+    function updateRawNumber(message) {
+        const rawBox = document.getElementById("display-raw-number");
+        if (!rawBox) return;
+
+        const text = String(message || "");
+
+        // 支援：
+        // RAW = 109852
+        // RAW=109852
+        // 109852
+        const match = text.match(/RAW\s*=\s*(-?\d+)/i);
+        const onlyNumber = text.trim().match(/^-?\d+$/);
+
+        if (match) {
+            rawBox.textContent = match[1];
+        } else if (onlyNumber) {
+            rawBox.textContent = onlyNumber[0];
+        } else {
+            rawBox.textContent = "--";
+        }
+    }
+
+    // ============================================================
+    // ✅ MQTT 連線：參考 bad_fixed_serialrawok1.html 的方式
+    // ============================================================
+    const brokerUrl = "wss://MQTTGO.io:8084/mqtt";
+    const cmdTopic = "esp32/cmd";
+    const clientIdBase = "pure_canvas_panel_" + Math.random().toString(16).substr(2, 8);
+
+    let client = null;
+    let mqttPaused = false;
+    let reconnectCount = 0;
+
+    const badge = document.getElementById("status-badge");
+    const tareBtn = document.getElementById("btn-tare");
+    const clearBtn = document.getElementById("btn-clear");
+    const pauseBtn = document.getElementById("btn-pause-mqtt");
+
+    function subscribeTopics() {
+        if (!client || !client.connected) return;
+
+        // ✅ 核心主題訂閱：保留 ok1 的連線與 topic
+        client.subscribe("esp32/msg");
+        client.subscribe("esp32/weight");
+        client.subscribe("esp32/medication/taken");
+        client.subscribe("esp32/water/taken");
+        client.subscribe("esp32/raw");
+        client.subscribe("esp/msg/seialraw");
+    }
+
+    function setConnectedUI() {
+        badge.innerText = "連線狀態：已連線至 MQTTGO";
+        badge.className = "status-badge state-ok";
+        tareBtn.disabled = false;
+        clearBtn.disabled = false;
+        pauseBtn.disabled = false;
+        pauseBtn.innerText = "⏸ 暫停 MQTT";
+        pauseBtn.className = "action-btn btn-orange";
+    }
+
+    function setDisconnectedUI(text) {
+        badge.innerText = text || "連線狀態：中斷連線";
+        badge.className = "status-badge state-no";
+        tareBtn.disabled = true;
+        clearBtn.disabled = true;
+        pauseBtn.disabled = false;
+    }
+
+    function setPausedUI() {
+        badge.innerText = "連線狀態：MQTT 已暫停";
+        badge.className = "status-badge state-pause";
+        tareBtn.disabled = true;
+        clearBtn.disabled = true;
+        pauseBtn.disabled = false;
+        pauseBtn.innerText = "▶ 恢復 MQTT";
+        pauseBtn.className = "action-btn btn-orange";
+    }
+
+    function handleMqttMessage(topic, payload) {
+        // ✅ 暫停時不處理任何新資料，畫面停住不閃爍
+        if (mqttPaused) return;
+
+        // ✅ 這裡不 trim 原始內容，避免完整字串被破壞；需要顯示時再處理
+        const message = new TextDecoder().decode(payload);
+
+        if (topic === "esp32/weight") {
+            const val = parseFloat(message) || 0;
+            drawGauge("canvas-weight", val, 0, 300, " g", "#818cf8", 1);
+        }
+
+        else if (topic === "esp32/medication/taken") {
+            const val = parseFloat(message) || 0;
+            drawGauge("canvas-medication", val, 0, 20, " g", "#ef4444", 2);
+        }
+
+        else if (topic === "esp32/water/taken") {
+            const val = parseFloat(message) || 0;
+            drawGauge("canvas-water", val, 0, 500, " cc", "#22d3ee", 1);
+        }
+
+        else if (topic === "esp32/msg") {
+            document.getElementById("display-msg").innerText = message.trim() || "--";
+        }
+
+        else if (topic === "esp32/raw") {
+            // 只更新上方 RAW 數字
+            updateRawNumber(message);
+        }
+
+        else if (topic === "esp/msg/seialraw") {
+            // 只有完整 SerialRAW 訊息加入 Log
+            appendSerialRawLine(message);
+        }
+    }
+
+    function registerMqttEvents() {
+        if (!client) return;
+
+        client.on("connect", () => {
+            console.log("MQTT 連線成功！");
+            reconnectCount = 0;
+            if (!mqttPaused) {
+                setConnectedUI();
+                subscribeTopics();
+            }
+        });
+
+        client.on("reconnect", () => {
+            reconnectCount += 1;
+            if (!mqttPaused) {
+                setDisconnectedUI("連線狀態：重新連線中");
+            }
+        });
+
+        client.on("close", () => {
+            if (!mqttPaused) {
+                setDisconnectedUI("連線狀態：中斷連線");
+            }
+        });
+
+        client.on("offline", () => {
+            if (!mqttPaused) {
+                setDisconnectedUI("連線狀態：離線");
+            }
+        });
+
+        client.on("error", (error) => {
+            console.error("MQTT 錯誤：", error);
+            if (!mqttPaused) {
+                setDisconnectedUI("連線狀態：MQTT 錯誤");
+            }
+        });
+
+        client.on("message", handleMqttMessage);
+    }
+
+    function connectMqtt() {
+        // ✅ 每次恢復重新產生不同 clientId，避免瀏覽器多分頁衝突
+        const clientId = clientIdBase + "_" + Date.now();
+
+        client = mqtt.connect(brokerUrl, {
+            clientId: clientId,
+            clean: true,
+            reconnectPeriod: 1000
+        });
+
+        registerMqttEvents();
+    }
+
+    function toggleMqttPause() {
+        if (!mqttPaused) {
+            // ✅ 暫停 MQTT：真正中斷 WebSocket MQTT，畫面保留最後資料
+            mqttPaused = true;
+
+            if (client) {
+                try {
+                    client.end(true);
+                } catch (error) {
+                    console.error("暫停 MQTT 時發生錯誤：", error);
+                }
+            }
+
+            setPausedUI();
+        } else {
+            // ✅ 恢復 MQTT：重新連線並重新訂閱主題
+            mqttPaused = false;
+            setDisconnectedUI("連線狀態：重新連線中");
+            pauseBtn.innerText = "⏸ 暫停 MQTT";
+
+            connectMqtt();
+        }
+    }
+
+    // ✅ 頁面載入後立即連線
+    connectMqtt();
+
+    // ============================================================
+    // ✅ 遠端控制指令
+    // ============================================================
+    function sendCmd(cmd) {
+        if (client && client.connected && !mqttPaused) {
+            client.publish(cmdTopic, cmd, { qos: 0, retain: false }, (err) => {
+                if (err) {
+                    alert("控制指令傳送失敗: " + err);
+                } else {
+                    console.log(`成功發送 [${cmd}] 指令至 [${cmdTopic}]`);
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
