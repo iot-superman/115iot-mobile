@@ -1,5 +1,5 @@
 //====================================================
-// 2026 最新終極修正版：加入「放回防彈跳」與「空秤拿開攔截」機制
+// 2026 最新終極修正版：加入「防彈跳」、「空秤攔截」與「100% 同步 Serial 文字 MQTT 發佈」
 //====================================================
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -64,6 +64,8 @@ const char* TOPIC_RAW = "esp32/raw";
 const char* TOPIC_CMD = "esp32/cmd";
 const char* TOPIC_MED_TAKEN = "esp32/medication/taken"; 
 const char* TOPIC_WAT_TAKEN = "esp32/water/taken";      
+const char* TOPIC_MSG = "esp32/msg";                     // 動態狀態中文訊息主題
+const char* TOPIC_SERIAL_RAW = "esp/msg/seialraw";       // ✨ 誠實反映 SerialPort 原始文字的主題
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -139,6 +141,11 @@ void appPrint(String text)
         txCharacteristic->setValue(text.c_str());
         txCharacteristic->notify();
     }
+    // 同時將重要狀態文字同步推播至 MQTT esp32/msg 主題
+    if(mqttClient.connected())
+    {
+        mqttClient.publish(TOPIC_MSG, text.c_str(), true);
+    }
 }
 
 void executeTare()
@@ -167,6 +174,7 @@ void executeClear()
     if(mqttClient.connected()) {
         mqttClient.publish(TOPIC_MED_TAKEN, "0", true); 
         mqttClient.publish(TOPIC_WAT_TAKEN, "0", true); 
+        mqttClient.publish(TOPIC_MSG, "吃藥與飲水數據已重置歸零", true);
         appPrint("MQTT 吃藥與飲水紀錄已成功獨立清零。");
     } else {
         appPrint("錯誤：MQTT 未連線，無法同步清零網頁端。");
@@ -359,12 +367,14 @@ void loop()
         Serial.println("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
     }
 
-    // 印出目前即時狀態
-    Serial.print("RAW = "); Serial.print(raw);
-    Serial.print("    Weight = "); Serial.print(weight, 2);
-    Serial.print(" g    [Base: "); Serial.print(last_reported_weight, 2);
-    Serial.print(" g]   [Mode: "); Serial.print(is_cup_mode ? "CUP" : "BOX");
-    Serial.println("]");
+    // 建立 100% 完全對齊原本 SerialPort 排版格式的字串字元流
+    String fullSerialLine = "RAW = " + String(raw) + 
+                            "    Weight = " + String(weight, 2) + 
+                            " g    [Base: " + String(last_reported_weight, 2) + 
+                            " g]   [Mode: " + String(is_cup_mode ? "CUP" : "BOX") + "]";
+
+    // 印出目前即時狀態到物理 Serial 埠
+    Serial.println(fullSerialLine);
 
     // ====================================================
     // 智慧絕對值靜態比對演算法
@@ -380,8 +390,10 @@ void loop()
         if ((last_reported_weight - weight) > 1.50 && !box_was_picked_up) {
             weight_before_pickup = last_reported_weight; 
             box_was_picked_up = true;
-            Serial.print("🔥【狀態鎖定】偵測到藥盒被拿起！鎖定拿藥前重量: ");
-            Serial.println(weight_before_pickup);
+            
+            String msgStr = "🔥【狀態鎖定】偵測到藥盒被拿起！鎖定拿藥前重量: " + String(weight_before_pickup, 2) + "g";
+            Serial.println(msgStr);
+            if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
         }
     }
 
@@ -397,13 +409,18 @@ void loop()
                 }
                 last_reported_weight = weight; 
                 box_was_picked_up = false; 
-                Serial.println("【狀態通知】偵測到水杯被拿離，基準已歸零。保持水杯模式記憶。");
+                
+                String msgStr = "【狀態通知】偵測到水杯被拿離，基準已歸零。保持水杯模式記憶。";
+                Serial.println(msgStr);
+                if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
             } 
             // -----------------【狀況 B：藥盒模式下移開/環境漂移】-----------------
             else {
                 static unsigned long last_msg_time = 0;
                 if (millis() - last_msg_time > 5000) {
-                    Serial.println("【狀態通知】當前處於藥盒拿藥狀態，鎖定歷史藥盒基準。");
+                    String msgStr = "【狀態通知】當前處於藥盒拿藥狀態，鎖定歷史藥盒基準。";
+                    Serial.println(msgStr);
+                    if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
                     last_msg_time = millis();
                 }
             }
@@ -414,8 +431,9 @@ void loop()
             is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
             
             if (previous_mode != is_cup_mode) {
-                Serial.print("🔄【模式切換】偵測到設備變更，目前切換至: ");
-                Serial.println(is_cup_mode ? "水杯模式" : "藥盒模式");
+                String msgStr = "🔄【模式切換】偵測到設備變更，目前切換至: " + String(is_cup_mode ? "水杯模式" : "藥盒模式");
+                Serial.println(msgStr);
+                if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
             }
 
             if (is_cup_mode) {
@@ -436,7 +454,9 @@ void loop()
                     weight_before_pickup = 0.0; 
                 } 
                 else if (consumed < -3.0) {
-                    Serial.println("【狀態】偵測到水杯水量增加，已更新基準重.");
+                    String msgStr = "【狀態】偵測到水杯水量增加，已更新基準重.";
+                    Serial.println(msgStr);
+                    if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
                     weight_before_pickup = 0.0; 
                 } else {
                     if (weight_before_pickup > 0.0 && abs(consumed) < WAT_THRESHOLD) {
@@ -449,20 +469,17 @@ void loop()
                 // =================【藥盒模式：防空秤與放回物理防抖機制】=================
                 if (box_was_picked_up && weight_before_pickup > EMPTY_LIMIT) {
                     
-                    // 🛡️【全新特徵防護網】：計算「如果現在結算，會減少多少克？」
                     float test_consumed = weight_before_pickup - weight;
                     
-                    // 1. [攔截空秤]：若計算出的差值過大（> 5g）且目前秤上殘餘重量極低（< 4.00g），
-                    //    代表整盒藥盒根本還沒放回來，這只是移開藥盒後的空秤漂移數據，拒絕錯誤結算！
+                    // 1. [攔截空秤]：避免空藥盒移開零點漂移數據被錯算為吃藥
                     if (weight < 4.00 && test_consumed > 5.00) {
-                        Serial.print("🛡️【攔截空秤誤判】目前重量 (");
-                        Serial.print(weight);
-                        Serial.println("g) 判定為空秤零點漂移，藥盒尚未放回，暫緩結算。");
+                        String msgStr = "🛡️【攔截空秤誤判】目前重量 (" + String(weight, 2) + "g) 判定為空秤零點漂移，藥盒尚未放回，暫緩結算。";
+                        Serial.println(msgStr);
+                        if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
                         
-                        // 保持鎖定狀態，不重置旗標，繼續等待真正的實體放回
                         stable_count = 0; 
                     }
-                    // 2. [放回防彈跳]：必須確實脫離空秤閾值，回到實體放回區域，才執行吃藥公克數結算
+                    // 2. [放回防彈跳]：必須確實高於空秤範圍，回到實體放回區域，才執行吃藥結算
                     else if (weight > EMPTY_LIMIT) {
                         float consumed = weight_before_pickup - weight;
 
@@ -473,10 +490,11 @@ void loop()
                                 mqttClient.publish(TOPIC_MED_TAKEN, msg, true);
                             }
                         } else {
-                            Serial.println("【防誤觸】放回後重量無顯著減少，不發送紀錄。");
+                            String msgStr = "【防誤觸】放回後重量無顯著減少，不發送紀錄。";
+                            Serial.println(msgStr);
+                            if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
                         }
                         
-                        // 成功放回並精準結算後，才重置拿起旗標
                         weight_before_pickup = 0.0;
                         box_was_picked_up = false;
                         last_reported_weight = weight; 
@@ -487,12 +505,17 @@ void loop()
                     float consumed = last_reported_weight - weight;
                     
                     if (consumed < -0.20) { 
-                        Serial.println("【防誤觸】偵測到藥盒重量顯著增加，強制刷新基準，不作吃藥結算。");
+                        String msgStr = "【防誤觸】偵測到藥盒重量顯著增加，強制刷新基準，不作吃藥結算。";
+                        Serial.println(msgStr);
+                        if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
+                        
                         weight_before_pickup = 0.0;
                         box_was_picked_up = false;
                     }
                     else if (consumed >= 0.0 && consumed < MED_THRESHOLD) {
-                        Serial.println("【防誤觸】微幅自然環境漂移，不作吃藥結算。");
+                        String msgStr = "【防誤觸】微幅自然環境漂移，不作吃藥結算。";
+                        Serial.println(msgStr);
+                        if(mqttClient.connected()) mqttClient.publish(TOPIC_MSG, msgStr.c_str(), true);
                     }
                     last_reported_weight = weight; 
                 }
@@ -503,18 +526,21 @@ void loop()
     last_loop_weight = weight; 
 
     // ====================================================
-    // 網頁數據美化與即時發佈（使用 enBeautiful 控制）
+    // 網頁數據美化與即時發佈、以及 100% 同步的 Serial Raw 文字推播
     // ====================================================
     if(mqttClient.connected())
     {
+        // 1. 發佈原始數值碼到舊的 topic (esp32/raw)
         char rawText[20]; sprintf(rawText, "%ld", raw);
         mqttClient.publish(TOPIC_RAW, rawText, true);
 
+        // 2. ✨【全新優化點】：直接把上面與實體埠 100% 格式同步的完整字串，完好如初發佈到指定主題
+        mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true);
+
+        // 3. 發佈第一個網頁儀表板處理後的重量 (esp32/weight)
         float display_weight = weight;
 
-        // ✨ 這裡完全由 enBeautiful 變數獨立掌控美化邏輯
         if (enBeautiful) {
-            // 【開啟美化模式】：物體移開時，畫面凍結在拿起前的重量
             if (display_weight <= EMPTY_LIMIT) {
                 if (weight_before_pickup > EMPTY_LIMIT) {
                     display_weight = weight_before_pickup;
@@ -527,13 +553,11 @@ void loop()
             }
         } 
         else {
-            // 【關閉美化模式（預設）】：第一個儀表板完全誠實反映即時重量！
             if (abs(display_weight) < DISPLAY_DEADBAND) {
                 display_weight = 0.00;
             }
         }
 
-        // 發佈最終處理後的網頁即時顯示重量（第一個儀表板）
         char weightText[20]; dtostrf(display_weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
     }
