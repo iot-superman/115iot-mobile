@@ -3,9 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧健康照護終端面板 - RAW + SerialRAW Log</title>
+    <title>智慧健康照護終端面板 - 易讀通知</title>
 
-    <!-- ✅ 參考 bad_fixed_serialrawok1.html 的 MQTT 載入方式 -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
     <style>
@@ -140,7 +139,36 @@
             white-space: pre-wrap;
         }
 
-        /* ✅ RAW 即時值：只顯示數字，例如 109852 */
+        /* ✅ 使用者易讀版系統通知 */
+        .display-box.notice-ok {
+            color: #bbf7d0;
+            background: rgba(16, 185, 129, 0.13);
+            border-color: rgba(16, 185, 129, 0.72);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+        }
+
+        .display-box.notice-info {
+            color: #bae6fd;
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.68);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
+        }
+
+        .display-box.notice-warn {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.14);
+            border-color: rgba(245, 158, 11, 0.75);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
+        }
+
+        .display-box.notice-error {
+            color: #fecaca;
+            background: rgba(239, 68, 68, 0.14);
+            border-color: rgba(239, 68, 68, 0.75);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        /* ✅ RAW 即時值 */
         .raw-number-box {
             font-family: "Courier New", Consolas, monospace;
             color: var(--cyan);
@@ -153,6 +181,137 @@
             align-items: center;
             justify-content: center;
             white-space: nowrap;
+        }
+
+        /* ✅ 目前模式顯示卡片（藥盒 / 水杯） */
+        .mode-card {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 36%),
+                radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.16), transparent 38%),
+                var(--card-bg);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.42);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .mode-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 45%);
+            pointer-events: none;
+        }
+
+        .mode-top-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .mode-label-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mode-small-label {
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .mode-title {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            line-height: 1.05;
+        }
+
+        .mode-icon {
+            width: 66px;
+            height: 66px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
+        }
+
+        .mode-chip-row {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .mode-chip {
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(15, 23, 42, 0.48);
+            color: var(--text-sub);
+            font-size: 13px;
+            font-weight: 900;
+            text-align: center;
+            transition: 0.2s ease;
+        }
+
+        .mode-chip.active-box {
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.75);
+            background: rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        .mode-chip.active-cup {
+            color: #bae6fd;
+            border-color: rgba(34, 211, 238, 0.75);
+            background: rgba(34, 211, 238, 0.14);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
+        }
+
+        .mode-desc {
+            position: relative;
+            color: var(--text-sub);
+            font-size: 13px;
+            line-height: 1.45;
+            min-height: 20px;
+        }
+
+        .mode-card.mode-box {
+            border-color: rgba(239, 68, 68, 0.42);
+        }
+
+        .mode-card.mode-box .mode-title {
+            color: #fecaca;
+        }
+
+        .mode-card.mode-cup {
+            border-color: rgba(34, 211, 238, 0.48);
+        }
+
+        .mode-card.mode-cup .mode-title {
+            color: #bae6fd;
+        }
+
+        .mode-card.mode-unknown .mode-title {
+            color: #e2e8f0;
         }
 
         /* 🟢 連線狀態與按鈕 */
@@ -241,7 +400,7 @@
             box-shadow: none;
         }
 
-        /* ✅ 下方 SerialRAW Text List：固定高度、不抖動、約 10 行 */
+        /* ✅ 下方 SerialRAW Text List */
         .serial-log-card {
             width: 100%;
             background: var(--card-bg);
@@ -270,7 +429,6 @@
             text-transform: uppercase;
         }
 
-        /* ✅ SerialRAW 複製按鈕：放在標題旁邊，明顯可見 */
         .copy-log-btn {
             height: 30px;
             min-width: 86px;
@@ -305,7 +463,6 @@
             background: rgba(16, 185, 129, 0.16);
         }
 
-        /* ✅ SerialRAW 清除按鈕：清空目前畫面上的所有 SerialRAW 文字列 */
         .copy-log-btn.clear-log-btn {
             border-color: var(--danger);
             background: rgba(239, 68, 68, 0.12);
@@ -324,8 +481,6 @@
             background: rgba(16, 185, 129, 0.16);
         }
 
-
-        /* ✅ SerialRAW 時間籤開關：類似 Arduino Serial Monitor 的小 checkbox */
         .timestamp-toggle {
             height: 30px;
             padding: 0 8px;
@@ -352,7 +507,7 @@
         }
 
         .serial-log-box {
-            height: 236px;                 /* ✅ 固定高度避免畫面抖動 */
+            height: 236px;
             max-height: 236px;
             overflow-y: auto;
             overflow-x: auto;
@@ -361,14 +516,14 @@
             border-radius: 10px;
             padding: 10px 14px;
             font-family: "Courier New", Consolas, monospace;
-            font-size: 18px;              /* ✅ 密集但可讀，約 10 行 */
+            font-size: 18px;
             line-height: 1.28;
             color: var(--cyan);
-            white-space: pre;             /* ✅ 保留空格對齊 */
+            white-space: pre;
             word-break: normal;
             overflow-wrap: normal;
             -webkit-font-smoothing: antialiased;
-            scrollbar-gutter: stable;     /* ✅ 捲軸保留空間，避免寬度跳動 */
+            scrollbar-gutter: stable;
         }
 
         .serial-log-box .placeholder {
@@ -376,7 +531,7 @@
         }
 
         .serial-log-line {
-            min-height: 23px;             /* ✅ 每行固定高度 */
+            min-height: 23px;
         }
 
         @media (max-width: 768px) {
@@ -420,6 +575,23 @@
         </div>
 
         <div class="controls-container">
+
+            <div id="device-mode-card" class="mode-card mode-unknown">
+                <div class="mode-top-row">
+                    <div class="mode-label-block">
+                        <div class="mode-small-label">目前裝置模式</div>
+                        <div id="device-mode-title" class="mode-title">等待判斷</div>
+                    </div>
+                    <div id="device-mode-icon" class="mode-icon">🧠</div>
+                </div>
+
+                <div class="mode-chip-row">
+                    <div id="chip-box" class="mode-chip">💊 藥盒模式</div>
+                    <div id="chip-cup" class="mode-chip">💧 水杯模式</div>
+                </div>
+
+                <div id="device-mode-desc" class="mode-desc">系統會依 MQTT 或 SerialRAW 內的 [Mode: BOX/CUP] 自動切換顯示。</div>
+            </div>
             <div class="info-card">
                 <div class="card-label">🔔 系統狀態通知</div>
                 <div id="display-msg" class="display-box">等待設備通報...</div>
@@ -556,7 +728,7 @@
     initAllGauges();
 
     // ============================================================
-    // ✅ SerialRAW Text List：append 連續列資料，不覆蓋、不閃爍
+    // ✅ SerialRAW Text List
     // ============================================================
     const MAX_LOG_LINES = 200;
     const serialRawLines = [];
@@ -573,12 +745,6 @@
     function cleanSerialRawLine(line) {
         const text = String(line || "").trim();
         if (!text) return "";
-
-        // ✅ 2026-06-28 修改：
-        // 不再限制一定要符合 RAW = 或 Weight = ... g 格式。
-        // 你的 ESP32 / MQTT 訊息可能會有 TARE OK、CLEAR、WiFi Reconnected、
-        // Calibration Start、Error、Mode、Base Updated 等不同格式，
-        // 這裡全部保留，收到什麼就顯示什麼，像 Arduino Serial Monitor 一樣。
         return text;
     }
 
@@ -589,7 +755,6 @@
         const line = String(text || "").trim();
         if (!line) return;
 
-        // ✅ 若 payload 內已經有多行，逐行加入；不限制格式，任何文字都會顯示
         const incomingLines = line.split(/\r?\n/).map(cleanSerialRawLine).filter(Boolean);
         if (incomingLines.length === 0) return;
 
@@ -598,7 +763,6 @@
         for (const cleanLine of incomingLines) {
             const finalLine = timestampEnabled ? `[${getTimestampText()}] ${cleanLine}` : cleanLine;
 
-            // ✅ 避免同一筆資料連續重複塞入
             if (serialRawLines[serialRawLines.length - 1] !== finalLine) {
                 serialRawLines.push(finalLine);
             }
@@ -608,13 +772,9 @@
             serialRawLines.shift();
         }
 
-        // ✅ 使用一次性 textContent 更新，避免逐個 DOM append 造成抖動
         box.textContent = serialRawLines.join("\n");
-
-        // ✅ 固定高度內捲到最新資料，不改變外層版面高度
         box.scrollTop = box.scrollHeight;
     }
-
 
     // ============================================================
     // ✅ 複製完整 SerialRAW Text List 到剪貼簿
@@ -633,7 +793,6 @@
         }
 
         try {
-            // ✅ 優先使用 Clipboard API；本機 file:// 若被瀏覽器限制，會自動改用 textarea fallback
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(text);
             } else {
@@ -665,22 +824,19 @@
     }
 
     // ============================================================
-    // ✅ 清除所有 SerialRAW Text List 文字列
+    // ✅ 清除所有 SerialRAW 文字列
     // ============================================================
     function clearSerialRawLog() {
         const box = document.getElementById("serialraw-list");
         const clearBtn = document.getElementById("btn-clear-serialraw");
 
-        // ✅ 清空記憶體中的所有 SerialRAW 紀錄，新的 MQTT 資料仍會繼續進來
         serialRawLines.length = 0;
 
-        // ✅ 還原提示文字，維持固定高度，不造成版面抖動
         if (box) {
             box.innerHTML = '<span class="placeholder">等待 SerialRAW 資料...</span>';
             box.scrollTop = 0;
         }
 
-        // ✅ 按鈕短暫顯示完成狀態
         if (clearBtn) {
             clearBtn.classList.add("cleared");
             clearBtn.textContent = "✓ 已清除";
@@ -699,11 +855,6 @@
         if (!rawBox) return;
 
         const text = String(message || "");
-
-        // 支援：
-        // RAW = 109852
-        // RAW=109852
-        // 109852
         const match = text.match(/RAW\s*=\s*(-?\d+)/i);
         const onlyNumber = text.trim().match(/^-?\d+$/);
 
@@ -717,7 +868,224 @@
     }
 
     // ============================================================
-    // ✅ MQTT 連線：參考 bad_fixed_serialrawok1.html 的方式
+    // ✅ 使用者易讀版系統通知
+    // ============================================================
+    function getDebugValue(message, key) {
+        const safeKey = String(key).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const reg = new RegExp("(?:^|\\|)" + safeKey + "=([^|]+)", "i");
+        const match = String(message || "").match(reg);
+        return match ? match[1].trim() : "";
+    }
+
+    function formatNumber(value, digits = 2) {
+        const num = parseFloat(value);
+        if (!Number.isFinite(num)) return "--";
+        return num.toFixed(digits);
+    }
+
+    // ✅ 已修正：應用戶要求，完全不回傳底層工程資訊摘要（RAW、Mode 等）
+    function buildEngineerInfo(message) {
+        return "";
+    }
+
+    function convertSystemMessage(message) {
+        const text = String(message || "").trim();
+
+        if (!text) {
+            return { level: "info", text: "等待設備通報..." };
+        }
+
+        const engineerInfo = buildEngineerInfo(text);
+        const reason = getDebugValue(text, "Reason");
+        const consumed = getDebugValue(text, "Consumed");
+        const rawDiff = getDebugValue(text, "RawDiff");
+        const mode = getDebugValue(text, "Mode");
+
+        // ✅ 感測器 RAW 單筆暴衝
+        if (reason === "BlockedRawSpike" || text.includes("Reason=BlockedRawSpike")) {
+            const diffText = rawDiff ? `\n異常差值：${rawDiff}` : "";
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到感測器瞬間讀值異常\n系統已自動忽略本次資料，不會誤判吃藥或飲水。${diffText}${engineerInfo}`
+            };
+        }
+
+        // ✅ 藥盒碰撞 / 被壓到 / 暫放物品。
+        if (["BoxImpactLock", "BlockedBoxIncrease", "ImpactCooling", "BlockedPickupDuringImpact", "BlockedMedDuringImpact"].includes(reason)) {
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到藥盒可能被碰撞或短暫壓到\n系統已暫停本次結算，避免誤判為吃藥。${engineerInfo}`
+            };
+        }
+
+        if (reason === "ImpactReleased") {
+            return {
+                level: "ok",
+                text: `✅ 藥盒重量已回到穩定範圍\n系統恢復正常監測。${engineerInfo}`
+            };
+        }
+
+        if (reason === "ImpactTimeoutBaseReset") {
+            return {
+                level: "info",
+                text: `ℹ️ 藥盒狀態已重新穩定\n系統已重新建立目前基準重量。${engineerInfo}`
+            };
+        }
+
+        // ✅ 吃藥事件（強化判斷：相容 Reason=MedicationTaken 或 包含舊版繁中）
+        if (reason === "MedicationTaken" || text.includes("Reason=MedicationTaken") || text.includes("偵測服用藥物")) {
+            let amount = consumed && parseFloat(consumed) > 0 ? formatNumber(consumed, 2) : "--";
+            if (amount === "--" && window.lastMedicationValue > 0) {
+                amount = formatNumber(window.lastMedicationValue, 2);
+            }
+            return {
+                level: "ok",
+                text: `💊 已偵測到服藥\n本次藥盒重量減少：約 ${amount} g${engineerInfo}`
+            };
+        }
+
+        // ✅ 飲水事件（強化判斷：相容 Reason=WaterTaken 或 包含舊版繁中）
+        if (reason === "WaterTaken" || text.includes("Reason=WaterTaken") || text.includes("偵測到飲水")) {
+            let amount = consumed && parseFloat(consumed) > 0 ? formatNumber(consumed, 1) : "--";
+            if (amount === "--" && window.lastWaterValue > 0) {
+                amount = formatNumber(window.lastWaterValue, 1);
+            }
+            return {
+                level: "ok",
+                text: `💧 已偵測到飲水\n本次飲水量：約 ${amount} cc${engineerInfo}`
+            };
+        }
+
+        // ✅ 正常監測與基準微調。
+        if (["NaturalDrift", "SmallDropBaseAdjust", "SmallIncreaseBaseAdjust", "Loop"].includes(reason) || (!text.includes("Reason=") && text.includes("Weight ="))) {
+            const isCup = mode === "CUP" || text.toUpperCase().includes("[MODE: CUP]");
+            const modeText = isCup ? "水杯" : "藥盒";
+            return {
+                level: "ok",
+                text: `✅ 系統正常監測中\n目前模式：${modeText}${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedDropWithoutPickup") {
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到重量下降，但尚未確認藥盒被拿起\n系統已暫不記錄吃藥，避免誤判。${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedEmptyScale" || reason === "BoxRemoved" || text.includes("藥盒已拿離")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到藥盒已離開秤面\n系統暫時保持藥盒模式，不進行吃藥結算。${engineerInfo}`
+            };
+        }
+
+        if (reason === "CupRemoved" || text.includes("水杯已拿離")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到水杯已離開秤面\n系統暫時保持水杯模式。${engineerInfo}`
+            };
+        }
+
+        if (reason === "Tare" || text.includes("去皮完成")) {
+            return { level: "ok", text: `✅ 去皮歸零完成\n系統已重新設定目前重量為基準。${engineerInfo}` };
+        }
+
+        if (reason === "Clear" || text.includes("紀錄清零")) {
+            return { level: "ok", text: `✅ 紀錄已清零\n吃藥與飲水資料已重新開始計算。${engineerInfo}` };
+        }
+
+        if (reason === "ModeToCup") {
+            return { level: "info", text: `💧 已切換為水杯模式\n系統將以飲水量判斷為主。${engineerInfo}` };
+        }
+
+        if (reason === "ModeToBox") {
+            return { level: "info", text: `💊 已切換為藥盒模式\n系統將以取藥與服藥判斷為主。${engineerInfo}` };
+        }
+
+        if (!text.includes("Reason=") && !text.startsWith("DBG|")) {
+            return { level: "info", text };
+        }
+
+        return {
+            level: "info",
+            text: `ℹ️ 系統正在監測中${engineerInfo}`
+        };
+    }
+
+    function updateSystemNotice(message) {
+        const msgBox = document.getElementById("display-msg");
+        if (!msgBox) return;
+
+        const converted = convertSystemMessage(message);
+        msgBox.classList.remove("notice-ok", "notice-info", "notice-warn", "notice-error");
+        msgBox.classList.add(`notice-${converted.level || "info"}`);
+        msgBox.innerText = converted.text || "等待設備通報...";
+    }
+
+    // ============================================================
+    // ✅ 目前模式 UI 顯示
+    // ============================================================
+    function updateDeviceMode(modeText) {
+        const mode = String(modeText || "").trim().toUpperCase();
+        const card = document.getElementById("device-mode-card");
+        const title = document.getElementById("device-mode-title");
+        const icon = document.getElementById("device-mode-icon");
+        const desc = document.getElementById("device-mode-desc");
+        const chipBox = document.getElementById("chip-box");
+        const chipCup = document.getElementById("chip-cup");
+
+        if (!card || !title || !icon || !desc || !chipBox || !chipCup) return;
+
+        card.classList.remove("mode-box", "mode-cup", "mode-unknown");
+        chipBox.classList.remove("active-box");
+        chipCup.classList.remove("active-cup");
+
+        if (mode === "BOX" || mode === "藥盒") {
+            card.classList.add("mode-box");
+            chipBox.classList.add("active-box");
+            title.textContent = "藥盒模式";
+            icon.textContent = "💊";
+            desc.textContent = "目前以藥盒重量為主，適合判斷是否取藥、補藥與微幅漂移。";
+        } else if (mode === "CUP" || mode === "WATER" || mode === "水杯") {
+            card.classList.add("mode-cup");
+            chipCup.classList.add("active-cup");
+            title.textContent = "水杯模式";
+            icon.textContent = "💧";
+            desc.textContent = "目前以水杯容量為主，適合判斷飲水量與喝水事件。";
+        } else {
+            card.classList.add("mode-unknown");
+            title.textContent = "等待判斷";
+            icon.textContent = "🧠";
+            desc.textContent = "正在等待裝置回報模式；支援 Mode=BOX、Mode=CUP、[Mode: BOX]、[Mode: CUP]。";
+        }
+    }
+
+    function updateDeviceModeFromText(text) {
+        const message = String(text || "");
+
+        const bracketMatch = message.match(/\[\s*Mode\s*:\s*(BOX|CUP|WATER|藥盒|水杯)\s*\]/i);
+        if (bracketMatch) {
+            updateDeviceMode(bracketMatch[1]);
+            return;
+        }
+
+        const debugMatch = message.match(/(?:^|\|)Mode\s*=\s*(BOX|CUP|WATER|藥盒|水杯)(?:\||$)/i);
+        if (debugMatch) {
+            updateDeviceMode(debugMatch[1]);
+            return;
+        }
+
+        const directMatch = message.trim().match(/^(BOX|CUP|WATER|藥盒|水杯)$/i);
+        if (directMatch) {
+            updateDeviceMode(directMatch[1]);
+        }
+    }
+
+    updateDeviceMode("");
+
+    // ============================================================
+    // ✅ MQTT 連線
     // ============================================================
     const brokerUrl = "wss://MQTTGO.io:8084/mqtt";
     const cmdTopic = "esp32/cmd";
@@ -727,6 +1095,10 @@
     let mqttPaused = false;
     let reconnectCount = 0;
 
+    // 全域數值快取防呆
+    window.lastMedicationValue = 0;
+    window.lastWaterValue = 0;
+
     const badge = document.getElementById("status-badge");
     const tareBtn = document.getElementById("btn-tare");
     const clearBtn = document.getElementById("btn-clear");
@@ -735,13 +1107,13 @@
     function subscribeTopics() {
         if (!client || !client.connected) return;
 
-        // ✅ 核心主題訂閱：保留 ok1 的連線與 topic
         client.subscribe("esp32/msg");
         client.subscribe("esp32/weight");
         client.subscribe("esp32/medication/taken");
         client.subscribe("esp32/water/taken");
         client.subscribe("esp32/raw");
         client.subscribe("esp/msg/seialraw");
+        client.subscribe("esp32/mode");
     }
 
     function setConnectedUI() {
@@ -773,11 +1145,11 @@
     }
 
     function handleMqttMessage(topic, payload) {
-        // ✅ 暫停時不處理任何新資料，畫面停住不閃爍
         if (mqttPaused) return;
 
-        // ✅ 這裡不 trim 原始內容，避免完整字串被破壞；需要顯示時再處理
         const message = new TextDecoder().decode(payload);
+
+        updateDeviceModeFromText(message);
 
         if (topic === "esp32/weight") {
             const val = parseFloat(message) || 0;
@@ -786,26 +1158,40 @@
 
         else if (topic === "esp32/medication/taken") {
             const val = parseFloat(message) || 0;
+            window.lastMedicationValue = val;
             drawGauge("canvas-medication", val, 0, 20, " g", "#ef4444", 2);
+            
+            const msgBox = document.getElementById("display-msg");
+            if (msgBox && msgBox.innerText.includes("約 -- g")) {
+                msgBox.innerText = msgBox.innerText.replace("約 -- g", `約 ${val.toFixed(2)} g`);
+            }
         }
 
         else if (topic === "esp32/water/taken") {
             const val = parseFloat(message) || 0;
+            window.lastWaterValue = val;
             drawGauge("canvas-water", val, 0, 500, " cc", "#22d3ee", 1);
+            
+            const msgBox = document.getElementById("display-msg");
+            if (msgBox && msgBox.innerText.includes("約 -- cc")) {
+                msgBox.innerText = msgBox.innerText.replace("約 -- cc", `約 ${val.toFixed(1)} cc`);
+            }
         }
 
         else if (topic === "esp32/msg") {
-            document.getElementById("display-msg").innerText = message.trim() || "--";
+            updateSystemNotice(message);
         }
 
         else if (topic === "esp32/raw") {
-            // 只更新上方 RAW 數字
             updateRawNumber(message);
         }
 
         else if (topic === "esp/msg/seialraw") {
-            // 只有完整 SerialRAW 訊息加入 Log
             appendSerialRawLine(message);
+        }
+
+        else if (topic === "esp32/mode") {
+            updateDeviceMode(message);
         }
     }
 
@@ -851,7 +1237,6 @@
     }
 
     function connectMqtt() {
-        // ✅ 每次恢復重新產生不同 clientId，避免瀏覽器多分頁衝突
         const clientId = clientIdBase + "_" + Date.now();
 
         client = mqtt.connect(brokerUrl, {
@@ -865,9 +1250,7 @@
 
     function toggleMqttPause() {
         if (!mqttPaused) {
-            // ✅ 暫停 MQTT：真正中斷 WebSocket MQTT，畫面保留最後資料
             mqttPaused = true;
-
             if (client) {
                 try {
                     client.end(true);
@@ -875,24 +1258,17 @@
                     console.error("暫停 MQTT 時發生錯誤：", error);
                 }
             }
-
             setPausedUI();
         } else {
-            // ✅ 恢復 MQTT：重新連線並重新訂閱主題
             mqttPaused = false;
             setDisconnectedUI("連線狀態：重新連線中");
             pauseBtn.innerText = "⏸ 暫停 MQTT";
-
             connectMqtt();
         }
     }
 
-    // ✅ 頁面載入後立即連線
     connectMqtt();
 
-    // ============================================================
-    // ✅ 遠端控制指令
-    // ============================================================
     function sendCmd(cmd) {
         if (client && client.connected && !mqttPaused) {
             client.publish(cmdTopic, cmd, { qos: 0, retain: false }, (err) => {

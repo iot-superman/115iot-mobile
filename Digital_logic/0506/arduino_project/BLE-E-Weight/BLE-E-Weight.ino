@@ -129,7 +129,7 @@ const unsigned long MQTT_RETRY_INTERVAL = 5000;
 const unsigned long HX711_RETRY_INTERVAL = 2000; 
 
 //====================================================
-// 🎯 修改後的通用列印函式：確保所有動態狀態訊息也同步推送到 TOPIC_SERIAL_RAW
+// 通用列印函式
 //====================================================
 void appPrint(String text)
 {
@@ -142,16 +142,15 @@ void appPrint(String text)
     if(mqttClient.connected())
     {
         mqttClient.publish(TOPIC_MSG, text.c_str(), true);
-        mqttClient.publish(TOPIC_SERIAL_RAW, text.c_str(), true); // 🎯 同步推播到追 Log 主題
+        mqttClient.publish(TOPIC_SERIAL_RAW, text.c_str(), true); 
     }
 }
 
-// 🎯 新增內部快速輔助函式：用於 loop 內部不想走全套 appPrint 但需要同步 SerialPort 與 MQTT Log 的地方
 void logPrint(String text) {
     Serial.println(text);
     if(mqttClient.connected()) {
         mqttClient.publish(TOPIC_MSG, text.c_str(), true);
-        mqttClient.publish(TOPIC_SERIAL_RAW, text.c_str(), true); // 🎯 同步推播到追 Log 主題
+        mqttClient.publish(TOPIC_SERIAL_RAW, text.c_str(), true); 
     }
 }
 
@@ -327,7 +326,7 @@ float movingAverage(float value)
 }
 
 //====================================================
-// 主程式 Setup 與 Loop
+// 主程式 Setup
 //====================================================
 void setup()
 {
@@ -340,6 +339,9 @@ void setup()
     initHX711NonBlocking();
 }
 
+//====================================================
+// 主程式 Loop
+//====================================================
 void loop()
 {
     handleSerialCommand();
@@ -375,19 +377,17 @@ void loop()
         logPrint("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
     }
 
-    // 建立標準每輪狀態字串
+    // 1. 建立標準每輪狀態字串（常態純數據行）
     String fullSerialLine = "RAW = " + String(raw) + 
                             "    Weight = " + String(weight, 2) + 
                             " g    [Base: " + String(last_reported_weight, 2) + 
                             " g]   [Mode: " + String(is_cup_mode ? "CUP" : "BOX") + "]";
 
+    // 2. 複製一份給網頁通知端，稍後若觸發結算會自動在此行屁股用單個 | 黏接數據
+    String webMsgLine = fullSerialLine;
+
     // 印出即時狀態到物理 Serial 埠
     Serial.println(fullSerialLine);
-
-    // 先把常態數據行丟上 MQTT Log 串流
-    if(mqttClient.connected()) {
-        mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true);
-    }
 
     // ====================================================
     // 智慧絕對值靜態比對演算法
@@ -398,7 +398,7 @@ void loop()
         stable_count = 0; 
     }
 
-    // ✨【動態離手偵測】：內部提示全面改用 logPrint 確保同步
+    // ✨【動態離手偵測】
     if (last_reported_weight > EMPTY_LIMIT) {
         // ----------------- 狀況一：水杯被拿起 -----------------
         if (is_cup_mode && (last_reported_weight - weight) > 10.0 && !cup_was_picked_up) {
@@ -458,6 +458,9 @@ void loop()
 
                 if (cup_was_picked_up) {
                     if (consumed >= WAT_THRESHOLD) {
+                        // ✨ 升級：在 webMsgLine 屁股用單個 | 黏接網頁通知必備的 Reason 與 Consumed 標籤
+                        webMsgLine += "|Reason=WaterTaken|Consumed=" + String(consumed, 1) + "|Mode=CUP|RAW=" + String(raw);
+
                         appPrint("【智慧紀錄】偵測到飲水！單次減少: " + String(consumed, 2) + " cc");
                         if(mqttClient.connected()) {
                             char msg[10]; dtostrf(consumed, 0, 2, msg); 
@@ -487,6 +490,9 @@ void loop()
                         float consumed = weight_before_pickup - weight;
 
                         if (consumed >= MED_THRESHOLD) {
+                            // ✨ 升級：在 webMsgLine 屁股用單個 | 黏接網頁通知必備的 Reason 與 Consumed 標籤
+                            webMsgLine += "|Reason=MedicationTaken|Consumed=" + String(consumed, 2) + "|Mode=BOX|RAW=" + String(raw);
+
                             appPrint("【智慧紀錄】偵測服用藥物！單次減少: " + String(consumed, 2) + " g");
                             if(mqttClient.connected()) {
                                 char msg[10]; dtostrf(consumed, 0, 2, msg); 
@@ -525,31 +531,32 @@ void loop()
     // ====================================================
     if(mqttClient.connected())
     {
+        // 1. 發送常態 RAW 點位數字
         char rawText[20]; sprintf(rawText, "%ld", raw);
         mqttClient.publish(TOPIC_RAW, rawText, true);
 
+        // 2. 處理儀表板美化重量
         float display_weight = weight;
-
         if (enBeautiful) {
             if (display_weight <= EMPTY_LIMIT) {
-                if (weight_before_pickup > EMPTY_LIMIT) {
-                    display_weight = weight_before_pickup;
-                } else {
-                    display_weight = last_reported_weight;
-                }
+                display_weight = (weight_before_pickup > EMPTY_LIMIT) ? weight_before_pickup : last_reported_weight;
             }
             if (abs(display_weight) < DISPLAY_DEADBAND || (display_weight <= EMPTY_LIMIT && last_reported_weight <= EMPTY_LIMIT)) {
                 display_weight = 0.00;
             }
         } 
         else {
-            if (abs(display_weight) < DISPLAY_DEADBAND) {
-                display_weight = 0.00;
-            }
+            if (abs(display_weight) < DISPLAY_DEADBAND) display_weight = 0.00;
         }
-
         char weightText[20]; dtostrf(display_weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
+
+        // 3. 🎯【分流發佈關鍵強化】
+        // 下方大框框專用：維持最純淨、無雜質的數據行，完全不抖動
+        mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true); 
+        
+        // 上方狀態通知專用：發布帶有單個 | 與 Reason/Consumed 的複合行，相容舊有翻譯引擎
+        mqttClient.publish(TOPIC_MSG, webMsgLine.c_str(), true); 
     }
 
     delay(150); 
