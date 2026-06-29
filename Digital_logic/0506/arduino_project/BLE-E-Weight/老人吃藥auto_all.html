@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧健康照護終端面板 - 易讀通知</title>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-line: #334155;
+            --box-bg: #111827;
+            --box-line: #475569;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --primary: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --cyan: #38bdf8;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: 30px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 26px;
+            letter-spacing: 1px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            margin-bottom: 30px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .panel-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            width: 100%;
+            max-width: 960px;
+        }
+
+        /* 📊 上方三個儀表板卡片 */
+        .dash-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .gauge-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-line);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 240px;
+        }
+
+        .gauge-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            background: transparent;
+        }
+
+        /* 📋 中間控制區 */
+        .controls-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-line);
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .display-box {
+            font-size: 15px;
+            color: #fff;
+            text-align: center;
+            margin: 6px 0 14px 0;
+            background: rgba(0,0,0,0.25);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--box-line);
+            min-height: 20px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        /* ✅ 使用者易讀版系統通知 */
+        .display-box.notice-ok {
+            color: #bbf7d0;
+            background: rgba(16, 185, 129, 0.13);
+            border-color: rgba(16, 185, 129, 0.72);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+        }
+
+        .display-box.notice-info {
+            color: #bae6fd;
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.68);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
+        }
+
+        .display-box.notice-warn {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.14);
+            border-color: rgba(245, 158, 11, 0.75);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
+        }
+
+        .display-box.notice-error {
+            color: #fecaca;
+            background: rgba(239, 68, 68, 0.14);
+            border-color: rgba(239, 68, 68, 0.75);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        /* ✅ RAW 即時值 */
+        .raw-number-box {
+            font-family: "Courier New", Consolas, monospace;
+            color: var(--cyan);
+            font-size: 22px;
+            line-height: 1.2;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        /* ✅ 目前模式顯示卡片（藥盒 / 水杯） */
+        .mode-card {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 36%),
+                radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.16), transparent 38%),
+                var(--card-bg);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.42);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .mode-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 45%);
+            pointer-events: none;
+        }
+
+        .mode-top-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .mode-label-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mode-small-label {
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .mode-title {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            line-height: 1.05;
+        }
+
+        .mode-icon {
+            width: 66px;
+            height: 66px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
+        }
+
+        .mode-chip-row {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .mode-chip {
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(15, 23, 42, 0.48);
+            color: var(--text-sub);
+            font-size: 13px;
+            font-weight: 900;
+            text-align: center;
+            transition: 0.2s ease;
+        }
+
+        .mode-chip.active-box {
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.75);
+            background: rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        .mode-chip.active-cup {
+            color: #bae6fd;
+            border-color: rgba(34, 211, 238, 0.75);
+            background: rgba(34, 211, 238, 0.14);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
+        }
+
+        .mode-desc {
+            position: relative;
+            color: var(--text-sub);
+            font-size: 13px;
+            line-height: 1.45;
+            min-height: 20px;
+        }
+
+        .mode-card.mode-box {
+            border-color: rgba(239, 68, 68, 0.42);
+        }
+
+        .mode-card.mode-box .mode-title {
+            color: #fecaca;
+        }
+
+        .mode-card.mode-cup {
+            border-color: rgba(34, 211, 238, 0.48);
+        }
+
+        .mode-card.mode-cup .mode-title {
+            color: #bae6fd;
+        }
+
+        .mode-card.mode-unknown .mode-title {
+            color: #e2e8f0;
+        }
+
+        /* 🟢 連線狀態與按鈕 */
+        .status-badge {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-align: center;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .state-ok {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .state-no {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .state-pause {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn-row-top {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-blue {
+            background: var(--primary);
+        }
+
+        .btn-blue:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-red {
+            background: var(--danger);
+        }
+
+        .btn-red:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-orange {
+            background: var(--warning);
+        }
+
+        .btn-orange:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            background: #475569 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        /* ✅ 下方 SerialRAW Text List */
+        .serial-log-card {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px 20px 20px 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-line);
+            overflow: hidden;
+        }
+
+        .serial-log-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            min-height: 32px;
+        }
+
+        .serial-log-title {
+            font-size: 13px;
+            color: var(--text-sub);
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .copy-log-btn {
+            height: 30px;
+            min-width: 86px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 1px solid var(--cyan);
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--cyan);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: background 0.15s, transform 0.15s, color 0.15s, border-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .copy-log-btn:hover {
+            background: rgba(56, 189, 248, 0.22);
+            transform: translateY(-1px);
+        }
+
+        .copy-log-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .copy-log-btn.copied {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.16);
+        }
+
+        .copy-log-btn.clear-log-btn {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+            min-width: 76px;
+        }
+
+        .copy-log-btn.clear-log-btn:hover {
+            background: rgba(239, 68, 68, 0.22);
+            color: #fecaca;
+        }
+
+        .copy-log-btn.clear-log-btn.cleared {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.16);
+        }
+
+        .timestamp-toggle {
+            height: 30px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--box-line);
+            background: rgba(15, 23, 42, 0.55);
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .timestamp-toggle input {
+            width: 13px;
+            height: 13px;
+            accent-color: var(--cyan);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .serial-log-box {
+            height: 236px;
+            max-height: 236px;
+            overflow-y: auto;
+            overflow-x: auto;
+            background: var(--box-bg);
+            border: 1px solid var(--box-line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: "Courier New", Consolas, monospace;
+            font-size: 18px;
+            line-height: 1.28;
+            color: var(--cyan);
+            white-space: pre;
+            word-break: normal;
+            overflow-wrap: normal;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-gutter: stable;
+        }
+
+        .serial-log-box .placeholder {
+            color: #64748b;
+        }
+
+        .serial-log-line {
+            min-height: 23px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            .gauge-card {
+                min-width: 100%;
+            }
+
+            .serial-log-box {
+                font-size: 14px;
+                height: 220px;
+                max-height: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>智慧健康照護終端面板</h1>
+    <div class="subtitle">IoT 長者吃藥與飲水即時監測系統</div>
+
+    <div class="panel-layout">
+        <div class="dash-container">
+            <div class="gauge-card">
+                <div class="gauge-title">⚖️ 目前即時重量</div>
+                <canvas id="canvas-weight" width="220" height="200"></canvas>
+            </div>
+
+            <div class="gauge-card">
+                <div class="gauge-title">💊 當次吃藥劑量</div>
+                <canvas id="canvas-medication" width="220" height="200"></canvas>
+            </div>
+
+            <div class="gauge-card">
+                <div class="gauge-title">💧 當次飲水容量</div>
+                <canvas id="canvas-water" width="220" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="controls-container">
+
+            <div id="device-mode-card" class="mode-card mode-unknown">
+                <div class="mode-top-row">
+                    <div class="mode-label-block">
+                        <div class="mode-small-label">目前裝置模式</div>
+                        <div id="device-mode-title" class="mode-title">等待判斷</div>
+                    </div>
+                    <div id="device-mode-icon" class="mode-icon">🧠</div>
+                </div>
+
+                <div class="mode-chip-row">
+                    <div id="chip-box" class="mode-chip">💊 藥盒模式</div>
+                    <div id="chip-cup" class="mode-chip">💧 水杯模式</div>
+                </div>
+
+                <div id="device-mode-desc" class="mode-desc">系統會依 MQTT 或 SerialRAW 內的 [Mode: BOX/CUP] 自動切換顯示。</div>
+            </div>
+            <div class="info-card">
+                <div class="card-label">🔔 系統狀態通知</div>
+                <div id="display-msg" class="display-box">等待設備通報...</div>
+
+                <div class="card-label">🔌 感測器原始數據 (RAW)</div>
+                <div id="display-raw-number" class="display-box raw-number-box">--</div>
+            </div>
+
+            <div class="info-card" style="text-align:center;">
+                <div id="status-badge" class="status-badge state-no">連線狀態：中斷連線</div>
+                <div class="card-label" style="margin-bottom:12px;font-size:13px;">設備遠端控制指令（遠端直連）</div>
+
+                <div class="btn-group">
+                    <div class="btn-row-top">
+                        <button id="btn-tare" class="action-btn btn-blue" onclick="sendCmd('tare')" disabled>執行去皮 (TARE)</button>
+                        <button id="btn-clear" class="action-btn btn-red" onclick="sendCmd('clear')" disabled>紀錄清零 (CLEAR)</button>
+                        <button id="btn-pause-mqtt" class="action-btn btn-orange" onclick="toggleMqttPause()">⏸ 暫停 MQTT</button>
+                    </div>
+                
+                    <!-- MQTT 手動指令區 -->
+                    <div style="margin-top:18px;">
+                        <div class="card-label">✉ MQTT 手動指令</div>
+                        <div style="display:flex;gap:10px;margin-top:8px;">
+                            <input id="mqtt-topic" type="text" value="esp32/cmd"
+                                placeholder="MQTT Topic"
+                                style="flex:1;padding:10px;border-radius:8px;border:1px solid #475569;background:#111827;color:white;">
+                            <input id="mqtt-payload" type="text"
+                                placeholder="輸入 MQTT 指令，例如 tare、clear、FORCEBOX..."
+                                style="flex:2;padding:10px;border-radius:8px;border:1px solid #475569;background:#111827;color:white;">
+                            <button class="action-btn btn-blue" style="flex:0 0 110px;" onclick="sendCustomMQTT()">發送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="serial-log-card">
+            <div class="serial-log-header">
+                <div class="serial-log-title">📋 完整 SERIALRAW 文字字串訊息</div>
+                <button id="btn-copy-serialraw" class="copy-log-btn" onclick="copySerialRawLog()" title="複製所有 SerialRAW 文字" aria-label="複製所有 SerialRAW 文字">📋 複製</button>
+                <button id="btn-clear-serialraw" class="copy-log-btn clear-log-btn" onclick="clearSerialRawLog()" title="清除所有 SerialRAW 文字" aria-label="清除所有 SerialRAW 文字">🗑 清除</button>
+                <label class="timestamp-toggle" title="像 Arduino Serial Monitor 一樣在每筆資料前加入時間籤">
+                    <input id="chk-timestamp" type="checkbox">
+                    時間籤
+                </label>
+            </div>
+            <div id="serialraw-list" class="serial-log-box"><span class="placeholder">等待 SerialRAW 資料...</span></div>
+        </div>
+    </div>
+
+<script>
+    // ============================================================
+    // 🎨 Canvas 儀表板繪圖
+    // ============================================================
+    function drawGauge(canvasId, value, min, max, unit, color, decimals) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 + 15;
+        const radius = 75;
+
+        // 背景圓弧軌道
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 8;
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // 動態進度軌道
+        const safeValue = Number.isFinite(value) ? value : 0;
+        const clampedVal = Math.min(Math.max(safeValue, min), max);
+        const valPercent = (clampedVal - min) / (max - min);
+        const endAngle = 0.75 * Math.PI + valPercent * (1.5 * Math.PI);
+
+        if (valPercent > 0) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 8;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+
+        // 刻度與標籤
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#475569";
+        ctx.font = "10px sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (let i = 0; i <= 5; i++) {
+            const p = i / 5;
+            const angle = 0.75 * Math.PI + p * (1.5 * Math.PI);
+
+            const x1 = cx + (radius - 4) * Math.cos(angle);
+            const y1 = cy + (radius - 4) * Math.sin(angle);
+            const x2 = cx + (radius + 4) * Math.cos(angle);
+            const y2 = cy + (radius + 4) * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            const tx = cx + (radius - 16) * Math.cos(angle);
+            const ty = cy + (radius - 16) * Math.sin(angle);
+            const lblVal = min + p * (max - min);
+            ctx.fillText(lblVal.toFixed(0), tx, ty);
+        }
+
+        // 指針
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(endAngle - 1.5 * Math.PI);
+        ctx.beginPath();
+        ctx.moveTo(0, 8);
+        ctx.lineTo(3, 0);
+        ctx.lineTo(0, -radius + 10);
+        ctx.lineTo(-3, 0);
+        ctx.closePath();
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fill();
+        ctx.restore();
+
+        // 中心圓鈕
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#64748b";
+        ctx.fill();
+
+        // 數位顯示
+        ctx.font = "bold 22px monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(safeValue.toFixed(decimals) + unit, cx, cy + radius - 45);
+    }
+
+    function initAllGauges() {
+        drawGauge("canvas-weight", 0.0, 0, 300, " g", "#818cf8", 1);
+        drawGauge("canvas-medication", 0.00, 0, 20, " g", "#ef4444", 2);
+        drawGauge("canvas-water", 0.0, 0, 500, " cc", "#22d3ee", 1);
+    }
+
+    initAllGauges();
+
+    // ============================================================
+    // ✅ SerialRAW Text List
+    // ============================================================
+    const MAX_LOG_LINES = 200;
+    const serialRawLines = [];
+
+    function getTimestampText() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        const ss = String(now.getSeconds()).padStart(2, "0");
+        const ms = String(now.getMilliseconds()).padStart(3, "0");
+        return `${hh}:${mm}:${ss}.${ms}`;
+    }
+
+    function cleanSerialRawLine(line) {
+        const text = String(line || "").trim();
+        if (!text) return "";
+        return text;
+    }
+
+    function appendSerialRawLine(text) {
+        const box = document.getElementById("serialraw-list");
+        if (!box) return;
+
+        const line = String(text || "").trim();
+        if (!line) return;
+
+        const incomingLines = line.split(/\r?\n/).map(cleanSerialRawLine).filter(Boolean);
+        if (incomingLines.length === 0) return;
+
+        const timestampEnabled = document.getElementById("chk-timestamp")?.checked === true;
+
+        for (const cleanLine of incomingLines) {
+            const finalLine = timestampEnabled ? `[${getTimestampText()}] ${cleanLine}` : cleanLine;
+
+            if (serialRawLines[serialRawLines.length - 1] !== finalLine) {
+                serialRawLines.push(finalLine);
+            }
+        }
+
+        while (serialRawLines.length > MAX_LOG_LINES) {
+            serialRawLines.shift();
+        }
+
+        box.textContent = serialRawLines.join("\n");
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // ============================================================
+    // ✅ 複製完整 SerialRAW Text List 到剪貼簿
+    // ============================================================
+    async function copySerialRawLog() {
+        const copyBtn = document.getElementById("btn-copy-serialraw");
+        const text = serialRawLines.join("\n");
+
+        if (!text.trim()) {
+            if (copyBtn) {
+                const oldText = copyBtn.textContent;
+                copyBtn.textContent = "無資料";
+                setTimeout(() => { copyBtn.textContent = oldText; }, 900);
+            }
+            return;
+        }
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.setAttribute("readonly", "readonly");
+                tempTextArea.style.position = "fixed";
+                tempTextArea.style.left = "-9999px";
+                tempTextArea.style.top = "0";
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempTextArea);
+            }
+
+            if (copyBtn) {
+                copyBtn.classList.add("copied");
+                copyBtn.textContent = "✓";
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                    copyBtn.textContent = "📋 複製";
+                }, 1200);
+            }
+        } catch (error) {
+            console.error("複製 SerialRAW 失敗：", error);
+            alert("複製失敗，請手動選取 SerialRAW 文字複製。");
+        }
+    }
+
+    // ============================================================
+    // ✅ 清除所有 SerialRAW 文字列
+    // ============================================================
+    function clearSerialRawLog() {
+        const box = document.getElementById("serialraw-list");
+        const clearBtn = document.getElementById("btn-clear-serialraw");
+
+        serialRawLines.length = 0;
+
+        if (box) {
+            box.innerHTML = '<span class="placeholder">等待 SerialRAW 資料...</span>';
+            box.scrollTop = 0;
+        }
+
+        if (clearBtn) {
+            clearBtn.classList.add("cleared");
+            clearBtn.textContent = "✓ 已清除";
+            setTimeout(() => {
+                clearBtn.classList.remove("cleared");
+                clearBtn.textContent = "🗑 清除";
+            }, 1000);
+        }
+    }
+
+    // ============================================================
+    // ✅ RAW 即時值：只抓 RAW = 後面的數字
+    // ============================================================
+    function updateRawNumber(message) {
+        const rawBox = document.getElementById("display-raw-number");
+        if (!rawBox) return;
+
+        const text = String(message || "");
+        const match = text.match(/RAW\s*=\s*(-?\d+)/i);
+        const onlyNumber = text.trim().match(/^-?\d+$/);
+
+        if (match) {
+            rawBox.textContent = match[1];
+        } else if (onlyNumber) {
+            rawBox.textContent = onlyNumber[0];
+        } else {
+            rawBox.textContent = "--";
+        }
+    }
+
+    // ============================================================
+    // ✅ 使用者易讀版系統通知
+    // ============================================================
+    function getDebugValue(message, key) {
+        const safeKey = String(key).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const reg = new RegExp("(?:^|\\|)" + safeKey + "=([^|]+)", "i");
+        const match = String(message || "").match(reg);
+        return match ? match[1].trim() : "";
+    }
+
+    function formatNumber(value, digits = 2) {
+        const num = parseFloat(value);
+        if (!Number.isFinite(num)) return "--";
+        return num.toFixed(digits);
+    }
+
+    // ✅ 已修正：應用戶要求，完全不回傳底層工程資訊摘要（RAW、Mode 等）
+    function buildEngineerInfo(message) {
+        return "";
+    }
+
+    function convertSystemMessage(message) {
+        const text = String(message || "").trim();
+
+        if (!text) {
+            return { level: "info", text: "等待設備通報..." };
+        }
+
+        const engineerInfo = buildEngineerInfo(text);
+        const reason = getDebugValue(text, "Reason");
+        const consumed = getDebugValue(text, "Consumed");
+        const rawDiff = getDebugValue(text, "RawDiff");
+        const mode = getDebugValue(text, "Mode");
+
+        // ✅ 感測器 RAW 單筆暴衝
+        if (reason === "BlockedRawSpike" || text.includes("Reason=BlockedRawSpike")) {
+            const diffText = rawDiff ? `\n異常差值：${rawDiff}` : "";
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到感測器瞬間讀值異常\n系統已自動忽略本次資料，不會誤判吃藥或飲水。${diffText}${engineerInfo}`
+            };
+        }
+
+        // ✅ 藥盒碰撞 / 被壓到 / 暫放物品。
+        if (["BoxImpactLock", "BlockedBoxIncrease", "ImpactCooling", "BlockedPickupDuringImpact", "BlockedMedDuringImpact"].includes(reason)) {
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到藥盒可能被碰撞或短暫壓到\n系統已暫停本次結算，避免誤判為吃藥。${engineerInfo}`
+            };
+        }
+
+        if (reason === "ImpactReleased") {
+            return {
+                level: "ok",
+                text: `✅ 藥盒重量已回到穩定範圍\n系統恢復正常監測。${engineerInfo}`
+            };
+        }
+
+        if (reason === "ImpactTimeoutBaseReset") {
+            return {
+                level: "info",
+                text: `ℹ️ 藥盒狀態已重新穩定\n系統已重新建立目前基準重量。${engineerInfo}`
+            };
+        }
+
+        // ✅ 吃藥事件（強化判斷：相容 Reason=MedicationTaken 或 包含舊版繁中）
+        if (reason === "MedicationTaken" || text.includes("Reason=MedicationTaken") || text.includes("偵測服用藥物")) {
+            let amount = consumed && parseFloat(consumed) > 0 ? formatNumber(consumed, 2) : "--";
+            if (amount === "--" && window.lastMedicationValue > 0) {
+                amount = formatNumber(window.lastMedicationValue, 2);
+            }
+            return {
+                level: "ok",
+                text: `💊 已偵測到服藥\n本次藥盒重量減少：約 ${amount} g${engineerInfo}`
+            };
+        }
+
+        // ✅ 飲水事件（強化判斷：相容 Reason=WaterTaken 或 包含舊版繁中）
+        if (reason === "WaterTaken" || text.includes("Reason=WaterTaken") || text.includes("偵測到飲水")) {
+            let amount = consumed && parseFloat(consumed) > 0 ? formatNumber(consumed, 1) : "--";
+            if (amount === "--" && window.lastWaterValue > 0) {
+                amount = formatNumber(window.lastWaterValue, 1);
+            }
+            return {
+                level: "ok",
+                text: `💧 已偵測到飲水\n本次飲水量：約 ${amount} cc${engineerInfo}`
+            };
+        }
+
+        // ✅ 正常監測與基準微調。
+        if (["NaturalDrift", "SmallDropBaseAdjust", "SmallIncreaseBaseAdjust", "Loop"].includes(reason) || (!text.includes("Reason=") && text.includes("Weight ="))) {
+            // 包含舊版與新版 FORCE_CUP 檢索
+            const isCup = mode === "CUP" || text.toUpperCase().includes("CUP");
+            const modeText = isCup ? "水杯" : "藥盒";
+            return {
+                level: "ok",
+                text: `✅ 系統正常監測中\n目前模式：${modeText}${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedDropWithoutPickup") {
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到重量下降，但尚未確認藥盒被拿起\n系統已暫不記錄吃藥，避免誤判。${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedEmptyScale" || reason === "BoxRemoved" || text.includes("藥盒已拿離")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到藥盒已離開秤面\n系統暫時保持藥盒模式，不進行吃藥結算。${engineerInfo}`
+            };
+        }
+
+        if (reason === "CupRemoved" || text.includes("水杯已拿離")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到水杯已離開秤面\n系統暫時保持水杯模式。${engineerInfo}`
+            };
+        }
+
+        if (reason === "Tare" || text.includes("去皮完成")) {
+            return { level: "ok", text: `✅ 去皮歸零完成\n系統已重新設定目前重量為基準。${engineerInfo}` };
+        }
+
+        if (reason === "Clear" || text.includes("紀錄清零")) {
+            return { level: "ok", text: `✅ 紀錄已清零\n吃藥與飲水資料已重新開始計算。${engineerInfo}` };
+        }
+
+        if (reason === "ModeToCup") {
+            return { level: "info", text: `💧 已切換為水杯模式\n系統將以飲水量判斷為主。${engineerInfo}` };
+        }
+
+        if (reason === "ModeToBox") {
+            return { level: "info", text: `💊 已切換為藥盒模式\n系統將以取藥與服藥判斷為主。${engineerInfo}` };
+        }
+
+        if (!text.includes("Reason=") && !text.startsWith("DBG|")) {
+            return { level: "info", text };
+        }
+
+        return {
+            level: "info",
+            text: `ℹ️ 系統正在監測中${engineerInfo}`
+        };
+    }
+
+    function updateSystemNotice(message) {
+        const msgBox = document.getElementById("display-msg");
+        if (!msgBox) return;
+
+        const converted = convertSystemMessage(message);
+        msgBox.classList.remove("notice-ok", "notice-info", "notice-warn", "notice-error");
+        msgBox.classList.add(`notice-${converted.level || "info"}`);
+        msgBox.innerText = converted.text || "等待設備通報...";
+    }
+
+    // ============================================================
+    // ✅ 目前模式 UI 顯示
+    // ============================================================
+    function updateDeviceMode(modeText) {
+        const mode = String(modeText || "").trim().toUpperCase();
+        const card = document.getElementById("device-mode-card");
+        const title = document.getElementById("device-mode-title");
+        const icon = document.getElementById("device-mode-icon");
+        const desc = document.getElementById("device-mode-desc");
+        const chipBox = document.getElementById("chip-box");
+        const chipCup = document.getElementById("chip-cup");
+
+        if (!card || !title || !icon || !desc || !chipBox || !chipCup) return;
+
+        card.classList.remove("mode-box", "mode-cup", "mode-unknown");
+        chipBox.classList.remove("active-box");
+        chipCup.classList.remove("active-cup");
+
+        // 🧠 核心修正點：利用 includes 包含特定子字串，完美包容 FORCE_BOX 或 FORCE_CUP
+        if (mode.includes("BOX") || mode.includes("藥盒")) {
+            card.classList.add("mode-box");
+            chipBox.classList.add("active-box");
+            title.textContent = mode.includes("FORCE") ? "強制藥盒模式" : "藥盒模式";
+            icon.textContent = "💊";
+            desc.textContent = "目前以藥盒重量為主，適合判斷是否取藥、補藥與微幅漂移。";
+        } else if (mode.includes("CUP") || mode.includes("WATER") || mode.includes("水杯")) {
+            card.classList.add("mode-cup");
+            chipCup.classList.add("active-cup");
+            title.textContent = mode.includes("FORCE") ? "強制水杯模式" : "水杯模式";
+            icon.textContent = "💧";
+            desc.textContent = "目前以水杯容量為主，適合判斷飲水量與喝水事件。";
+        } else if (mode === "EMPTY") {
+            card.classList.add("mode-unknown");
+            title.textContent = "空秤待機";
+            icon.textContent = "⚪";
+            desc.textContent = "目前秤面沒有放置藥盒 or 水杯，等待放置裝置。";
+        } else {
+            card.classList.add("mode-unknown");
+            title.textContent = "等待判斷";
+            icon.textContent = "🧠";
+            desc.textContent = "正在等待裝置回報 FSM State。";
+        }
+    }
+
+    function updateDeviceModeFromText(text) {
+        const message = String(text || "");
+
+        // 1. 優先攔截 FSM 狀態資訊
+        const stateMatch = message.match(/\[State:\s*([A-Z_]+)\]/i);
+        if (stateMatch) {
+            const state = stateMatch[1].toUpperCase();
+            if (state.startsWith("BOX_")) { updateDeviceMode("BOX"); return; }
+            if (state.startsWith("CUP_")) { updateDeviceMode("CUP"); return; }
+            if (state === "EMPTY_IDLE") { updateDeviceMode("EMPTY"); return; }
+        }
+
+        // 2. 🧠 核心修正點：擴展中括號配對規則，允許提取包含底線的單字 (例如 FORCE_CUP)
+        const bracketMatch = message.match(/\[\s*Mode\s*:\s*([A-Z_0-9\u4e00-\u9fa5]+)\s*\]/i);
+        if (bracketMatch) {
+            updateDeviceMode(bracketMatch[1]);
+            return;
+        }
+
+        // 3. 擴展 Debug 形式的配對
+        const debugMatch = message.match(/(?:^|\|)Mode\s*=\s*([A-Z_0-9\u4e00-\u9fa5]+)(?:\||$)/i);
+        if (debugMatch) {
+            updateDeviceMode(debugMatch[1]);
+            return;
+        }
+    }
+
+    updateDeviceMode("");
+
+    // ============================================================
+    // ✅ MQTT 連線
+    // ============================================================
+    const brokerUrl = "wss://MQTTGO.io:8084/mqtt";
+    const cmdTopic = "esp32/cmd";
+    const clientIdBase = "pure_canvas_panel_" + Math.random().toString(16).substr(2, 8);
+
+    let client = null;
+    let mqttPaused = false;
+    let reconnectCount = 0;
+
+    window.lastMedicationValue = 0;
+    window.lastWaterValue = 0;
+
+    const badge = document.getElementById("status-badge");
+    const tareBtn = document.getElementById("btn-tare");
+    const clearBtn = document.getElementById("btn-clear");
+    const pauseBtn = document.getElementById("btn-pause-mqtt");
+
+    function subscribeTopics() {
+        if (!client || !client.connected) return;
+        client.subscribe("esp32/msg");
+        client.subscribe("esp32/weight");
+        client.subscribe("esp32/medication/taken");
+        client.subscribe("esp32/water/taken");
+        client.subscribe("esp32/raw");
+        client.subscribe("esp/msg/seialraw");
+        client.subscribe("esp32/mode");
+    }
+
+    function setConnectedUI() {
+        badge.innerText = "連線狀態：已連線至 MQTTGO";
+        badge.className = "status-badge state-ok";
+        tareBtn.disabled = false;
+        clearBtn.disabled = false;
+        pauseBtn.disabled = false;
+        pauseBtn.innerText = "⏸ 暫停 MQTT";
+        pauseBtn.className = "action-btn btn-orange";
+    }
+
+    function setDisconnectedUI(text) {
+        badge.innerText = text || "連線狀態：中斷連線";
+        badge.className = "status-badge state-no";
+        tareBtn.disabled = true;
+        clearBtn.disabled = true;
+        pauseBtn.disabled = false;
+    }
+
+    function setPausedUI() {
+        badge.innerText = "連線狀態：MQTT 已暫停";
+        badge.className = "status-badge state-pause";
+        tareBtn.disabled = true;
+        clearBtn.disabled = true;
+        pauseBtn.disabled = false;
+        pauseBtn.innerText = "▶ 恢復 MQTT";
+        pauseBtn.className = "action-btn btn-orange";
+    }
+
+    function handleMqttMessage(topic, payload) {
+        if (mqttPaused) return;
+
+        const message = new TextDecoder().decode(payload);
+        updateDeviceModeFromText(message);
+
+        if (topic === "esp32/weight") {
+            const val = parseFloat(message) || 0;
+            drawGauge("canvas-weight", val, 0, 300, " g", "#818cf8", 1);
+        }
+        else if (topic === "esp32/medication/taken") {
+            const val = parseFloat(message) || 0;
+            window.lastMedicationValue = val;
+            drawGauge("canvas-medication", val, 0, 20, " g", "#ef4444", 2);
+            
+            const msgBox = document.getElementById("display-msg");
+            if (msgBox && msgBox.innerText.includes("約 -- g")) {
+                msgBox.innerText = msgBox.innerText.replace("約 -- g", `約 ${val.toFixed(2)} g`);
+            }
+        }
+        else if (topic === "esp32/water/taken") {
+            const val = parseFloat(message) || 0;
+            window.lastWaterValue = val;
+            drawGauge("canvas-water", val, 0, 500, " cc", "#22d3ee", 1);
+            
+            const msgBox = document.getElementById("display-msg");
+            if (msgBox && msgBox.innerText.includes("約 -- cc")) {
+                msgBox.innerText = msgBox.innerText.replace("約 -- cc", `約 ${val.toFixed(1)} cc`);
+            }
+        }
+        else if (topic === "esp32/msg") {
+            updateSystemNotice(message);
+        }
+        else if (topic === "esp32/raw") {
+            updateRawNumber(message);
+        }
+        else if (topic === "esp/msg/seialraw") {
+            appendSerialRawLine(message);
+        }
+        else if (topic === "esp32/mode") {
+            updateDeviceMode(message);
+        }
+    }
+
+    function registerMqttEvents() {
+        if (!client) return;
+
+        client.on("connect", () => {
+            console.log("MQTT 連線成功！");
+            reconnectCount = 0;
+            if (!mqttPaused) {
+                setConnectedUI();
+                subscribeTopics();
+            }
+        });
+
+        client.on("reconnect", () => {
+            reconnectCount += 1;
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：重新連線中"); }
+        });
+
+        client.on("close", () => {
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：中斷連線"); }
+        });
+
+        client.on("offline", () => {
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：離線"); }
+        });
+
+        client.on("error", (error) => {
+            console.error("MQTT 錯誤：", error);
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：MQTT 錯誤"); }
+        });
+
+        client.on("message", handleMqttMessage);
+    }
+
+    function connectMqtt() {
+        const clientId = clientIdBase + "_" + Date.now();
+        client = mqtt.connect(brokerUrl, {
+            clientId: clientId,
+            clean: true,
+            reconnectPeriod: 1000
+        });
+        registerMqttEvents();
+    }
+
+    function toggleMqttPause() {
+        if (!mqttPaused) {
+            mqttPaused = true;
+            if (client) {
+                try { client.end(true); } catch (error) { console.error(error); }
+            }
+            setPausedUI();
+        } else {
+            mqttPaused = false;
+            setDisconnectedUI("連線狀態：重新連線中");
+            pauseBtn.innerText = "⏸ 暫停 MQTT";
+            connectMqtt();
+        }
+    }
+
+    connectMqtt();
+
+    function sendCmd(cmd) {
+        if (client && client.connected && !mqttPaused) {
+            client.publish(cmdTopic, cmd, { qos: 0, retain: false }, (err) => {
+                if (err) { alert("控制指令傳送失敗: " + err); }
+            });
+        }
+    }
+
+    function sendCustomMQTT() {
+        if (!client || !client.connected) {
+            alert("MQTT 尚未連線");
+            return;
+        }
+        const topic = document.getElementById("mqtt-topic").value.trim();
+        const payload = document.getElementById("mqtt-payload").value.trim();
+        if (topic === "") {
+            alert("請輸入 Topic");
+            return;
+        }
+        client.publish(topic, payload, {qos:0, retain:false}, function(err){
+            if(err){
+                alert("發送失敗");
+            }else{
+                appendSerialRawLine("[Manual MQTT] Topic=" + topic + " Payload=" + payload);
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+        const p = document.getElementById("mqtt-payload");
+        if(p){
+            p.addEventListener("keydown", function(e){
+                if(e.key === "Enter"){ sendCustomMQTT(); }
+            });
+        }
+    });
+</script>
+</body>
+</html>

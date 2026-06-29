@@ -1,3 +1,14 @@
+/*
+https://chatgpt.com/share/6a4268a4-9a08-83e8-9157-0fb57d683ef9
+不算完全對，主架構對了，但 AUTO_BOX → 放上 236g 水杯這段有漏洞。你的 Log 顯示：藥盒拿離後，放上 236.5g 物品，程式先用「藥盒模式」做結算，才切成水杯模式，所以才出現「放回後重量無顯著減少」再切水杯。HX711 / MQTT / Preferences 用法本身方向可行；HX711 是讀取荷重元 ADC，PubSubClient 是 MQTT 收發，Preferences 是 ESP32 NVS 儲存。 
+
+你現在最大的 3 個問題是：
+
+1. 模式切換太晚：is_cup_mode = weight >= 40 放在穩定後，而且在 box_was_picked_up 結算流程之後才生效。
+2. 放回不同設備沒有攔截：藥盒拿起後，如果放回來的是 236g 水杯，應該判定「設備更換」，不是藥盒放回。
+3. 動態加速後 weight 沒重新同步：你把 avgBuffer 填成新值，但 weight 變數還是舊平均值，所以 Log 才會從 3.92、36.64、64.60 慢慢爬到 236g。
+*/
+
 //====================================================
 // 2026 最新終極修正版：封鎖輕水杯/保特瓶喝空誤觸藥盒漏洞（FSM 手動強制切換強化版）
 //====================================================
@@ -52,7 +63,7 @@ enum FsmMode {
 FsmMode currentFsmMode = FSM_MODE_AUTO;
 
 //====================================================
-// NVS 記憶體快取
+// NVS 記憶體快取ƒ
 //====================================================
 Preferences preferences;
 
@@ -414,13 +425,20 @@ void loop()
         is_initialized = true;
     }
 
-    // ✨【動態加速濾波】
-    if (abs(weight - last_loop_weight) > 15.0) {
-        for(int i = 0; i < AVG_SIZE; i++) avgBuffer[i] = weight;
-        avgReady = true;
-        logPrint("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
+// ✨【動態加速濾波】**
+// 若重量瞬間變動超過 15g，代表物體被拿起或放下。
+// 這裡不只同步 avgBuffer，也要把本輪 weight 立即改成新值，避免畫面慢慢爬升。
+if (abs(weight - last_loop_weight) > 15.0) {
+    for(int i = 0; i < AVG_SIZE; i++) {
+        avgBuffer[i] = weight;
     }
+    avgReady = true;
 
+    // 🔥 新增：本輪重量立即同步，不再等移動平均慢慢追
+    last_loop_weight = weight;
+
+    logPrint("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
+}
     // 建立動態模式標籤文字
     String modeStr = "BOX";
     if (currentFsmMode == FSM_MODE_FORCE_CUP) modeStr = "FORCE_CUP";
@@ -528,6 +546,27 @@ void loop()
             } 
             else {
                 // =================【藥盒模式結算】=================
+
+                // 🛡️【設備更換攔截】**
+                // 原本是藥盒拿起，但放回來重量已超過水杯門檻，代表使用者把水杯放上秤。
+                // 這不是吃藥結算，必須清掉藥盒拿起狀態，並切到水杯模式。
+                if (currentFsmMode == FSM_MODE_AUTO &&
+                    box_was_picked_up &&
+                    weight >= MODE_CUP_THRESHOLD) {
+
+                    is_cup_mode = true;
+                    box_was_picked_up = false;
+                    cup_was_picked_up = false;
+                    weight_before_pickup = 0.0;
+                    last_reported_weight = weight;
+
+                    logPrint("🔄【設備更換】藥盒拿離後偵測到水杯重量，取消藥盒結算並切換至水杯模式。");
+
+                    // 直接結束這次穩定結算，避免繼續跑藥盒判斷
+                    last_loop_weight = weight;
+                    return;
+                }
+
                 if (box_was_picked_up && weight_before_pickup > EMPTY_LIMIT) {
                     
                     float test_consumed = weight_before_pickup - weight;
@@ -580,26 +619,39 @@ void loop()
     // ====================================================
     if(mqttClient.connected())
     {
-        char rawText[20]; sprintf(rawText, "%ld", raw);
-        mqttClient.publish(TOPIC_RAW, rawText, true);
-
-        float display_weight = weight;
+    float display_weight = weight;
+        
         if (enBeautiful) {
-            if (display_weight <= EMPTY_LIMIT) {
+            // 情境 A：藥盒已被拿走 (小於空秤閥值)
+            if (weight <= EMPTY_LIMIT) {
+                // 網頁顯示拿起前的重量，讓使用者知道原本有多重
                 display_weight = (weight_before_pickup > EMPTY_LIMIT) ? weight_before_pickup : last_reported_weight;
-            }
-            if (abs(display_weight) < DISPLAY_DEADBAND || (display_weight <= EMPTY_LIMIT && last_reported_weight <= EMPTY_LIMIT)) {
+                
+                // 如果連原本重量都很輕，或者判定是要完全歸零，再強制作為 0
+                if (weight_before_pickup <= EMPTY_LIMIT && last_reported_weight <= EMPTY_LIMIT) {
+                    display_weight = 0.00;
+                }
+            } 
+            // 情境 B：藥盒還在，但只是小幅度的數位雜訊飄移
+            else if (abs(display_weight) < DISPLAY_DEADBAND) {
                 display_weight = 0.00;
             }
         } 
         else {
+            // 未開啟美化，僅過濾極小死區
             if (abs(display_weight) < DISPLAY_DEADBAND) display_weight = 0.00;
         }
+
+        // 發佈數據
         char weightText[20]; dtostrf(display_weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
 
+        // 👇發佈數據: 包含所有 Serial 文字與數據的終極追 Log 主題
         mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true); 
-        mqttClient.publish(TOPIC_MSG, webMsgLine.c_str(), true); 
+        mqttClient.publish(TOPIC_MSG, webMsgLine.c_str(), true);
+
+        // 【記得在發佈後更新最後回報值】
+        last_reported_weight = display_weight;
     }
 
     delay(150); 
