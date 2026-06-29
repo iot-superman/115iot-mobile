@@ -1,5 +1,5 @@
 //====================================================
-// 2026 最新終極修正版：封鎖輕水杯/保特瓶喝空誤觸藥盒漏洞（Log 串流同步強化版）
+// 2026 最新終極修正版：封鎖輕水杯/保特瓶喝空誤觸藥盒漏洞（FSM 手動強制切換強化版）
 //====================================================
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -40,6 +40,16 @@ const int   STABLE_THRESHOLD = 12;     // 靜態判定連續次數（約 1.8 秒
 
 // ✨【網頁數據美化獨立功能開關】
 const bool enBeautiful = false;
+
+//====================================================
+// 🚀 FSM 狀態定義與變數
+//====================================================
+enum FsmMode {
+    FSM_MODE_AUTO = 0,
+    FSM_MODE_FORCE_CUP = 1,
+    FSM_MODE_FORCE_BOX = 2
+};
+FsmMode currentFsmMode = FSM_MODE_AUTO;
 
 //====================================================
 // NVS 記憶體快取
@@ -166,7 +176,12 @@ void executeTare()
         weight_before_pickup = 0.0;
         box_was_picked_up = false;
         cup_was_picked_up = false;
-        is_cup_mode = (current_w >= MODE_CUP_THRESHOLD);
+        
+        // 根據 FSM 模式初始化 cup 模式
+        if (currentFsmMode == FSM_MODE_FORCE_CUP) is_cup_mode = true;
+        else if (currentFsmMode == FSM_MODE_FORCE_BOX) is_cup_mode = false;
+        else is_cup_mode = (current_w >= MODE_CUP_THRESHOLD);
+
         is_initialized = true;
         appPrint("去皮完成，目前基準重: " + String(current_w, 2) + "g");
     }
@@ -188,20 +203,6 @@ void executeClear()
     }
 }
 
-void loadWiFiFromNVS()
-{
-    preferences.begin("wifi", false);
-    currentSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);
-    currentPassword = preferences.getString("pwd", DEFAULT_WIFI_PASSWORD);
-}
-
-void saveWiFiToNVS()
-{
-    preferences.putString("ssid", currentSSID);
-    preferences.putString("pwd", currentPassword);
-    appPrint("WiFi 設定已成功儲存至 NVS。");
-}
-
 void handleCommand(String input)
 {
     input.trim();
@@ -219,6 +220,33 @@ void handleCommand(String input)
         return;
     }
 
+    // ✨【全新支援手動強制切換指令】
+    if(input == "forcecup")
+    {
+        currentFsmMode = FSM_MODE_FORCE_CUP;
+        is_cup_mode = true;
+        appPrint("📢【FSM手動切換】指令成功！強制切換至: FSM=CUP (水杯模式已鎖定)");
+        return;
+    }
+
+    if(input == "forcebox")
+    {
+        currentFsmMode = FSM_MODE_FORCE_BOX;
+        is_cup_mode = false;
+        appPrint("📢【FSM手動切換】指令成功！強制切換至: FSM=BOX (藥盒模式已鎖定)");
+        return;
+    }
+
+    if(input == "auto")
+    {
+        currentFsmMode = FSM_MODE_AUTO;
+        float current_w = scale.is_ready() ? scale.get_units(1) : 0.0;
+        is_cup_mode = (current_w >= MODE_CUP_THRESHOLD);
+        appPrint("📢【FSM手動切換】指令成功！FSM恢復 AUTO 自動識別 (目前依重量判定為: " + String(is_cup_mode ? "CUP" : "BOX") + ")");
+        return;
+    }
+
+    // 處理 WiFi SSID:Password
     int colonIndex = input.indexOf(':');
     if(colonIndex <= 0) return;
 
@@ -230,6 +258,20 @@ void handleCommand(String input)
     if(mqttClient.connected()) mqttClient.disconnect();
     WiFi.disconnect(true);
     WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
+}
+
+void loadWiFiFromNVS()
+{
+    preferences.begin("wifi", false);
+    currentSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);
+    currentPassword = preferences.getString("pwd", DEFAULT_WIFI_PASSWORD);
+}
+
+void saveWiFiToNVS()
+{
+    preferences.putString("ssid", currentSSID);
+    preferences.putString("pwd", currentPassword);
+    appPrint("WiFi 設定已成功儲存至 NVS。");
 }
 
 class MyServerCallbacks : public BLEServerCallbacks {
@@ -366,7 +408,9 @@ void loop()
     if (!is_initialized) {
         last_reported_weight = weight;
         last_loop_weight = weight;
-        is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
+        if (currentFsmMode == FSM_MODE_FORCE_CUP) is_cup_mode = true;
+        else if (currentFsmMode == FSM_MODE_FORCE_BOX) is_cup_mode = false;
+        else is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
         is_initialized = true;
     }
 
@@ -377,13 +421,19 @@ void loop()
         logPrint("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
     }
 
+    // 建立動態模式標籤文字
+    String modeStr = "BOX";
+    if (currentFsmMode == FSM_MODE_FORCE_CUP) modeStr = "FORCE_CUP";
+    else if (currentFsmMode == FSM_MODE_FORCE_BOX) modeStr = "FORCE_BOX";
+    else modeStr = is_cup_mode ? "AUTO_CUP" : "AUTO_BOX";
+
     // 1. 建立標準每輪狀態字串（常態純數據行）
     String fullSerialLine = "RAW = " + String(raw) + 
                             "    Weight = " + String(weight, 2) + 
                             " g    [Base: " + String(last_reported_weight, 2) + 
-                            " g]   [Mode: " + String(is_cup_mode ? "CUP" : "BOX") + "]";
+                            " g]   [Mode: " + modeStr + "]";
 
-    // 2. 複製一份給網頁通知端，稍後若觸發結算會自動在此行屁股用單個 | 黏接數據
+    // 2. 複製一份給網頁通知端
     String webMsgLine = fullSerialLine;
 
     // 印出即時狀態到物理 Serial 埠
@@ -438,7 +488,8 @@ void loop()
         } 
         else {
             // 2. 有東西在秤上且完全穩定
-            if (!cup_was_picked_up && !box_was_picked_up) {
+            // ✨【修正防覆寫】：只有在 AUTO 模式下，才允許動態透過重量改變 is_cup_mode
+            if (!cup_was_picked_up && !box_was_picked_up && currentFsmMode == FSM_MODE_AUTO) {
                 bool previous_mode = is_cup_mode;
                 is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
                 
@@ -450,7 +501,7 @@ void loop()
             if (is_cup_mode) {
                 // =================【水杯模式結算】=================
                 float consumed = 0.0;
-                if (cup_was_picked_up && weight_before_pickup >= MODE_CUP_THRESHOLD) {
+                if (cup_was_picked_up && weight_before_pickup >= (currentFsmMode == FSM_MODE_FORCE_CUP ? 0.0 : MODE_CUP_THRESHOLD)) {
                     consumed = weight_before_pickup - weight;
                 } else {
                     consumed = last_reported_weight - weight;
@@ -458,7 +509,6 @@ void loop()
 
                 if (cup_was_picked_up) {
                     if (consumed >= WAT_THRESHOLD) {
-                        // ✨ 升級：在 webMsgLine 屁股用單個 | 黏接網頁通知必備的 Reason 與 Consumed 標籤
                         webMsgLine += "|Reason=WaterTaken|Consumed=" + String(consumed, 1) + "|Mode=CUP|RAW=" + String(raw);
 
                         appPrint("【智慧紀錄】偵測到飲水！單次減少: " + String(consumed, 2) + " cc");
@@ -490,7 +540,6 @@ void loop()
                         float consumed = weight_before_pickup - weight;
 
                         if (consumed >= MED_THRESHOLD) {
-                            // ✨ 升級：在 webMsgLine 屁股用單個 | 黏接網頁通知必備的 Reason 與 Consumed 標籤
                             webMsgLine += "|Reason=MedicationTaken|Consumed=" + String(consumed, 2) + "|Mode=BOX|RAW=" + String(raw);
 
                             appPrint("【智慧紀錄】偵測服用藥物！單次減少: " + String(consumed, 2) + " g");
@@ -531,11 +580,9 @@ void loop()
     // ====================================================
     if(mqttClient.connected())
     {
-        // 1. 發送常態 RAW 點位數字
         char rawText[20]; sprintf(rawText, "%ld", raw);
         mqttClient.publish(TOPIC_RAW, rawText, true);
 
-        // 2. 處理儀表板美化重量
         float display_weight = weight;
         if (enBeautiful) {
             if (display_weight <= EMPTY_LIMIT) {
@@ -551,11 +598,7 @@ void loop()
         char weightText[20]; dtostrf(display_weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
 
-        // 3. 🎯【分流發佈關鍵強化】
-        // 下方大框框專用：維持最純淨、無雜質的數據行，完全不抖動
         mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true); 
-        
-        // 上方狀態通知專用：發布帶有單個 | 與 Reason/Consumed 的複合行，相容舊有翻譯引擎
         mqttClient.publish(TOPIC_MSG, webMsgLine.c_str(), true); 
     }
 
