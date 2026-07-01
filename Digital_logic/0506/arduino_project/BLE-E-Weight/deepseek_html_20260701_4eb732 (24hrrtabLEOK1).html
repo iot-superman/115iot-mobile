@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>智慧健康照護終端面板 - 易讀通知</title>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-line: #334155;
+            --box-bg: #111827;
+            --box-line: #475569;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --primary: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --cyan: #38bdf8;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: calc(14px + env(safe-area-inset-top, 0px)) 24px calc(14px + env(safe-area-inset-bottom, 0px));
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            margin: 0 0 3px 0;
+            font-size: 20px;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            margin-bottom: 10px;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .panel-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .dash-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .gauge-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 7px 18px rgba(0,0,0,0.34);
+            border: 1px solid var(--card-line);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 0;
+            min-width: 180px;
+            max-width: 290px;
+        }
+
+        .gauge-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        canvas {
+            background: transparent;
+            display: block;
+            width: 150px;
+            height: 112px;
+            max-width: 100%;
+        }
+
+        .controls-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 7px 18px rgba(0,0,0,0.34);
+            border: 1px solid var(--card-line);
+            flex: 1;
+            min-width: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .display-box {
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+            margin: 4px 0 8px 0;
+            background: rgba(0,0,0,0.25);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--box-line);
+            min-height: 20px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .display-box.notice-ok {
+            color: #bbf7d0;
+            background: rgba(16, 185, 129, 0.13);
+            border-color: rgba(16, 185, 129, 0.72);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+        }
+
+        .display-box.notice-info {
+            color: #bae6fd;
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.68);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
+        }
+
+        .display-box.notice-warn {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.14);
+            border-color: rgba(245, 158, 11, 0.75);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
+        }
+
+        .display-box.notice-error {
+            color: #fecaca;
+            background: rgba(239, 68, 68, 0.14);
+            border-color: rgba(239, 68, 68, 0.75);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        .raw-number-box {
+            font-family: "Courier New", Consolas, monospace;
+            color: var(--cyan);
+            font-size: 18px;
+            line-height: 1.2;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .mode-card {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 36%),
+                radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.16), transparent 38%),
+                var(--card-bg);
+            border-radius: 18px;
+            padding: 12px;
+            box-shadow: 0 7px 18px rgba(0,0,0,0.34);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            flex: 1;
+            min-width: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mode-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 45%);
+            pointer-events: none;
+        }
+
+        .mode-top-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .mode-label-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mode-small-label {
+            color: var(--text-sub);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .mode-title {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            line-height: 1.05;
+        }
+
+        .mode-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
+        }
+
+        .mode-chip-row {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .mode-chip {
+            padding: 6px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(15, 23, 42, 0.48);
+            color: var(--text-sub);
+            font-size: 11px;
+            font-weight: 900;
+            text-align: center;
+            transition: 0.2s ease;
+        }
+
+        .mode-chip.active-box {
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.75);
+            background: rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        .mode-chip.active-cup {
+            color: #bae6fd;
+            border-color: rgba(34, 211, 238, 0.75);
+            background: rgba(34, 211, 238, 0.14);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08);
+        }
+
+        .mode-desc {
+            position: relative;
+            color: var(--text-sub);
+            font-size: 11px;
+            line-height: 1.3;
+            min-height: 20px;
+        }
+
+        .mode-card.mode-box {
+            border-color: rgba(239, 68, 68, 0.42);
+        }
+
+        .mode-card.mode-box .mode-title {
+            color: #fecaca;
+        }
+
+        .mode-card.mode-cup {
+            border-color: rgba(34, 211, 238, 0.48);
+        }
+
+        .mode-card.mode-cup .mode-title {
+            color: #bae6fd;
+        }
+
+        .mode-card.mode-unknown .mode-title {
+            color: #e2e8f0;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 10px;
+            text-align: center;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .state-ok {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .state-no {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .state-pause {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .broker-select-wrap {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5px;
+            margin: -3px 0 8px;
+        }
+
+        .broker-select-label {
+            color: var(--text-sub);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .broker-select {
+            width: 100%;
+            min-height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--box-line);
+            background: #111827;
+            color: var(--text-main);
+            padding: 6px 9px;
+            font-size: 12px;
+            font-weight: 800;
+            outline: none;
+        }
+
+        .broker-select:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-row-top {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .force-mode-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 9px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .mobile-label {
+            display: none;
+        }
+
+        .btn-blue {
+            background: var(--primary);
+        }
+
+        .btn-blue:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-red {
+            background: var(--danger);
+        }
+
+        .btn-red:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-orange {
+            background: var(--warning);
+        }
+
+        .btn-orange:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .force-mode-btn {
+            min-height: 40px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            background: rgba(15, 23, 42, 0.62);
+            color: var(--text-sub);
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.22);
+        }
+
+        .force-mode-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .force-mode-box {
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.76);
+            background: rgba(239, 68, 68, 0.14);
+        }
+
+        .force-mode-cup {
+            color: #bae6fd;
+            border-color: rgba(56, 189, 248, 0.72);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .action-btn:disabled {
+            background: #475569 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        /* ===== 時間軸卡片 ===== */
+        .chart-card {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px 14px 10px;
+            box-shadow: 0 7px 18px rgba(0,0,0,0.34);
+            border: 1px solid var(--card-line);
+            overflow: hidden;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .chart-title-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            color: var(--text-sub);
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .chart-mode-toggle {
+            display: flex;
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 2px;
+            border: 1px solid var(--box-line);
+        }
+
+        .chart-mode-btn {
+            width: 28px;
+            height: 24px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text-sub);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .chart-mode-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 14px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-sub);
+            flex-wrap: wrap;
+        }
+
+        .chart-legend span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: var(--box-bg);
+            border-radius: 8px;
+            border: 1px solid var(--box-line);
+            overflow: hidden;
+        }
+
+        #timelineCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .serial-log-card {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 7px 18px rgba(0,0,0,0.34);
+            border: 1px solid var(--card-line);
+            overflow: hidden;
+        }
+
+        .serial-log-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            min-height: 24px;
+        }
+
+        .serial-log-title {
+            font-size: 11px;
+            color: var(--text-sub);
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .copy-log-btn {
+            height: 24px;
+            min-width: 64px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--cyan);
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--cyan);
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: background 0.15s, transform 0.15s, color 0.15s, border-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .copy-log-btn:hover {
+            background: rgba(56, 189, 248, 0.22);
+            transform: translateY(-1px);
+        }
+
+        .copy-log-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .copy-log-btn.copied {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.16);
+        }
+
+        .copy-log-btn.clear-log-btn {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+            min-width: 60px;
+        }
+
+        .copy-log-btn.clear-log-btn:hover {
+            background: rgba(239, 68, 68, 0.22);
+            color: #fecaca;
+        }
+
+        .copy-log-btn.clear-log-btn.cleared {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.16);
+        }
+
+        .timestamp-toggle {
+            height: 24px;
+            padding: 0 7px;
+            border-radius: 999px;
+            border: 1px solid var(--box-line);
+            background: rgba(15, 23, 42, 0.55);
+            color: var(--text-sub);
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .timestamp-toggle input {
+            width: 13px;
+            height: 13px;
+            accent-color: var(--cyan);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .serial-log-box {
+            height: 130px;
+            max-height: 130px;
+            overflow-y: auto;
+            overflow-x: auto;
+            background: var(--box-bg);
+            border: 1px solid var(--box-line);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-family: "Courier New", Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.2;
+            color: var(--cyan);
+            white-space: pre;
+            word-break: normal;
+            overflow-wrap: normal;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-gutter: stable;
+        }
+
+        .serial-log-box .placeholder {
+            color: #64748b;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: calc(46px + env(safe-area-inset-top, 0px)) 7px calc(10px + env(safe-area-inset-bottom, 0px));
+            }
+            h1 { font-size: 16px; line-height: 1.1; margin-bottom: 1px; }
+            .subtitle { margin-bottom: 5px; font-size: 9px; }
+            .panel-layout { gap: 6px; }
+            .dash-container {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 5px;
+                align-items: stretch;
+            }
+            .gauge-card {
+                min-width: 0;
+                width: 100%;
+                padding: 4px 3px 3px;
+                border-radius: 8px;
+            }
+            .gauge-title {
+                min-height: 18px;
+                margin-bottom: 2px;
+                font-size: 8px;
+                line-height: 1.1;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .gauge-card canvas {
+                width: min(22vw, 74px);
+                height: 58px;
+            }
+            .controls-container {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 6px;
+            }
+            .mode-card, .info-card {
+                min-width: 0;
+                width: 100%;
+                border-radius: 9px;
+                padding: 7px 6px;
+                background: var(--card-bg);
+                border: 1px solid var(--card-line);
+                box-shadow: 0 6px 14px rgba(0,0,0,0.32);
+            }
+            .mode-card { gap: 5px; }
+            .mode-card::before { display: none; }
+            .mode-top-row { gap: 5px; }
+            .mode-small-label, .card-label { font-size: 9px; letter-spacing: 0.3px; margin-bottom: 3px; }
+            .mode-title { font-size: 15px; letter-spacing: 0; }
+            .mode-icon { width: 32px; height: 32px; border-radius: 10px; font-size: 18px; flex: 0 0 auto; }
+            .mode-chip-row { gap: 4px; }
+            .mode-chip { padding: 4px 3px; font-size: 9px; white-space: nowrap; }
+            .mode-desc { display: none; }
+            .display-box { margin: 3px 0 6px; padding: 5px 5px; border-radius: 7px; min-height: 28px; font-size: 10px; line-height: 1.2; }
+            .raw-number-box { min-height: 28px; font-size: 15px; letter-spacing: 0.5px; }
+            .controls-container > .info-card:last-child { grid-column: 1 / -1; }
+            .control-card { padding: 6px !important; border-radius: 10px; }
+            .control-card > .card-label { display: none; }
+            #mqtt-manual-block .card-label { display: block; margin-bottom: 2px !important; font-size: 9px !important; line-height: 1.1; }
+            .status-badge { margin-bottom: 5px; padding: 4px 8px; font-size: 9px; line-height: 1.1; max-width: 100%; white-space: nowrap; }
+            .broker-select-wrap { gap: 3px; margin: -1px 0 5px; }
+            .broker-select-label { font-size: 9px; line-height: 1.1; }
+            .broker-select { min-height: 28px; padding: 4px 7px; border-radius: 7px; font-size: 11px; }
+            .btn-group { gap: 5px; }
+            .btn-row-top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+            .force-mode-row { gap: 5px; }
+            .action-btn { min-height: 30px; padding: 4px 3px; border-radius: 7px; font-size: 11px; line-height: 1.1; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.22); }
+            .force-mode-btn { min-height: 30px; padding: 4px 3px; font-size: 11px; }
+            .desktop-label { display: none; }
+            .mobile-label { display: inline; font-weight: 900; }
+            #mqtt-manual-block { margin-top: 5px !important; padding-top: 5px; border-top: 1px solid rgba(148, 163, 184, 0.16); }
+            #mqtt-manual-row { display: grid !important; grid-template-columns: minmax(0, 1fr); gap: 4px !important; margin-top: 3px !important; }
+            #mqtt-topic, #mqtt-payload { min-width: 0; width: 100%; height: 28px; padding: 5px 8px !important; font-size: 11px; border-radius: 8px !important; }
+            #mqtt-topic { grid-column: 1 / -1; }
+            #mqtt-payload { flex: initial !important; grid-column: 1 / -1; }
+            #mqtt-payload + button { flex: initial !important; width: 100%; grid-column: 1 / -1; min-height: 28px; padding: 5px 4px; }
+            .chart-wrapper { height: 140px; }
+            .chart-legend { font-size: 8px; gap: 8px; }
+            .chart-card { padding: 8px 6px; }
+            .chart-mode-btn { width: 24px; height: 20px; font-size: 11px; }
+            .serial-log-card { padding: 7px 6px 8px; border-radius: 9px; }
+            .serial-log-header { flex-wrap: wrap; gap: 4px; margin-bottom: 5px; min-height: 0; }
+            .serial-log-title { width: 100%; font-size: 9px; }
+            .copy-log-btn, .timestamp-toggle { height: 24px; min-width: 0; padding: 0 6px; font-size: 9px; }
+            .timestamp-toggle input { width: 11px; height: 11px; }
+            .serial-log-box { font-size: 10px; line-height: 1.16; height: 64px; max-height: 64px; padding: 5px; border-radius: 7px; }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>智慧健康照護終端面板</h1>
+    <div class="subtitle">IoT 長者吃藥與飲水即時監測系統</div>
+
+    <div class="panel-layout">
+        <div class="dash-container">
+            <div class="gauge-card">
+                <div class="gauge-title">⚖️ 目前即時重量</div>
+                <canvas id="canvas-weight" width="220" height="200"></canvas>
+            </div>
+
+            <div class="gauge-card">
+                <div class="gauge-title">💊 當次吃藥劑量</div>
+                <canvas id="canvas-medication" width="220" height="200"></canvas>
+            </div>
+
+            <div class="gauge-card">
+                <div class="gauge-title">💧 當次飲水容量</div>
+                <canvas id="canvas-water" width="220" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="controls-container">
+
+            <div id="device-mode-card" class="mode-card mode-unknown">
+                <div class="mode-top-row">
+                    <div class="mode-label-block">
+                        <div class="mode-small-label">目前裝置模式</div>
+                        <div id="device-mode-title" class="mode-title">等待判斷</div>
+                    </div>
+                    <div id="device-mode-icon" class="mode-icon">🧠</div>
+                </div>
+
+                <div class="mode-chip-row">
+                    <div id="chip-box" class="mode-chip">💊 藥盒模式</div>
+                    <div id="chip-cup" class="mode-chip">💧 水杯模式</div>
+                </div>
+
+                <div id="device-mode-desc" class="mode-desc">系統會依 MQTT 或 SerialRAW 內的 [Mode: BOX/CUP] 自動切換顯示。</div>
+            </div>
+            <div class="info-card">
+                <div class="card-label">🔔 系統狀態通知</div>
+                <div id="display-msg" class="display-box">等待設備通報...</div>
+
+                <div class="card-label">🔌 感測器原始數據 (RAW)</div>
+                <div id="display-raw-number" class="display-box raw-number-box">--</div>
+            </div>
+
+            <div class="info-card control-card" style="text-align:center;">
+                <div id="status-badge" class="status-badge state-no">連線狀態：中斷連線</div>
+                <div class="broker-select-wrap">
+                    <label class="broker-select-label" for="broker-select">MQTT Broker 選擇</label>
+                    <select id="broker-select" class="broker-select" onchange="changeBroker(this.value)">
+                        <option value="mqttgo">MQTTGO：mqttgo.io</option>
+                        <option value="emqx">EMQX：broker.emqx.io</option>
+                    </select>
+                </div>
+                <div class="card-label" style="margin-bottom:6px;font-size:11px;">設備遠端控制指令（遠端直連）</div>
+
+                <div class="btn-group">
+                    <div class="btn-row-top">
+                        <button id="btn-tare" class="action-btn btn-blue" data-mobile-label="去皮" onclick="sendCmd('tare')" disabled><span class="desktop-label">執行去皮 (TARE)</span><span class="mobile-label">去皮</span></button>
+                        <button id="btn-clear" class="action-btn btn-red" data-mobile-label="清零" onclick="sendCmd('clear')" disabled><span class="desktop-label">紀錄清零 (CLEAR)</span><span class="mobile-label">清零</span></button>
+                        <button id="btn-pause-mqtt" class="action-btn btn-orange" data-mobile-label="暫停MQTT" onclick="toggleMqttPause()"><span class="desktop-label">⏸ 暫停 MQTT</span><span class="mobile-label">暫停</span></button>
+                    </div>
+
+                    <div class="force-mode-row">
+                        <button id="btn-force-box" class="action-btn force-mode-btn force-mode-box" onclick="sendForceMode('BOX')" disabled>💊 藥盒模式</button>
+                        <button id="btn-force-cup" class="action-btn force-mode-btn force-mode-cup" onclick="sendForceMode('CUP')" disabled>💧 水杯模式</button>
+                    </div>
+                
+                    <div id="mqtt-manual-block" style="margin-top:8px;">
+                        <div class="card-label">✉ MQTT 手動指令</div>
+                        <div id="mqtt-manual-row" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+                            <input id="mqtt-topic" type="text" value="esp32/cmd"
+                                placeholder="MQTT Topic"
+                                style="width:100%;padding:7px 9px;border-radius:8px;border:1px solid #475569;background:#111827;color:white;">
+                            <input id="mqtt-payload" type="text"
+                                placeholder="輸入 MQTT 指令，例如 tare、clear、forcebox..."
+                                style="width:100%;padding:7px 9px;border-radius:8px;border:1px solid #475569;background:#111827;color:white;">
+                            <button class="action-btn btn-blue" data-mobile-label="發送" style="width:100%;" onclick="sendCustomMQTT()"><span class="desktop-label">發送</span><span class="mobile-label">發送</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 時間軸卡片 ===== -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title-area">
+                    <span class="chart-title">⏱ 24小時事件時間軸</span>
+                    <div class="chart-mode-toggle">
+                        <button class="chart-mode-btn active" id="btn-bar" onclick="setChartMode('bar')" title="直方圖">▌▌</button>
+                        <button class="chart-mode-btn" id="btn-line" onclick="setChartMode('line')" title="折線圖">〰</button>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <span><span class="legend-dot" style="background:#ef4444;"></span> 服藥 (g)</span>
+                    <span><span class="legend-dot" style="background:#38bdf8;"></span> 飲水 (cc)</span>
+                    <span style="font-weight:400;color:var(--text-sub);">每小時累計</span>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="timelineCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="serial-log-card">
+            <div class="serial-log-header">
+                <div class="serial-log-title">📋 完整 SERIALRAW 文字字串訊息</div>
+                <button id="btn-copy-serialraw" class="copy-log-btn" onclick="copySerialRawLog()" title="複製所有 SerialRAW 文字" aria-label="複製所有 SerialRAW 文字">📋 複製</button>
+                <button id="btn-clear-serialraw" class="copy-log-btn clear-log-btn" onclick="clearSerialRawLog()" title="清除所有 SerialRAW 文字" aria-label="清除所有 SerialRAW 文字">🗑 清除</button>
+                <label class="timestamp-toggle" title="像 Arduino Serial Monitor 一樣在每筆資料前加入時間籤">
+                    <input id="chk-timestamp" type="checkbox">
+                    時間籤
+                </label>
+            </div>
+            <div id="serialraw-list" class="serial-log-box"><span class="placeholder">等待 SerialRAW 資料...</span></div>
+        </div>
+    </div>
+
+<script>
+    // ============================================================
+    // 🎨 Canvas 儀表板繪圖
+    // ============================================================
+    function drawGauge(canvasId, value, min, max, unit, color, decimals) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const cssWidth = Math.max(1, Math.round(rect.width || 220));
+        const cssHeight = Math.max(1, Math.round(rect.height || 200));
+        const dpr = window.devicePixelRatio || 1;
+
+        if (canvas.width !== Math.round(cssWidth * dpr) || canvas.height !== Math.round(cssHeight * dpr)) {
+            canvas.width = Math.round(cssWidth * dpr);
+            canvas.height = Math.round(cssHeight * dpr);
+        }
+
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+        const cx = cssWidth / 2;
+        const cy = cssHeight * 0.56;
+        const radius = Math.max(22, Math.min(75, cssWidth * 0.34, cssHeight * 0.38));
+        const strokeWidth = Math.max(5, Math.min(8, radius * 0.11));
+        const showScaleLabels = cssWidth >= 130;
+        const tickSize = showScaleLabels ? 4 : 3;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        const safeValue = Number.isFinite(value) ? value : 0;
+        const clampedVal = Math.min(Math.max(safeValue, min), max);
+        const valPercent = (clampedVal - min) / (max - min);
+        const endAngle = 0.75 * Math.PI + valPercent * (1.5 * Math.PI);
+
+        if (valPercent > 0) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+
+        ctx.lineWidth = Math.max(1, Math.min(2, radius * 0.03));
+        ctx.strokeStyle = "#475569";
+        ctx.font = "10px sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (let i = 0; i <= 5; i++) {
+            const p = i / 5;
+            const angle = 0.75 * Math.PI + p * (1.5 * Math.PI);
+
+            const x1 = cx + (radius - tickSize) * Math.cos(angle);
+            const y1 = cy + (radius - tickSize) * Math.sin(angle);
+            const x2 = cx + (radius + tickSize) * Math.cos(angle);
+            const y2 = cy + (radius + tickSize) * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            if (showScaleLabels) {
+                const tx = cx + (radius - 16) * Math.cos(angle);
+                const ty = cy + (radius - 16) * Math.sin(angle);
+                const lblVal = min + p * (max - min);
+                ctx.fillText(lblVal.toFixed(0), tx, ty);
+            }
+        }
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(endAngle - 1.5 * Math.PI);
+        ctx.beginPath();
+        ctx.moveTo(0, 8);
+        ctx.lineTo(3, 0);
+        ctx.lineTo(0, -radius + 10);
+        ctx.lineTo(-3, 0);
+        ctx.closePath();
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fill();
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(3, radius * 0.07), 0, 2 * Math.PI);
+        ctx.fillStyle = "#64748b";
+        ctx.fill();
+
+        ctx.font = `bold ${Math.max(12, Math.min(22, cssWidth * 0.13))}px monospace`;
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(safeValue.toFixed(decimals) + unit, cx, cy + radius - Math.max(18, radius * 0.6));
+    }
+
+    function initAllGauges() {
+        drawGauge("canvas-weight", 0.0, 0, 600, " g", "#818cf8", 1);
+        drawGauge("canvas-medication", 0.00, 0, 20, " g", "#ef4444", 2);
+        drawGauge("canvas-water", 0.0, 0, 500, " cc", "#22d3ee", 1);
+    }
+
+    initAllGauges();
+
+    let gaugeResizeTimer = null;
+    window.addEventListener("resize", () => {
+        clearTimeout(gaugeResizeTimer);
+        gaugeResizeTimer = setTimeout(initAllGauges, 120);
+    });
+
+    // ============================================================
+    // ✅ SerialRAW Text List
+    // ============================================================
+    const MAX_LOG_LINES = 200;
+    const serialRawLines = [];
+
+    function getTimestampText() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        const ss = String(now.getSeconds()).padStart(2, "0");
+        const ms = String(now.getMilliseconds()).padStart(3, "0");
+        return `${hh}:${mm}:${ss}.${ms}`;
+    }
+
+    function cleanSerialRawLine(line) {
+        const text = String(line || "").trim();
+        if (!text) return "";
+        return text;
+    }
+
+    function appendSerialRawLine(text) {
+        const box = document.getElementById("serialraw-list");
+        if (!box) return;
+
+        const line = String(text || "").trim();
+        if (!line) return;
+
+        const incomingLines = line.split(/\r?\n/).map(cleanSerialRawLine).filter(Boolean);
+        if (incomingLines.length === 0) return;
+
+        const timestampEnabled = document.getElementById("chk-timestamp")?.checked === true;
+
+        for (const cleanLine of incomingLines) {
+            const finalLine = timestampEnabled ? `[${getTimestampText()}] ${cleanLine}` : cleanLine;
+
+            if (serialRawLines[serialRawLines.length - 1] !== finalLine) {
+                serialRawLines.push(finalLine);
+            }
+        }
+
+        while (serialRawLines.length > MAX_LOG_LINES) {
+            serialRawLines.shift();
+        }
+
+        box.textContent = serialRawLines.join("\n");
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function copySerialRawLog() {
+        const copyBtn = document.getElementById("btn-copy-serialraw");
+        const text = serialRawLines.join("\n");
+
+        if (!text.trim()) {
+            if (copyBtn) {
+                const oldText = copyBtn.textContent;
+                copyBtn.textContent = "無資料";
+                setTimeout(() => { copyBtn.textContent = oldText; }, 900);
+            }
+            return;
+        }
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.setAttribute("readonly", "readonly");
+                tempTextArea.style.position = "fixed";
+                tempTextArea.style.left = "-9999px";
+                tempTextArea.style.top = "0";
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempTextArea);
+            }
+
+            if (copyBtn) {
+                copyBtn.classList.add("copied");
+                copyBtn.textContent = "✓";
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                    copyBtn.textContent = "📋 複製";
+                }, 1200);
+            }
+        } catch (error) {
+            console.error("複製 SerialRAW 失敗：", error);
+            alert("複製失敗，請手動選取 SerialRAW 文字複製。");
+        }
+    }
+
+    function clearSerialRawLog() {
+        const box = document.getElementById("serialraw-list");
+        const clearBtn = document.getElementById("btn-clear-serialraw");
+
+        serialRawLines.length = 0;
+
+        if (box) {
+            box.innerHTML = '<span class="placeholder">等待 SerialRAW 資料...</span>';
+            box.scrollTop = 0;
+        }
+
+        if (clearBtn) {
+            clearBtn.classList.add("cleared");
+            clearBtn.textContent = "✓ 已清除";
+            setTimeout(() => {
+                clearBtn.classList.remove("cleared");
+                clearBtn.textContent = "🗑 清除";
+            }, 1000);
+        }
+    }
+
+    function updateRawNumber(message) {
+        const rawBox = document.getElementById("display-raw-number");
+        if (!rawBox) return;
+
+        const text = String(message || "");
+        const matches = Array.from(text.matchAll(/RAW\s*=\s*(-?\d+)/gi));
+        const match = matches.length ? matches[matches.length - 1] : null;
+        const onlyNumber = text.trim().match(/^-?\d+$/);
+
+        if (match) {
+            rawBox.textContent = match[1];
+        } else if (onlyNumber) {
+            rawBox.textContent = onlyNumber[0];
+        } else {
+            rawBox.textContent = "--";
+        }
+    }
+
+    function getLatestStateFromText(message) {
+        const matches = Array.from(String(message || "").matchAll(/\[State:\s*([A-Z_]+)\]/gi));
+        return matches.length ? matches[matches.length - 1][1].toUpperCase() : "";
+    }
+
+    function updateTelemetryFromSerialRaw(message) {
+        const text = String(message || "");
+
+        updateRawNumber(text);
+
+        const weightMatches = Array.from(text.matchAll(/Weight\s*=\s*(-?\d+(?:\.\d+)?)\s*g/gi));
+        if (weightMatches.length) {
+            const weight = parseFloat(weightMatches[weightMatches.length - 1][1]);
+            if (Number.isFinite(weight)) {
+                drawGauge("canvas-weight", weight, 0, 600, " g", "#818cf8", 1);
+            }
+        }
+
+        updateDeviceModeFromText(text);
+    }
+
+    // ============================================================
+    // ✅ 使用者易讀版系統通知
+    // ============================================================
+    function getDebugValue(message, key) {
+        const safeKey = String(key).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const reg = new RegExp("(?:^|\\|)" + safeKey + "=([^|]+)", "i");
+        const match = String(message || "").match(reg);
+        return match ? match[1].trim() : "";
+    }
+
+    function formatNumber(value, digits = 2) {
+        const num = parseFloat(value);
+        if (!Number.isFinite(num)) return "--";
+        return num.toFixed(digits);
+    }
+
+    function buildEngineerInfo(message) {
+        return "";
+    }
+
+    function convertSystemMessage(message) {
+        const text = String(message || "").trim();
+
+        if (!text) {
+            return { level: "info", text: "等待設備通報..." };
+        }
+
+        const engineerInfo = buildEngineerInfo(text);
+        const reason = getDebugValue(text, "Reason");
+        const consumed = getDebugValue(text, "Consumed");
+        const rawDiff = getDebugValue(text, "RawDiff");
+        const mode = getDebugValue(text, "Mode");
+        const latestState = getLatestStateFromText(text);
+
+        if (text.includes("動態加速")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到重量快速變動\n系統正在加速同步濾波，等待重量穩定。${engineerInfo}`
+            };
+        }
+
+        if (text.includes("鎖定為") && text.includes("水杯模式")) {
+            return {
+                level: "ok",
+                text: `💧 已識別為水杯模式\n系統將以飲水量判斷為主。${engineerInfo}`
+            };
+        }
+
+        if (text.includes("鎖定為") && text.includes("藥盒模式")) {
+            return {
+                level: "ok",
+                text: `💊 已識別為藥盒模式\n系統將以取藥與服藥判斷為主。${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedRawSpike" || text.includes("Reason=BlockedRawSpike")) {
+            const diffText = rawDiff ? `\n異常差值：${rawDiff}` : "";
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到感測器瞬間讀值異常\n系統已自動忽略本次資料，不會誤判吃藥或飲水。${diffText}${engineerInfo}`
+            };
+        }
+
+        if (["BoxImpactLock", "BlockedBoxIncrease", "ImpactCooling", "BlockedPickupDuringImpact", "BlockedMedDuringImpact"].includes(reason)) {
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到藥盒可能被碰撞或短暫壓到\n系統已暫停本次結算，避免誤判為吃藥。${engineerInfo}`
+            };
+        }
+
+        if (reason === "ImpactReleased") {
+            return {
+                level: "ok",
+                text: `✅ 藥盒重量已回到穩定範圍\n系統恢復正常監測。${engineerInfo}`
+            };
+        }
+
+        if (reason === "ImpactTimeoutBaseReset") {
+            return {
+                level: "info",
+                text: `ℹ️ 藥盒狀態已重新穩定\n系統已重新建立目前基準重量。${engineerInfo}`
+            };
+        }
+
+        if (reason === "MedicationTaken" || text.includes("Reason=MedicationTaken") || text.includes("偵測服用藥物")) {
+            let amount = consumed && parseFloat(consumed) > 0 ? formatNumber(consumed, 2) : "--";
+            if (amount === "--" && window.lastMedicationValue > 0) {
+                amount = formatNumber(window.lastMedicationValue, 2);
+            }
+            const hour = new Date().getHours();
+            addEvent(hour, parseFloat(amount) || 0, 0);
+            return {
+                level: "ok",
+                text: `💊 已偵測到服藥\n本次藥盒重量減少：約 ${amount} g${engineerInfo}`
+            };
+        }
+
+        if (reason === "WaterTaken" || text.includes("Reason=WaterTaken") || text.includes("偵測到飲水")) {
+            let amount = consumed && parseFloat(consumed) > 0 ? formatNumber(consumed, 1) : "--";
+            if (amount === "--" && window.lastWaterValue > 0) {
+                amount = formatNumber(window.lastWaterValue, 1);
+            }
+            const hour = new Date().getHours();
+            addEvent(hour, 0, parseFloat(amount) || 0);
+            return {
+                level: "ok",
+                text: `💧 已偵測到飲水\n本次飲水量：約 ${amount} cc${engineerInfo}`
+            };
+        }
+
+        if (["NaturalDrift", "SmallDropBaseAdjust", "SmallIncreaseBaseAdjust", "Loop"].includes(reason) || (!text.includes("Reason=") && text.includes("Weight ="))) {
+            const upperText = text.toUpperCase();
+            let modeText = "監測";
+            if (latestState === "EMPTY_IDLE") {
+                if (manualForcedMode) {
+                    modeText = manualForcedMode.includes("CUP") ? "強制水杯" : "強制藥盒";
+                } else {
+                    modeText = "空秤待機";
+                }
+            } else if (latestState.startsWith("CUP_") || mode === "CUP" || upperText.includes("CUP")) {
+                modeText = manualForcedMode ? "強制水杯" : "水杯";
+            } else if (latestState.startsWith("BOX_") || mode === "BOX" || upperText.includes("BOX")) {
+                modeText = manualForcedMode ? "強制藥盒" : "藥盒";
+            }
+            return {
+                level: "ok",
+                text: `✅ 系統正常監測中\n目前模式：${modeText}${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedDropWithoutPickup") {
+            return {
+                level: "warn",
+                text: `⚠️ 偵測到重量下降，但尚未確認藥盒被拿起\n系統已暫不記錄吃藥，避免誤判。${engineerInfo}`
+            };
+        }
+
+        if (reason === "BlockedEmptyScale" || reason === "BoxRemoved" || text.includes("藥盒已拿離")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到藥盒已離開秤面\n系統暫時保持藥盒模式，不進行吃藥結算。${engineerInfo}`
+            };
+        }
+
+        if (reason === "CupRemoved" || text.includes("水杯已拿離")) {
+            return {
+                level: "info",
+                text: `ℹ️ 偵測到水杯已離開秤面\n系統暫時保持水杯模式。${engineerInfo}`
+            };
+        }
+
+        if (reason === "Tare" || text.includes("去皮完成")) {
+            return { level: "ok", text: `✅ 去皮歸零完成\n系統已重新設定目前重量為基準。${engineerInfo}` };
+        }
+
+        if (reason === "Clear" || text.includes("紀錄清零")) {
+            return { level: "ok", text: `✅ 紀錄已清零\n吃藥與飲水資料已重新開始計算。${engineerInfo}` };
+        }
+
+        if (reason === "ModeToCup") {
+            return { level: "info", text: `💧 已切換為水杯模式\n系統將以飲水量判斷為主。${engineerInfo}` };
+        }
+
+        if (reason === "ModeToBox") {
+            return { level: "info", text: `💊 已切換為藥盒模式\n系統將以取藥與服藥判斷為主。${engineerInfo}` };
+        }
+
+        if (!text.includes("Reason=") && !text.startsWith("DBG|")) {
+            return { level: "info", text };
+        }
+
+        return {
+            level: "info",
+            text: `ℹ️ 系統正在監測中${engineerInfo}`
+        };
+    }
+
+    function updateSystemNotice(message) {
+        const msgBox = document.getElementById("display-msg");
+        if (!msgBox) return;
+
+        const converted = convertSystemMessage(message);
+        msgBox.classList.remove("notice-ok", "notice-info", "notice-warn", "notice-error");
+        msgBox.classList.add(`notice-${converted.level || "info"}`);
+        msgBox.innerText = converted.text || "等待設備通報...";
+    }
+
+    // ============================================================
+    // ✅ 時間軸直方圖/折線圖 (24小時)
+    // ============================================================
+    let chartMode = 'bar';
+
+    const hourlyData = [];
+    for (let i = 0; i < 24; i++) {
+        hourlyData.push({ hour: i, med: 0, water: 0, count: 0 });
+    }
+
+    function addEvent(hour, med, water) {
+        if (hour < 0 || hour > 23) return;
+        hourlyData[hour].med += med;
+        hourlyData[hour].water += water;
+        if (med > 0 || water > 0) hourlyData[hour].count += 1;
+        drawTimeline();
+    }
+
+    function setChartMode(mode) {
+        chartMode = mode;
+        document.getElementById('btn-bar').classList.toggle('active', mode === 'bar');
+        document.getElementById('btn-line').classList.toggle('active', mode === 'line');
+        drawTimeline();
+    }
+
+    function drawTimeline() {
+        const canvas = document.getElementById('timelineCanvas');
+        if (!canvas) return;
+
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const w = rect.width || 600;
+        const h = rect.height || 180;
+        const dpr = window.devicePixelRatio || 1;
+
+        if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+        }
+
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+
+        const pad = { top: 14, bottom: 20, left: 26, right: 10 };
+        const chartW = w - pad.left - pad.right;
+        const chartH = h - pad.top - pad.bottom;
+
+        let maxVal = 1;
+        for (let i = 0; i < 24; i++) {
+            maxVal = Math.max(maxVal, hourlyData[i].med, hourlyData[i].water);
+        }
+        maxVal = Math.ceil(maxVal / 10) * 10 + 5;
+
+        ctx.strokeStyle = 'rgba(71, 85, 105, 0.3)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= 4; i++) {
+            const y = pad.top + chartH - (i / 4) * chartH;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, y);
+            ctx.lineTo(pad.left + chartW, y);
+            ctx.stroke();
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '8px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(Math.round((i / 4) * maxVal), pad.left - 4, y);
+        }
+
+        const barWidth = Math.max(3, (chartW / 24) * 0.65);
+        const gap = (chartW / 24) * 0.35;
+
+        if (chartMode === 'bar') {
+            for (let i = 0; i < 24; i++) {
+                const x = pad.left + (i / 24) * chartW + gap / 2;
+                const data = hourlyData[i];
+
+                const medHeight = (data.med / maxVal) * chartH;
+                if (medHeight > 0) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(x, pad.top + chartH - medHeight, barWidth * 0.45, medHeight);
+                }
+
+                const waterHeight = (data.water / maxVal) * chartH;
+                if (waterHeight > 0) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(x + barWidth * 0.45, pad.top + chartH - waterHeight, barWidth * 0.45, waterHeight);
+                }
+
+                if (data.count > 0) {
+                    ctx.fillStyle = '#facc15';
+                    ctx.beginPath();
+                    ctx.arc(x + barWidth / 2, pad.top + chartH + 2, 2.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+
+                if (i % 3 === 0) {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '8px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(String(i).padStart(2, '0') + 'h', x + barWidth / 2, pad.top + chartH + 4);
+                }
+            }
+        } else {
+            ctx.beginPath();
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 24; i++) {
+                const x = pad.left + (i / 23) * chartW;
+                const y = pad.top + chartH - (hourlyData[i].med / maxVal) * chartH;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            for (let i = 0; i < 24; i++) {
+                const x = pad.left + (i / 23) * chartW;
+                const y = pad.top + chartH - (hourlyData[i].med / maxVal) * chartH;
+                if (hourlyData[i].med > 0) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fill();
+                    ctx.strokeStyle = '#fecaca';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            }
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 24; i++) {
+                const x = pad.left + (i / 23) * chartW;
+                const y = pad.top + chartH - (hourlyData[i].water / maxVal) * chartH;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            for (let i = 0; i < 24; i++) {
+                const x = pad.left + (i / 23) * chartW;
+                const y = pad.top + chartH - (hourlyData[i].water / maxVal) * chartH;
+                if (hourlyData[i].water > 0) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fill();
+                    ctx.strokeStyle = '#bae6fd';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            }
+
+            for (let i = 0; i < 24; i++) {
+                if (hourlyData[i].count > 0) {
+                    const x = pad.left + (i / 23) * chartW;
+                    ctx.fillStyle = '#facc15';
+                    ctx.beginPath();
+                    ctx.arc(x, pad.top + chartH + 2, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 24; i += 3) {
+                const x = pad.left + (i / 23) * chartW;
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(String(i).padStart(2, '0') + 'h', x, pad.top + chartH + 4);
+            }
+        }
+
+        if (hourlyData.every(d => d.med === 0 && d.water === 0)) {
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('等待事件資料…', w / 2, h / 2);
+        }
+    }
+
+    let timelineResizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(timelineResizeTimer);
+        timelineResizeTimer = setTimeout(drawTimeline, 200);
+    });
+
+    // ============================================================
+    // ✅ 目前模式 UI 顯示
+    // ============================================================
+    let manualForcedMode = "";
+
+    function updateDeviceMode(modeText) {
+        const mode = String(modeText || "").trim().toUpperCase();
+        const card = document.getElementById("device-mode-card");
+        const title = document.getElementById("device-mode-title");
+        const icon = document.getElementById("device-mode-icon");
+        const desc = document.getElementById("device-mode-desc");
+        const chipBox = document.getElementById("chip-box");
+        const chipCup = document.getElementById("chip-cup");
+
+        if (!card || !title || !icon || !desc || !chipBox || !chipCup) return;
+
+        card.classList.remove("mode-box", "mode-cup", "mode-unknown");
+        chipBox.classList.remove("active-box");
+        chipCup.classList.remove("active-cup");
+
+        if (manualForcedMode) {
+            if (manualForcedMode === "FORCE_BOX") {
+                card.classList.add("mode-box");
+                chipBox.classList.add("active-box");
+                title.textContent = "🔒 強制藥盒模式";
+                icon.textContent = "💊";
+                desc.textContent = "已強制鎖定藥盒模式，不會被設備回傳覆蓋。";
+                return;
+            }
+            if (manualForcedMode === "FORCE_CUP") {
+                card.classList.add("mode-cup");
+                chipCup.classList.add("active-cup");
+                title.textContent = "🔒 強制水杯模式";
+                icon.textContent = "💧";
+                desc.textContent = "已強制鎖定水杯模式，不會被設備回傳覆蓋。";
+                return;
+            }
+        }
+
+        if (mode.includes("BOX") || mode.includes("藥盒")) {
+            card.classList.add("mode-box");
+            chipBox.classList.add("active-box");
+            title.textContent = mode.includes("FORCE") ? "強制藥盒模式" : "藥盒模式";
+            icon.textContent = "💊";
+            desc.textContent = "目前以藥盒重量為主，適合判斷是否取藥、補藥與微幅漂移。";
+        } else if (mode.includes("CUP") || mode.includes("WATER") || mode.includes("水杯")) {
+            card.classList.add("mode-cup");
+            chipCup.classList.add("active-cup");
+            title.textContent = mode.includes("FORCE") ? "強制水杯模式" : "水杯模式";
+            icon.textContent = "💧";
+            desc.textContent = "目前以水杯容量為主，適合判斷飲水量與喝水事件。";
+        } else if (mode === "EMPTY") {
+            card.classList.add("mode-unknown");
+            title.textContent = "空秤待機";
+            icon.textContent = "⚪";
+            desc.textContent = "目前秤面沒有放置藥盒 or 水杯，等待放置裝置。";
+        } else {
+            card.classList.add("mode-unknown");
+            title.textContent = "等待判斷";
+            icon.textContent = "🧠";
+            desc.textContent = "正在等待裝置回報 FSM State。";
+        }
+    }
+
+    function updateDeviceModeFromText(text) {
+        const message = String(text || "");
+
+        if (manualForcedMode) {
+            updateDeviceMode(manualForcedMode);
+            return;
+        }
+
+        const bracketMatch = message.match(/\[\s*Mode\s*:\s*([A-Z_0-9\u4e00-\u9fa5]+)\s*\]/i);
+        if (bracketMatch) {
+            updateDeviceMode(bracketMatch[1]);
+            return;
+        }
+
+        const debugMatch = message.match(/(?:^|\|)Mode\s*=\s*([A-Z_0-9\u4e00-\u9fa5]+)(?:\||$)/i);
+        if (debugMatch) {
+            updateDeviceMode(debugMatch[1]);
+            return;
+        }
+
+        if (message.includes("鎖定為") && message.includes("水杯模式")) {
+            updateDeviceMode("CUP");
+            return;
+        }
+
+        if (message.includes("鎖定為") && message.includes("藥盒模式")) {
+            updateDeviceMode("BOX");
+            return;
+        }
+
+        const state = getLatestStateFromText(message);
+        if (state) {
+            if (state.startsWith("BOX_")) { updateDeviceMode("BOX"); return; }
+            if (state.startsWith("CUP_")) { updateDeviceMode("CUP"); return; }
+            if (state === "EMPTY_IDLE") { updateDeviceMode("EMPTY"); return; }
+        }
+    }
+
+    updateDeviceMode("");
+
+    // ============================================================
+    // ✅ MQTT 連線
+    // ============================================================
+    const brokerOptions = {
+        emqx: {
+            label: "EMQX",
+            url: "wss://broker.emqx.io:8084/mqtt"
+        },
+        mqttgo: {
+            label: "MQTTGO",
+            url: "wss://mqttgo.io:8084/mqtt"
+        }
+    };
+    const defaultBrokerKey = "mqttgo";
+    const brokerStorageKey = "smartCupSelectedBrokerV2";
+    let selectedBrokerKey = localStorage.getItem(brokerStorageKey) || defaultBrokerKey;
+    if (!brokerOptions[selectedBrokerKey]) selectedBrokerKey = defaultBrokerKey;
+
+    const cmdTopic = "esp32/cmd";
+    const clientIdBase = "pure_canvas_panel_" + Math.random().toString(16).substr(2, 8);
+
+    let client = null;
+    let mqttPaused = false;
+    let reconnectCount = 0;
+
+    window.lastMedicationValue = 0;
+    window.lastWaterValue = 0;
+
+    const badge = document.getElementById("status-badge");
+    const tareBtn = document.getElementById("btn-tare");
+    const clearBtn = document.getElementById("btn-clear");
+    const pauseBtn = document.getElementById("btn-pause-mqtt");
+    const forceBoxBtn = document.getElementById("btn-force-box");
+    const forceCupBtn = document.getElementById("btn-force-cup");
+    const brokerSelect = document.getElementById("broker-select");
+
+    if (brokerSelect) {
+        brokerSelect.value = selectedBrokerKey;
+    }
+
+    function getSelectedBroker() {
+        return brokerOptions[selectedBrokerKey] || brokerOptions[defaultBrokerKey];
+    }
+
+    function subscribeTopics() {
+        if (!client || !client.connected) return;
+        client.subscribe("esp32/msg");
+        client.subscribe("esp32/weight");
+        client.subscribe("esp32/medication/taken");
+        client.subscribe("esp32/water/taken");
+        client.subscribe("esp32/raw");
+        client.subscribe("esp/msg/seialraw");
+        client.subscribe("esp32/mode");
+    }
+
+    function setConnectedUI() {
+        badge.innerText = "連線狀態：已連線至 " + getSelectedBroker().label;
+        badge.className = "status-badge state-ok";
+        tareBtn.disabled = false;
+        clearBtn.disabled = false;
+        forceBoxBtn.disabled = false;
+        forceCupBtn.disabled = false;
+        pauseBtn.disabled = false;
+        pauseBtn.innerHTML = '<span class="desktop-label">⏸ 暫停 MQTT</span><span class="mobile-label">暫停</span>';
+        pauseBtn.dataset.mobileLabel = "暫停MQTT";
+        pauseBtn.className = "action-btn btn-orange";
+    }
+
+    function setDisconnectedUI(text) {
+        badge.innerText = text || "連線狀態：中斷連線";
+        badge.className = "status-badge state-no";
+        tareBtn.disabled = true;
+        clearBtn.disabled = true;
+        forceBoxBtn.disabled = true;
+        forceCupBtn.disabled = true;
+        pauseBtn.disabled = false;
+    }
+
+    function setPausedUI() {
+        badge.innerText = "連線狀態：MQTT 已暫停";
+        badge.className = "status-badge state-pause";
+        tareBtn.disabled = true;
+        clearBtn.disabled = true;
+        forceBoxBtn.disabled = true;
+        forceCupBtn.disabled = true;
+        pauseBtn.disabled = false;
+        pauseBtn.innerHTML = '<span class="desktop-label">▶ 恢復 MQTT</span><span class="mobile-label">恢復</span>';
+        pauseBtn.dataset.mobileLabel = "恢復MQTT";
+        pauseBtn.className = "action-btn btn-orange";
+    }
+
+    function handleMqttMessage(topic, payload) {
+        if (mqttPaused) return;
+
+        const message = new TextDecoder().decode(payload);
+        updateDeviceModeFromText(message);
+
+        if (topic === "esp32/weight") {
+            const val = parseFloat(message) || 0;
+            drawGauge("canvas-weight", val, 0, 600, " g", "#818cf8", 1);
+        }
+        else if (topic === "esp32/medication/taken") {
+            const val = parseFloat(message) || 0;
+            window.lastMedicationValue = val;
+            drawGauge("canvas-medication", val, 0, 20, " g", "#ef4444", 2);
+            const hour = new Date().getHours();
+            addEvent(hour, val, 0);
+            
+            const msgBox = document.getElementById("display-msg");
+            if (msgBox && msgBox.innerText.includes("約 -- g")) {
+                msgBox.innerText = msgBox.innerText.replace("約 -- g", `約 ${val.toFixed(2)} g`);
+            }
+        }
+        else if (topic === "esp32/water/taken") {
+            const val = parseFloat(message) || 0;
+            window.lastWaterValue = val;
+            drawGauge("canvas-water", val, 0, 500, " cc", "#22d3ee", 1);
+            const hour = new Date().getHours();
+            addEvent(hour, 0, val);
+            
+            const msgBox = document.getElementById("display-msg");
+            if (msgBox && msgBox.innerText.includes("約 -- cc")) {
+                msgBox.innerText = msgBox.innerText.replace("約 -- cc", `約 ${val.toFixed(1)} cc`);
+            }
+        }
+        else if (topic === "esp32/msg") {
+            updateSystemNotice(message);
+        }
+        else if (topic === "esp32/raw") {
+            updateRawNumber(message);
+        }
+        else if (topic === "esp/msg/seialraw") {
+            appendSerialRawLine(message);
+            updateTelemetryFromSerialRaw(message);
+            updateSystemNotice(message);
+        }
+        else if (topic === "esp32/mode") {
+            updateDeviceMode(message);
+        }
+    }
+
+    function registerMqttEvents() {
+        if (!client) return;
+
+        client.on("connect", () => {
+            console.log("MQTT 連線成功！");
+            reconnectCount = 0;
+            if (!mqttPaused) {
+                setConnectedUI();
+                subscribeTopics();
+            }
+        });
+
+        client.on("reconnect", () => {
+            reconnectCount += 1;
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：重新連線中"); }
+        });
+
+        client.on("close", () => {
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：中斷連線"); }
+        });
+
+        client.on("offline", () => {
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：離線"); }
+        });
+
+        client.on("error", (error) => {
+            console.error("MQTT 錯誤：", error);
+            if (!mqttPaused) { setDisconnectedUI("連線狀態：MQTT 錯誤"); }
+        });
+
+        client.on("message", handleMqttMessage);
+    }
+
+    function connectMqtt() {
+        const clientId = clientIdBase + "_" + Date.now();
+        const broker = getSelectedBroker();
+        client = mqtt.connect(broker.url, {
+            clientId: clientId,
+            clean: true,
+            reconnectPeriod: 1000
+        });
+        registerMqttEvents();
+        setDisconnectedUI("連線狀態：連線至 " + broker.label + " 中");
+    }
+
+    function changeBroker(brokerKey) {
+        if (!brokerOptions[brokerKey]) return;
+        selectedBrokerKey = brokerKey;
+        localStorage.setItem(brokerStorageKey, selectedBrokerKey);
+
+        if (client) {
+            try { client.end(true); } catch (error) { console.error(error); }
+            client = null;
+        }
+
+        if (mqttPaused) {
+            setPausedUI();
+            return;
+        }
+
+        connectMqtt();
+    }
+
+    function toggleMqttPause() {
+        if (!mqttPaused) {
+            mqttPaused = true;
+            if (client) {
+                try { client.end(true); } catch (error) { console.error(error); }
+            }
+            setPausedUI();
+        } else {
+            mqttPaused = false;
+            setDisconnectedUI("連線狀態：重新連線中");
+            pauseBtn.innerHTML = '<span class="desktop-label">⏸ 暫停 MQTT</span><span class="mobile-label">暫停</span>';
+            connectMqtt();
+        }
+    }
+
+    connectMqtt();
+
+    function publishCommandPayload(payload) {
+        client.publish(cmdTopic, payload, { qos: 1, retain: false }, (err) => {
+            if (err) {
+                alert("控制指令傳送失敗: " + err);
+                return;
+            }
+
+            appendSerialRawLine("[Manual MQTT] Topic=" + cmdTopic + " Payload=" + payload);
+        });
+    }
+
+    function sendCmd(cmd) {
+        if (!client || !client.connected || mqttPaused) {
+            alert("MQTT 尚未連線");
+            return;
+        }
+
+        manualForcedMode = "";
+        updateDeviceMode("");
+
+        publishCommandPayload(String(cmd || "").trim().toLowerCase());
+    }
+
+    function sendForceMode(mode) {
+        const normalizedMode = String(mode || "").trim().toUpperCase();
+        if (normalizedMode !== "BOX" && normalizedMode !== "CUP") return;
+
+        const cmd = normalizedMode === "BOX" ? "forcebox" : "forcecup";
+        if (!client || !client.connected || mqttPaused) {
+            alert("MQTT 尚未連線");
+            return;
+        }
+
+        client.publish(cmdTopic, cmd, { qos: 0, retain: false }, (err) => {
+            if (err) {
+                alert("控制指令傳送失敗: " + err);
+                return;
+            }
+
+            manualForcedMode = "FORCE_" + normalizedMode;
+            updateDeviceMode(manualForcedMode);
+            appendSerialRawLine("[Manual MQTT] Topic=" + cmdTopic + " Payload=" + cmd);
+        });
+    }
+
+    function sendCustomMQTT() {
+        if (!client || !client.connected) {
+            alert("MQTT 尚未連線");
+            return;
+        }
+        const topic = document.getElementById("mqtt-topic").value.trim();
+        const payload = document.getElementById("mqtt-payload").value.trim();
+        if (topic === "") {
+            alert("請輸入 Topic");
+            return;
+        }
+
+        const lowerPayload = payload.toLowerCase();
+        if (lowerPayload === "forcebox") {
+            manualForcedMode = "FORCE_BOX";
+            updateDeviceMode(manualForcedMode);
+        } else if (lowerPayload === "forcecup") {
+            manualForcedMode = "FORCE_CUP";
+            updateDeviceMode(manualForcedMode);
+        } else {
+            manualForcedMode = "";
+        }
+
+        client.publish(topic, payload, {qos:0, retain:false}, function(err){
+            if(err){
+                alert("發送失敗");
+            }else{
+                appendSerialRawLine("[Manual MQTT] Topic=" + topic + " Payload=" + payload);
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+        const p = document.getElementById("mqtt-payload");
+        if(p){
+            p.addEventListener("keydown", function(e){
+                if(e.key === "Enter"){ sendCustomMQTT(); }
+            });
+        }
+    });
+</script>
+</body>
+</html>

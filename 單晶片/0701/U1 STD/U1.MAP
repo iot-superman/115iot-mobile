@@ -1,0 +1,121 @@
+
+Linker Version 8.8.1.250507
+Input Object File: C:\Users\User\Desktop\U1 STD\STARTUP1_L.OBJ
+Input Object File: C:\Users\User\Desktop\U1 STD\U1_6.OBJ
+
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
+
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     0005h     000ch    0008h      CODE               @crom (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     000dh     001ah    000eh      CODE               _CROM2PROM (CROM2PROM)
+     00h     001bh     0028h    000eh      CODE               _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0029h     004ah    0022h      CODE               _ScanKey (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     004bh     007ch    0032h      CODE               _main (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     0080h     0080h    0001h      DATA     9         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+
+     Local Sections
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0083h     0083h    0000h      LOCAL    0         @dummy (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     0082h     0082h    0001h      LOCAL    4         _main (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     0081h     0081h    0000h      LOCAL    0         _ScanKey (C:\Users\User\Desktop\U1 STD\U1_6.OBJ)
+     00h     0081h     0081h    0001h      LOCAL    3         _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0081h     0081h    0000h      LOCAL    0         _Crom2Prom (CROM2PROM)
+
+     Public Symbols Information
+     Address            Public by Name
+     000dh              _Crom2Prom
+     000dh              _Crom2PromNext
+     0005h              _SEG_TAB
+     0029h              _ScanKey
+     001dh              __DELAYY0_isr00
+     001dh              __DELAYY1_isr00
+     001ch              __DELAYY2_isr00
+     001ch              __DELAYY3_isr00
+     001bh              __DELAYY4_isr00
+     001bh              __DELAYY5_isr00
+     0081h              _builtin_holtek_delay_isr00_2
+     004bh              _main
+     0080h              ra
+
+     Address            Public by Value
+     0005h              _SEG_TAB
+     000dh              _Crom2PromNext
+     000dh              _Crom2Prom
+     001bh              __DELAYY4_isr00
+     001bh              __DELAYY5_isr00
+     001ch              __DELAYY2_isr00
+     001ch              __DELAYY3_isr00
+     001dh              __DELAYY0_isr00
+     001dh              __DELAYY1_isr00
+     0029h              _ScanKey
+     004bh              _main
+     0080h              ra
+     0081h              _builtin_holtek_delay_isr00_2
+
+
+ROM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       2000h     007dh    1%
+     01h       2000h     0000h    0%
+     02h       2000h     0000h    0%
+     03h       2000h     0000h    0%
+     04h       2000h     0000h    0%
+     05h       2000h     0000h    0%
+     06h       2000h     0000h    0%
+     07h       2000h     0000h    0%
+     Total     10000h     007dh    0%
+
+RAM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       0080h     0003h    2%
+     01h       0080h     0000h    0%
+     02h       0080h     0000h    0%
+     03h       0080h     0000h    0%
+     04h       0080h     0000h    0%
+     05h       0080h     0000h    0%
+     06h       0080h     0000h    0%
+     07h       0080h     0000h    0%
+     08h       0080h     0000h    0%
+     09h       0080h     0000h    0%
+     0ah       0080h     0000h    0%
+     0bh       0080h     0000h    0%
+     0ch       0080h     0000h    0%
+     0dh       0080h     0000h    0%
+     0eh       0080h     0000h    0%
+     0fh       0080h     0000h    0%
+     10h       0080h     0000h    0%
+     11h       0080h     0000h    0%
+     12h       0080h     0000h    0%
+     13h       0080h     0000h    0%
+     14h       0080h     0000h    0%
+     15h       0080h     0000h    0%
+     16h       0080h     0000h    0%
+     17h       0080h     0000h    0%
+     18h       0080h     0000h    0%
+     19h       0080h     0000h    0%
+     1ah       0080h     0000h    0%
+     1bh       0080h     0000h    0%
+     1ch       0080h     0000h    0%
+     1dh       0080h     0000h    0%
+     1eh       0080h     0000h    0%
+     1fh       0080h     0000h    0%
+     Total     1000h     0003h    0%
+
+Use Stack Count
+_main: 1
+
+Call Tree
+    @dummy
+        _main (0)
+            _ScanKey (1)
+            _builtin_holtek_delay_isr00 (1)
+            _Crom2Prom (1)
+
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Desktop\U1 STD\U1_6.OBJ'
+
+Total 0 error(s), Total 0 Warning(s)

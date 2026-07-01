@@ -1,0 +1,213 @@
+
+Linker Version 8.8.1.250507
+Input Object File: C:\Users\User\Desktop\U3 STD\STARTUP1_L.OBJ
+Input Object File: C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ
+
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
+
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     0005h     000bh    0007h      CODE               @crom (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     000ch     0019h    000eh      CODE               _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     001ah     0023h    000ah      CODE               __DELAYX (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0024h     0027h    0004h      CODE               @ISR_TB0_code (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     0028h     0083h    005ch      CODE               _ISR_TB0 (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     009ch     00bah    001fh      CODE               _builtin_holtek_mulsi3_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     00bbh     01efh    0135h      CODE               _main (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     01f0h     01fdh    000eh      CODE               _CROM2PROM (CROM2PROM)
+     00h     0080h     0080h    0001h      DATA     2         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0081h     0081h    0001h      DATA     14        @data_rb (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0082h     0082h    0001h      DATA     13        @data_rc (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0083h     0083h    0001h      DATA     13        @data_rd (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0084h     0084h    0001h      DATA     11        @data_re (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0085h     0085h    0001h      DATA     9         @data_rf (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0086h     0086h    0001h      DATA     8         @data_rg (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0087h     0087h    0001h      DATA     2         @data_r124 (isr:ra~rh)
+     00h     0088h     0088h    0001h      DATA     2         @data_r224 (isr:ra~rh)
+     00h     0089h     0089h    0001h      DATA     5         @data_rb24 (isr:ra~rh)
+     00h     008ah     008ah    0001h      DATA     5         @data_rc24 (isr:ra~rh)
+     00h     008bh     008bh    0001h      DATA     7         @data_ra24 (isr:ra~rh)
+     00h     00a0h     00a0h    0001h      DATA     6         @HCCINIT0_ScanCode (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     00a1h     00a2h    0002h      DATA     5         @HCCINIT0_ptr (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     00a3h     00a6h    0004h      DATA     2         @HCCINIT0_Buffer (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     00a7h     00a8h    0002h      DATA     1         @HCCINIT0_Volt (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     00a9h     00a9h    0001h      DATA     2         @data_r324 (isr:ra~rh)
+     00h     00aah     00aah    0001h      DATA     2         @data_r424 (isr:ra~rh)
+     00h     00abh     00abh    0001h      DATA     2         @data_r524 (isr:ra~rh)
+     00h     00ach     00ach    0001h      DATA     2         @data_r624 (isr:ra~rh)
+     00h     00adh     00adh    0001h      DATA     2         @data_r724 (isr:ra~rh)
+
+     Local Sections
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     00a0h     00a0h    0000h      LOCAL    0         @dummy (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     0098h     009fh    0008h      LOCAL    1.75      _main (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     008ch     008ch    0000h      LOCAL    0         __DELAYX (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     008ch     0097h    000ch      LOCAL    4.0833    _builtin_holtek_mulsi3_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     008ch     008ch    0001h      LOCAL    2         _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     008ch     008ch    0000h      LOCAL    0         @dummy36 (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     008ch     008ch    0000h      LOCAL    0         _ISR_TB0 (C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ)
+     00h     008ch     008ch    0000h      LOCAL    0         _Crom2Prom (CROM2PROM)
+
+     Public Symbols Information
+     Address            Public by Name
+     0005h              _AVDD
+     00a3h              _Buffer
+     01f0h              _Crom2Prom
+     01f0h              _Crom2PromNext
+     0028h              _ISR_TB0
+     0007h              _SEG_TAB
+     00a0h              _ScanCode
+     0006h              _VR
+     00a7h              _Volt
+     001dh              __DELAYX0
+     001ch              __DELAYX1
+     001ch              __DELAYX2
+     001bh              __DELAYX3
+     001bh              __DELAYX4
+     001ah              __DELAYX5
+     001ah              __DELAYX6
+     000eh              __DELAYY0_isr00
+     000eh              __DELAYY1_isr00
+     000dh              __DELAYY2_isr00
+     000dh              __DELAYY3_isr00
+     000ch              __DELAYY4_isr00
+     000ch              __DELAYY5_isr00
+     008ch              _builtin_holtek_delay_isr00_2
+     009ch              _builtin_holtek_mulsi3_isr00
+     008dh              _builtin_holtek_mulsi3_isr00_2
+     00bbh              _main
+     00a1h              _ptr
+     0087h              r124
+     0088h              r224
+     00a9h              r324
+     00aah              r424
+     00abh              r524
+     00ach              r624
+     00adh              r724
+     0080h              ra
+     008bh              ra24
+     0081h              rb
+     0089h              rb24
+     0082h              rc
+     008ah              rc24
+     0083h              rd
+     0084h              re
+     0085h              rf
+     0086h              rg
+
+     Address            Public by Value
+     0005h              _AVDD
+     0006h              _VR
+     0007h              _SEG_TAB
+     000ch              __DELAYY4_isr00
+     000ch              __DELAYY5_isr00
+     000dh              __DELAYY2_isr00
+     000dh              __DELAYY3_isr00
+     000eh              __DELAYY0_isr00
+     000eh              __DELAYY1_isr00
+     001ah              __DELAYX5
+     001ah              __DELAYX6
+     001bh              __DELAYX3
+     001bh              __DELAYX4
+     001ch              __DELAYX1
+     001ch              __DELAYX2
+     001dh              __DELAYX0
+     0028h              _ISR_TB0
+     0080h              ra
+     0081h              rb
+     0082h              rc
+     0083h              rd
+     0084h              re
+     0085h              rf
+     0086h              rg
+     0087h              r124
+     0088h              r224
+     0089h              rb24
+     008ah              rc24
+     008bh              ra24
+     008ch              _builtin_holtek_delay_isr00_2
+     008dh              _builtin_holtek_mulsi3_isr00_2
+     009ch              _builtin_holtek_mulsi3_isr00
+     00a0h              _ScanCode
+     00a1h              _ptr
+     00a3h              _Buffer
+     00a7h              _Volt
+     00a9h              r324
+     00aah              r424
+     00abh              r524
+     00ach              r624
+     00adh              r724
+     00bbh              _main
+     01f0h              _Crom2Prom
+     01f0h              _Crom2PromNext
+
+
+ROM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       2000h     01e6h    5%
+     01h       2000h     0000h    0%
+     02h       2000h     0000h    0%
+     03h       2000h     0000h    0%
+     04h       2000h     0000h    0%
+     05h       2000h     0000h    0%
+     06h       2000h     0000h    0%
+     07h       2000h     0000h    0%
+     Total     10000h     01e6h    0%
+
+RAM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       0080h     002eh    35%
+     01h       0080h     0000h    0%
+     02h       0080h     0000h    0%
+     03h       0080h     0000h    0%
+     04h       0080h     0000h    0%
+     05h       0080h     0000h    0%
+     06h       0080h     0000h    0%
+     07h       0080h     0000h    0%
+     08h       0080h     0000h    0%
+     09h       0080h     0000h    0%
+     0ah       0080h     0000h    0%
+     0bh       0080h     0000h    0%
+     0ch       0080h     0000h    0%
+     0dh       0080h     0000h    0%
+     0eh       0080h     0000h    0%
+     0fh       0080h     0000h    0%
+     10h       0080h     0000h    0%
+     11h       0080h     0000h    0%
+     12h       0080h     0000h    0%
+     13h       0080h     0000h    0%
+     14h       0080h     0000h    0%
+     15h       0080h     0000h    0%
+     16h       0080h     0000h    0%
+     17h       0080h     0000h    0%
+     18h       0080h     0000h    0%
+     19h       0080h     0000h    0%
+     1ah       0080h     0000h    0%
+     1bh       0080h     0000h    0%
+     1ch       0080h     0000h    0%
+     1dh       0080h     0000h    0%
+     1eh       0080h     0000h    0%
+     1fh       0080h     0000h    0%
+     Total     1000h     002eh    1%
+
+Use Stack Count
+_main: 1
+_ISR_TB0: 1
+
+Call Tree
+    @dummy
+        _main (0)
+            __DELAYX (1)
+            _builtin_holtek_mulsi3_isr00 (1)
+            _builtin_holtek_delay_isr00 (1)
+    @dummy36
+        _ISR_TB0 (0)
+            _Crom2Prom (1)
+
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Desktop\U3 STD\HU3_3_1_METERV2.OBJ'
+
+Total 0 error(s), Total 0 Warning(s)

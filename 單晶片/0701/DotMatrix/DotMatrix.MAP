@@ -1,0 +1,226 @@
+
+Linker Version 8.7.7.220718
+Input Object File: C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\STARTUP1_L.OBJ
+Input Object File: C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ
+
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
+
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0005h     0012h    000eh      CODE               _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0013h     001dh    000bh      CODE               _DisplayChar (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0024h     0027h    0004h      CODE               @ISR_TB0_code (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0028h     005bh    0034h      CODE               _ISR_TB0 (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0062h     01fdh    019ch      CODE               @crom (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     01feh     0214h    0017h      CODE               _Delayms (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0215h     0224h    0010h      CODE               _CROM2PROM (CROM2PROM)
+     00h     0225h     0250h    002ch      CODE               _ShiftDn (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0251h     02c6h    0076h      CODE               _main (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0080h     0080h    0001h      DATA     6         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0081h     0081h    0001h      DATA     55        @data_rb (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0082h     0082h    0001h      DATA     53        @data_rc (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0083h     0083h    0001h      DATA     44        @data_rd (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0084h     0084h    0001h      DATA     45        @data_re (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0085h     0085h    0001h      DATA     23        @data_rf (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0086h     0086h    0001h      DATA     23        @data_rg (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0087h     0087h    0001h      DATA     2         @data_r124 (isr:ra~rh)
+     00h     0088h     0088h    0001h      DATA     2         @data_r224 (isr:ra~rh)
+     00h     0089h     0089h    0001h      DATA     3         @data_rb24 (isr:ra~rh)
+     00h     008ah     008ah    0001h      DATA     3         @data_rc24 (isr:ra~rh)
+     00h     0096h     0097h    0002h      DATA     14        @HCCINIT0_ptr (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0098h     0098h    0001h      DATA     5         @HCCINIT0_ScanCode (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     0099h     00b8h    0020h      DATA     0.5       @HCCINIT0_Buffer (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     00b9h     00b9h    0001h      DATA     2         @data_r324 (isr:ra~rh)
+     00h     00bah     00bah    0001h      DATA     2         @data_r424 (isr:ra~rh)
+     00h     00bbh     00bbh    0001h      DATA     2         @data_r524 (isr:ra~rh)
+     00h     00bch     00bch    0001h      DATA     2         @data_r624 (isr:ra~rh)
+     00h     00bdh     00bdh    0001h      DATA     2         @data_r724 (isr:ra~rh)
+
+     Local Sections
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     008bh     008bh    0000h      LOCAL    0         @dummy36 (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008bh     008bh    0000h      LOCAL    0         _ISR_TB0 (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008bh     008bh    0000h      LOCAL    0         _Crom2Prom (CROM2PROM)
+     00h     0096h     0096h    0000h      LOCAL    0         @dummy (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008fh     0095h    0007h      LOCAL    3.2857    _main (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008bh     008bh    0001h      LOCAL    4         _ShiftDn (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008eh     008eh    0001h      LOCAL    2         _DisplayChar (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008ch     008dh    0002h      LOCAL    2         _Delayms (C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ)
+     00h     008bh     008bh    0001h      LOCAL    2         _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+
+     Public Symbols Information
+     Address            Public by Name
+     0099h              _Buffer
+     0216h              _Crom2Prom
+     0215h              _Crom2PromNext
+     01feh              _Delayms
+     008ch              _Delayms_2
+     0013h              _DisplayChar
+     0028h              _ISR_TB0
+     0098h              _ScanCode
+     0225h              _ShiftDn
+     000ah              __DELAYY0_isr00
+     0009h              __DELAYY1_isr00
+     0008h              __DELAYY2_isr00
+     0007h              __DELAYY3_isr00
+     0006h              __DELAYY4_isr00
+     0005h              __DELAYY5_isr00
+     0065h              _font
+     0251h              _main
+     0096h              _ptr
+     0062h              _string
+     0087h              r124
+     0088h              r224
+     00b9h              r324
+     00bah              r424
+     00bbh              r524
+     00bch              r624
+     00bdh              r724
+     0080h              ra
+     0081h              rb
+     0089h              rb24
+     0082h              rc
+     008ah              rc24
+     0083h              rd
+     0084h              re
+     0085h              rf
+     0086h              rg
+
+     Address            Public by Value
+     0005h              __DELAYY5_isr00
+     0006h              __DELAYY4_isr00
+     0007h              __DELAYY3_isr00
+     0008h              __DELAYY2_isr00
+     0009h              __DELAYY1_isr00
+     000ah              __DELAYY0_isr00
+     0013h              _DisplayChar
+     0028h              _ISR_TB0
+     0062h              _string
+     0065h              _font
+     0080h              ra
+     0081h              rb
+     0082h              rc
+     0083h              rd
+     0084h              re
+     0085h              rf
+     0086h              rg
+     0087h              r124
+     0088h              r224
+     0089h              rb24
+     008ah              rc24
+     008ch              _Delayms_2
+     0096h              _ptr
+     0098h              _ScanCode
+     0099h              _Buffer
+     00b9h              r324
+     00bah              r424
+     00bbh              r524
+     00bch              r624
+     00bdh              r724
+     01feh              _Delayms
+     0215h              _Crom2PromNext
+     0216h              _Crom2Prom
+     0225h              _ShiftDn
+     0251h              _main
+
+
+ROM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       2000h     02bbh    8%
+     01h       2000h     0000h    0%
+     02h       2000h     0000h    0%
+     03h       2000h     0000h    0%
+     04h       2000h     0000h    0%
+     05h       2000h     0000h    0%
+     06h       2000h     0000h    0%
+     07h       2000h     0000h    0%
+     Total     10000h     02bbh    1%
+
+RAM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       0080h     003eh    48%
+     01h       0080h     0000h    0%
+     02h       0080h     0000h    0%
+     03h       0080h     0000h    0%
+     04h       0080h     0000h    0%
+     05h       0080h     0000h    0%
+     06h       0080h     0000h    0%
+     07h       0080h     0000h    0%
+     08h       0080h     0000h    0%
+     09h       0080h     0000h    0%
+     0ah       0080h     0000h    0%
+     0bh       0080h     0000h    0%
+     0ch       0080h     0000h    0%
+     0dh       0080h     0000h    0%
+     0eh       0080h     0000h    0%
+     0fh       0080h     0000h    0%
+     10h       0080h     0000h    0%
+     11h       0080h     0000h    0%
+     12h       0080h     0000h    0%
+     13h       0080h     0000h    0%
+     14h       0080h     0000h    0%
+     15h       0080h     0000h    0%
+     16h       0080h     0000h    0%
+     17h       0080h     0000h    0%
+     18h       0080h     0000h    0%
+     19h       0080h     0000h    0%
+     1ah       0080h     0000h    0%
+     1bh       0080h     0000h    0%
+     1ch       0080h     0000h    0%
+     1dh       0080h     0000h    0%
+     1eh       0080h     0000h    0%
+     1fh       0080h     0000h    0%
+     Total     1000h     003eh    1%
+
+Use Stack Count
+_Copy2Q3: 1
+_Copy2Q1: 1
+_Copy2Q2: 1
+_ShiftUp: 1
+_ShiftDown: 1
+_ShiftRight: 1
+_ShiftLeft: 1
+_ISR_TB0: 1
+_main: 3
+
+Call Tree
+    _Copy2Q3
+        _Crom2Prom (0)
+    _Copy2Q1
+        _Crom2Prom (0)
+        _Crom2Prom (0)
+    _Copy2Q2
+        _Crom2Prom (0)
+        _Crom2Prom (0)
+    _ShiftUp
+        _Crom2Prom (0)
+        _Crom2Prom (0)
+    _ShiftDown
+        _Crom2Prom (0)
+        _Crom2Prom (0)
+    _ShiftRight
+        _Crom2Prom (0)
+        _Crom2Prom (0)
+    _ShiftLeft
+        _Crom2Prom (0)
+        _Crom2Prom (0)
+    @dummy36
+        _ISR_TB0 (0)
+            _Crom2Prom (1)
+    @dummy
+        _main (0)
+            _Crom2Prom (1)
+            _ShiftDn (1)
+                _Crom2Prom (2)
+                _Crom2Prom (2)
+            _DisplayChar (1)
+                _Delayms (2)
+                    _builtin_holtek_delay_isr00 (3)
+
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Documents\115iot-mobile\單晶片\0701\DotMatrix\DOTMATRIXV6.OBJ'
+
+Total 0 error(s), Total 0 Warning(s)
