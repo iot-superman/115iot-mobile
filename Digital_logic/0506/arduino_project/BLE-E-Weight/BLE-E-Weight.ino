@@ -1,16 +1,7 @@
-/*
-https://chatgpt.com/share/6a4268a4-9a08-83e8-9157-0fb57d683ef9
-不算完全對，主架構對了，但 AUTO_BOX → 放上 236g 水杯這段有漏洞。你的 Log 顯示：藥盒拿離後，放上 236.5g 物品，程式先用「藥盒模式」做結算，才切成水杯模式，所以才出現「放回後重量無顯著減少」再切水杯。HX711 / MQTT / Preferences 用法本身方向可行；HX711 是讀取荷重元 ADC，PubSubClient 是 MQTT 收發，Preferences 是 ESP32 NVS 儲存。 
-
-你現在最大的 3 個問題是：
-
-1. 模式切換太晚：is_cup_mode = weight >= 40 放在穩定後，而且在 box_was_picked_up 結算流程之後才生效。
-2. 放回不同設備沒有攔截：藥盒拿起後，如果放回來的是 236g 水杯，應該判定「設備更換」，不是藥盒放回。
-3. 動態加速後 weight 沒重新同步：你把 avgBuffer 填成新值，但 weight 變數還是舊平均值，所以 Log 才會從 3.92、36.64、64.60 慢慢爬到 236g。
-*/
-
 //====================================================
-// 2026 最新終極修正版：封鎖輕水杯/保特瓶喝空誤觸藥盒漏洞（FSM 手動強制切換強化版）
+// 2026 終極修正版：封鎖輕水杯/保特瓶喝空誤觸藥盒漏洞
+// 修正：模式切換太晚、設備更換攔截、動態加速同步
+// 新增：FORCE 模式狀態保護、Base 基準鎖定
 //====================================================
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -23,7 +14,7 @@ https://chatgpt.com/share/6a4268a4-9a08-83e8-9157-0fb57d683ef9
 #include <BLE2902.h>
 
 //====================================================
-// HX711 腳位設定（已避開 Flash 佔用的 GPIO 6-11）
+// HX711 腳位設定
 //====================================================
 #define HX711_DT   4  
 #define HX711_SCK  5  
@@ -32,28 +23,35 @@ HX711 scale;
 bool hx711Ready = false;
 
 //====================================================
-// 🎯 核心智慧演算法參數設定區
+// 核心參數
 //====================================================
-const float MED_THRESHOLD = 0.25;      // 吃藥觸發門檻 (g)
-const float WAT_THRESHOLD = 3.00;      // 飲水觸發門檻 (cc)
-
-// ✨【智慧身分識別門檻】
-const float MODE_CUP_THRESHOLD = 40.00; 
-
-// 智慧空秤門檻 (g)
+const float MED_THRESHOLD = 0.25;      
+const float WAT_THRESHOLD = 3.00;      
 const float EMPTY_LIMIT = 1.50;        
+const float MODE_CUP_THRESHOLD = 40.00;
+const float DISPLAY_DEADBAND = 0.10;   
+const float STABLE_NOISE_LIMIT = 0.06; 
+const int   STABLE_THRESHOLD = 12;     
+const float NOISE_THRESHOLD = 3.00;    
+const float WATER_ADD_THRESHOLD = 8.00;
 
-const float DISPLAY_DEADBAND = 0.10;   // 儀表板零點死區 (g)
+bool AUTODET_ONCE = true;              
+bool isModeLocked = false;             
 
-// 🔥【放回精密結算參數】
-const float STABLE_NOISE_LIMIT = 0.06; // 靜態判定雜訊上限 (g)
-const int   STABLE_THRESHOLD = 12;     // 靜態判定連續次數（約 1.8 秒）
+enum ScaleState {
+    STATE_IDLE,
+    CUP_SETTLED,
+    CUP_PICKED_UP,
+    CUP_WAIT_RETURN,
+    BOX_SETTLED,
+    BOX_PICKED_UP,
+    BOX_WAIT_RETURN
+};
 
-// ✨【網頁數據美化獨立功能開關】
-const bool enBeautiful = false;
+ScaleState currentState = STATE_IDLE;
 
 //====================================================
-// 🚀 FSM 狀態定義與變數
+// FSM 模式列舉
 //====================================================
 enum FsmMode {
     FSM_MODE_AUTO = 0,
@@ -63,19 +61,14 @@ enum FsmMode {
 FsmMode currentFsmMode = FSM_MODE_AUTO;
 
 //====================================================
-// NVS 記憶體快取ƒ
+// NVS 記憶體
 //====================================================
 Preferences preferences;
-
 const char* DEFAULT_WIFI_SSID = "thmrb306";
 const char* DEFAULT_WIFI_PASSWORD = "thmrbthmrb";
-
 String currentSSID = "";
 String currentPassword = "";
 
-//====================================================
-// MQTT 設定
-//====================================================
 const char* MQTT_SERVER = "mqttgo.io";
 const int MQTT_PORT = 1883;
 
@@ -84,84 +77,56 @@ const char* TOPIC_RAW = "esp32/raw";
 const char* TOPIC_CMD = "esp32/cmd";
 const char* TOPIC_MED_TAKEN = "esp32/medication/taken"; 
 const char* TOPIC_WAT_TAKEN = "esp32/water/taken";      
-const char* TOPIC_MSG = "esp32/msg";                     
-const char* TOPIC_SERIAL_RAW = "esp/msg/seialraw";       // 🎯 包含所有 Serial 文字與數據的終極追 Log 主題
+const char* TOPIC_MSG = "esp32/msg";                    
+const char* TOPIC_SERIAL_RAW = "esp/msg/seialraw";       
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
-//====================================================
-// BLE UART 設定
-//====================================================
 #define BLE_DEVICE_NAME "ESP32S3_SCALE"
-
 #define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define RX_CHARACTERISTIC_UUID "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define TX_CHARACTERISTIC_UUID "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 BLECharacteristic* txCharacteristic = nullptr;
 bool bleDeviceConnected = false;
-
 String bleRxBuffer = "";
 unsigned long lastBleRxTime = 0;
 const unsigned long BLE_PACKET_TIMEOUT = 50; 
 
-//====================================================
-// 電子秤校正參數
-//====================================================
-float calibration_factor = 387.2; 
-
-//====================================================
-// 移動平均濾波器參數
-//====================================================
+float calibration_factor = 1380.3; 
 const int AVG_SIZE = 8;
 float avgBuffer[AVG_SIZE];
 int avgIndex = 0;
 bool avgReady = false;
 
-//====================================================
-// 相對重量演算法暫存變數
-//====================================================
 float last_reported_weight = 0; 
-float last_loop_weight = 0;     
-int stable_count = 0;           
-bool is_initialized = false;    
+float last_loop_weight = 0;      
+int stable_count = 0;            
+bool hx711_just_recovered = false; 
+float weight_before_pickup = 0.0; 
 
-bool is_cup_mode = false;       
-
-float weight_before_pickup = 0.0;
-bool box_was_picked_up = false;
-bool cup_was_picked_up = false; 
-
-//====================================================
-// Serial 暫存輸入
-//====================================================
 String serialInput = "";
-
-//====================================================
-// 非阻塞式定時器
-//====================================================
 unsigned long lastWiFiTryTime = 0;
 unsigned long lastMQTTTryTime = 0;
 unsigned long lastHX711TryTime = 0;
-
-const unsigned long WIFI_RETRY_INTERVAL = 5000;  
+const unsigned long WIFI_RETRY_INTERVAL = 10000;
 const unsigned long MQTT_RETRY_INTERVAL = 5000;  
 const unsigned long HX711_RETRY_INTERVAL = 2000; 
 
+wl_status_t lastWiFiStatus = WL_DISCONNECTED;
+bool wifiConnecting = false;
+
 //====================================================
-// 通用列印函式
+// 工具函式
 //====================================================
-void appPrint(String text)
-{
+void appPrint(String text) {
     Serial.println(text);
-    if(bleDeviceConnected && txCharacteristic != nullptr)
-    {
+    if(bleDeviceConnected && txCharacteristic != nullptr) {
         txCharacteristic->setValue(text.c_str());
         txCharacteristic->notify();
     }
-    if(mqttClient.connected())
-    {
+    if(mqttClient.connected()) {
         mqttClient.publish(TOPIC_MSG, text.c_str(), true);
         mqttClient.publish(TOPIC_SERIAL_RAW, text.c_str(), true); 
     }
@@ -175,130 +140,224 @@ void logPrint(String text) {
     }
 }
 
-void executeTare()
-{
-    if(scale.is_ready())
-    {
+String getStateString(ScaleState state) {
+    switch(state) {
+        case STATE_IDLE:        return "EMPTY_IDLE";
+        case CUP_SETTLED:       return "CUP_SETTLED";
+        case CUP_PICKED_UP:     return "CUP_PICKED_UP";
+        case CUP_WAIT_RETURN:   return "CUP_WAIT_RETURN";
+        case BOX_SETTLED:       return "BOX_SETTLED";
+        case BOX_PICKED_UP:     return "BOX_PICKED_UP";
+        case BOX_WAIT_RETURN:   return "BOX_WAIT_RETURN";
+        default:                return "UNKNOWN";
+    }
+}
+
+String getWiFiStatusString(wl_status_t status) {
+    switch (status) {
+        case WL_IDLE_STATUS:     return "WL_IDLE_STATUS";
+        case WL_NO_SSID_AVAIL:   return "WL_NO_SSID_AVAIL";
+        case WL_SCAN_COMPLETED:  return "WL_SCAN_COMPLETED";
+        case WL_CONNECTED:       return "WL_CONNECTED";
+        case WL_CONNECT_FAILED:  return "WL_CONNECT_FAILED";
+        case WL_CONNECTION_LOST: return "WL_CONNECTION_LOST";
+        case WL_DISCONNECTED:    return "WL_DISCONNECTED";
+        default:                 return "UNKNOWN_STATUS";
+    }
+}
+
+void forceSyncFilterBuffer(float target_weight) {
+    for(int i = 0; i < AVG_SIZE; i++) avgBuffer[i] = target_weight;
+    avgReady = true;
+}
+
+void executeTare() {
+    if(scale.is_ready()) {
         appPrint("執行去皮歸零 (Tare)...");
         scale.tare(10); 
         float current_w = scale.get_units(5);
         last_reported_weight = current_w;
         last_loop_weight = current_w;
         weight_before_pickup = 0.0;
-        box_was_picked_up = false;
-        cup_was_picked_up = false;
+        isModeLocked = false; 
         
-        // 根據 FSM 模式初始化 cup 模式
-        if (currentFsmMode == FSM_MODE_FORCE_CUP) is_cup_mode = true;
-        else if (currentFsmMode == FSM_MODE_FORCE_BOX) is_cup_mode = false;
-        else is_cup_mode = (current_w >= MODE_CUP_THRESHOLD);
-
-        is_initialized = true;
-        appPrint("去皮完成，目前基準重: " + String(current_w, 2) + "g");
+        // 根據強制模式設定狀態
+        if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+            currentState = CUP_SETTLED;
+            isModeLocked = true;
+        } else if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+            currentState = BOX_SETTLED;
+            isModeLocked = true;
+        } else {
+            if (current_w < EMPTY_LIMIT) currentState = STATE_IDLE;
+            else if (current_w < MODE_CUP_THRESHOLD) { currentState = BOX_SETTLED; if(AUTODET_ONCE) isModeLocked = true; }
+            else { currentState = CUP_SETTLED; if(AUTODET_ONCE) isModeLocked = true; }
+        }
+        hx711_just_recovered = false;
+        appPrint("去皮完成。目前狀態: " + getStateString(currentState) + " 基準重: " + String(current_w, 2) + "g");
     }
 }
 
-void executeClear()
-{
+void executeClear() {
     appPrint("執行紀錄清零 (Clear)...");
     weight_before_pickup = 0.0;
-    box_was_picked_up = false;
-    cup_was_picked_up = false;
-
     if(mqttClient.connected()) {
         mqttClient.publish(TOPIC_MED_TAKEN, "0", true); 
-        mqttClient.publish(TOPIC_WAT_TAKEN, "0", true); 
-        appPrint("吃藥與飲水數據已重置歸零，MQTT 紀錄已成功獨立清零。");
+        mqttClient.publish(TOPIC_WAT_TAKEN, "0", true);  
+        appPrint("吃藥與飲水數據已重置歸零。");
     } else {
-        appPrint("錯誤：MQTT 未連線，無法同步清零網頁端。");
+        appPrint("錯誤：MQTT 未連線，無法同步網頁端。");
     }
 }
 
-void handleCommand(String input)
-{
+void executeForceCup() {
+    if(!scale.is_ready()) return;
+    float current_w = scale.get_units(5);
+    forceSyncFilterBuffer(current_w);
+    last_reported_weight = current_w;
+    last_loop_weight = current_w;
+    weight_before_pickup = 0.0;
+    isModeLocked = true;
+    currentFsmMode = FSM_MODE_FORCE_CUP;
+    currentState = CUP_SETTLED;
+    appPrint("🎮 [人工強制] 系統死鎖為【水杯模式】！基準: " + String(current_w, 2) + "g");
+}
+
+void executeForceBox() {
+    if(!scale.is_ready()) return;
+    float current_w = scale.get_units(5);
+    forceSyncFilterBuffer(current_w);
+    last_reported_weight = current_w;
+    last_loop_weight = current_w;
+    weight_before_pickup = 0.0;
+    isModeLocked = true;
+    currentFsmMode = FSM_MODE_FORCE_BOX;
+    currentState = BOX_SETTLED;
+    appPrint("🎮 [人工強制] 系統死鎖為【藥盒模式】！基準: " + String(current_w, 2) + "g");
+}
+
+void executeResetAuto() {
+    AUTODET_ONCE = true;
+    isModeLocked = false;
+    currentFsmMode = FSM_MODE_AUTO;
+    if(scale.is_ready()) {
+        float current_w = scale.get_units(5);
+        if (current_w < EMPTY_LIMIT) currentState = STATE_IDLE;
+        else if (current_w < MODE_CUP_THRESHOLD) currentState = BOX_SETTLED;
+        else currentState = CUP_SETTLED;
+    }
+    appPrint("🔄 [指令回復] 已重新啟用 智慧單次自動識別。系統現在是 [UNLOCKED] 狀態");
+}
+
+void loadWiFiFromNVS() {
+    preferences.begin("wifi", false);
+    currentSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);
+    currentPassword = preferences.getString("pwd", DEFAULT_WIFI_PASSWORD);
+    preferences.end();
+    Serial.println("📂 [NVS 讀取] 目前快取的 WiFi 名稱: " + currentSSID);
+}
+
+void saveWiFiToNVS() {
+    preferences.begin("wifi", false);
+    preferences.putString("ssid", currentSSID);
+    preferences.putString("pwd", currentPassword);
+    preferences.end();
+}
+
+void handleCommand(String input) {
     input.trim();
     if(input.length() == 0) return;
-
-    if(input == "tare")
-    {
-        executeTare();
-        return;
+    
+    Serial.println("📨 [指令接收] " + input);
+    
+    if(input == "tare")     { executeTare(); return; }
+    if(input == "clear")    { executeClear(); return; }
+    if(input == "forcecup") { executeForceCup(); return; }
+    if(input == "forcebox") { executeForceBox(); return; }
+    if(input == "auto" || input == "resetauto" || input == "unlock" || input == "reset") { 
+        executeResetAuto(); 
+        return; 
     }
 
-    if(input == "clear")
-    {
-        executeClear();
-        return;
-    }
-
-    // ✨【全新支援手動強制切換指令】
-    if(input == "forcecup")
-    {
-        currentFsmMode = FSM_MODE_FORCE_CUP;
-        is_cup_mode = true;
-        appPrint("📢【FSM手動切換】指令成功！強制切換至: FSM=CUP (水杯模式已鎖定)");
-        return;
-    }
-
-    if(input == "forcebox")
-    {
-        currentFsmMode = FSM_MODE_FORCE_BOX;
-        is_cup_mode = false;
-        appPrint("📢【FSM手動切換】指令成功！強制切換至: FSM=BOX (藥盒模式已鎖定)");
-        return;
-    }
-
-    if(input == "auto")
-    {
-        currentFsmMode = FSM_MODE_AUTO;
-        float current_w = scale.is_ready() ? scale.get_units(1) : 0.0;
-        is_cup_mode = (current_w >= MODE_CUP_THRESHOLD);
-        appPrint("📢【FSM手動切換】指令成功！FSM恢復 AUTO 自動識別 (目前依重量判定為: " + String(is_cup_mode ? "CUP" : "BOX") + ")");
-        return;
-    }
-
-    // 處理 WiFi SSID:Password
     int colonIndex = input.indexOf(':');
-    if(colonIndex <= 0) return;
+    if(colonIndex <= 0) {
+        Serial.println("⚠️ [指令錯誤] 未知指令: " + input);
+        return;
+    }
 
     currentSSID = input.substring(0, colonIndex);
     currentPassword = input.substring(colonIndex + 1);
     currentSSID.trim(); currentPassword.trim();
-
+    
+    Serial.println("📥 [接收到指令] SSID: [" + currentSSID + "]");
+    Serial.println("📥 [接收到指令] 密碼: [" + currentPassword + "] (長度: " + String(currentPassword.length()) + ")");
+    
     saveWiFiToNVS();
-    if(mqttClient.connected()) mqttClient.disconnect();
-    WiFi.disconnect(true);
+    appPrint("💾 [NVS 儲存成功] 新 WiFi 寫入！SSID: " + currentSSID + "，準備重新嘗試連線...");
+    
+    if(mqttClient.connected()) {
+        mqttClient.disconnect();
+        delay(100);
+    }
+    
+    WiFi.disconnect(true, true);
+    delay(300);
+    
+    lastWiFiStatus = WL_DISCONNECTED;
+    wifiConnecting = false;
+    lastWiFiTryTime = 0;
+    
     WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
+    wifiConnecting = true;
+    Serial.println("📡 [WiFi] 已發起新連線到: " + currentSSID);
 }
 
-void loadWiFiFromNVS()
-{
-    preferences.begin("wifi", false);
-    currentSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);
-    currentPassword = preferences.getString("pwd", DEFAULT_WIFI_PASSWORD);
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+    String message;
+    for(unsigned int i = 0; i < length; i++) message += (char)payload[i];
+    handleCommand(message);
 }
 
-void saveWiFiToNVS()
-{
-    preferences.putString("ssid", currentSSID);
-    preferences.putString("pwd", currentPassword);
-    appPrint("WiFi 設定已成功儲存至 NVS。");
+void handleSerialCommand() {
+    while(Serial.available() > 0) {
+        char c = Serial.read();
+        if(c == '\n' || c == '\r') {
+            if(serialInput.length() > 0) {
+                Serial.print("📨 [Serial 接收] >>> ");
+                Serial.println(serialInput);
+                handleCommand(serialInput);
+                serialInput = "";
+            }
+        } else { 
+            serialInput += c; 
+        }
+    }
 }
 
+//====================================================
+// BLE 設定
+//====================================================
 class MyServerCallbacks : public BLEServerCallbacks {
-    void onConnect(BLEServer* server) { bleDeviceConnected = true; bleRxBuffer = ""; }
-    void onDisconnect(BLEServer* server) { bleDeviceConnected = false; delay(300); BLEDevice::startAdvertising(); }
+    void onConnect(BLEServer* server) { bleDeviceConnected = true; bleRxBuffer = ""; Serial.println("📱 [BLE] 手機已連線到本裝置。"); }
+    void onDisconnect(BLEServer* server) { bleDeviceConnected = false; delay(300); BLEDevice::startAdvertising(); Serial.println("📱 [BLE] 手機已斷開連線，重新廣播中..."); }
 };
 
 class MyRXCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* characteristic) {
-        String rxValue = characteristic->getValue().c_str();
-        if(rxValue.length() > 0) { bleRxBuffer += rxValue; lastBleRxTime = millis(); }
+        String rxValue = characteristic->getValue();
+        if (rxValue.length() > 0) {
+            bleRxBuffer += rxValue;
+            lastBleRxTime = millis();
+            Serial.print("📨 [BLE 接收] 長度: ");
+            Serial.print(rxValue.length());
+            Serial.print(" 內容: [");
+            Serial.print(rxValue);
+            Serial.println("]");
+        }
     }
 };
 
-void setupBLE()
-{
+void setupBLE() {
     BLEDevice::init(BLE_DEVICE_NAME);
     BLEServer* server = BLEDevice::createServer();
     server->setCallbacks(new MyServerCallbacks());
@@ -309,66 +368,130 @@ void setupBLE()
     rxCharacteristic->setCallbacks(new MyRXCallbacks());
     service->start();
     BLEDevice::getAdvertising()->start();
+    Serial.println("📡 [BLE] 初始化完成，藍牙廣播名稱: " BLE_DEVICE_NAME);
 }
 
-void mqttCallback(char* topic, byte* payload, unsigned int length)
-{
-    String message;
-    for(unsigned int i = 0; i < length; i++) message += (char)payload[i];
-    handleCommand(message);
-}
-
-void handleSerialCommand()
-{
-    while(Serial.available() > 0)
-    {
-        char c = Serial.read();
-        if(c == '\n' || c == '\r') {
-            serialInput.trim();
-            if(serialInput.length() > 0) handleCommand(serialInput);
-            serialInput = "";
-        } else {
-            serialInput += c;
+//====================================================
+// WiFi/MQTT 連線
+//====================================================
+void connectWiFiNonBlocking() {
+    wl_status_t currentStatus = WiFi.status();
+    
+    if (currentStatus != lastWiFiStatus) {
+        Serial.println("🌐 [WiFi 狀態變更] " + getWiFiStatusString(lastWiFiStatus) + " ➡️ " + getWiFiStatusString(currentStatus));
+        if (currentStatus == WL_CONNECTED) {
+            appPrint("🎉 [WiFi 連線成功] IP: " + WiFi.localIP().toString());
+            wifiConnecting = false;
+        } else if (currentStatus == WL_CONNECT_FAILED || currentStatus == WL_NO_SSID_AVAIL || currentStatus == WL_CONNECTION_LOST || currentStatus == WL_DISCONNECTED) {
+            wifiConnecting = false;
         }
+        lastWiFiStatus = currentStatus;
     }
-}
-
-void connectWiFiNonBlocking()
-{
-    if(WiFi.status() == WL_CONNECTED) return;
+    
+    if(currentStatus == WL_CONNECTED) return;
+    if(wifiConnecting || currentStatus == WL_IDLE_STATUS || currentStatus == WL_SCAN_COMPLETED) return;
+    
     unsigned long now = millis();
     if(now - lastWiFiTryTime < WIFI_RETRY_INTERVAL) return;
+    
     lastWiFiTryTime = now;
-    WiFi.disconnect();
+    Serial.println("🌐 [WiFi 定時重連觸發] 嘗試連線到: " + currentSSID);
+    WiFi.disconnect(true);
+    delay(100);
     WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
+    wifiConnecting = true;
 }
 
-void connectMQTTNonBlocking()
-{
-    if(WiFi.status() != WL_CONNECTED || mqttClient.connected()) return;
+void connectMQTTNonBlocking() {
+    if(WiFi.status() != WL_CONNECTED) return;
+    if(mqttClient.connected()) return;
+    
     unsigned long now = millis();
     if(now - lastMQTTTryTime < MQTT_RETRY_INTERVAL) return;
     lastMQTTTryTime = now;
+    
     String clientId = "ESP32S3-"; clientId += String(random(0xffff), HEX);
-    if(mqttClient.connect(clientId.c_str())) mqttClient.subscribe(TOPIC_CMD);
+    Serial.print("🚀 [MQTT 嘗試連線] ... ");
+    if(mqttClient.connect(clientId.c_str())) {
+        mqttClient.subscribe(TOPIC_CMD);
+        appPrint("成功！");
+    } else {
+        Serial.println("失敗！錯誤代碼 = " + String(mqttClient.state()));
+    }
 }
 
-void initHX711NonBlocking()
-{
+void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
+    switch(event) {
+        case ARDUINO_EVENT_WIFI_STA_START: Serial.println("🔵 [WiFi 事件] 驅動啟動"); break;
+        case ARDUINO_EVENT_WIFI_STA_STOP: Serial.println("🔴 [WiFi 事件] 驅動停止"); break;
+        case ARDUINO_EVENT_WIFI_STA_CONNECTED: Serial.println("✅ [WiFi 事件] 已連接到 AP"); break;
+        case ARDUINO_EVENT_WIFI_STA_GOT_IP: Serial.print("✅ [WiFi 事件] 已獲取 IP: "); Serial.println(WiFi.localIP()); break;
+        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED: {
+            uint8_t reason = info.wifi_sta_disconnected.reason;
+            Serial.print("⚠️ [WiFi 底層事件] 斷線，Reason Code: " + String(reason));
+            wifiConnecting = false;
+            break;
+        }
+        default: break;
+    }
+}
+
+ 
+//====================================================
+// HX711 初始化 - 修正版（確保正確去皮）
+//====================================================
+void initHX711NonBlocking() {
     scale.begin(HX711_DT, HX711_SCK);
     scale.set_scale(calibration_factor); 
+    
+    // ✅ 等待 HX711 就緒（最多 5 秒）
     unsigned long startTime = millis();
     while(!scale.is_ready()) {
         handleSerialCommand();
-        if(millis() - startTime > 3000) return;
-        delay(10); 
+        if(millis() - startTime > 5000) {
+            hx711Ready = false;
+            appPrint("⚠️ HX711 初始化超時！");
+            return;
+        }
+        delay(10);
     }
+    
+    hx711Ready = true;
+    
+    // ✅ 執行 20 次平均去皮
     scale.tare(20);
-    hx711Ready = true; 
+    
+    // ✅ 讀取去皮後的基準重量
+    float current_w = scale.get_units(5);
+    last_reported_weight = current_w;
+    last_loop_weight = current_w;
+    
+    // ✅ 同步濾波器
+    forceSyncFilterBuffer(current_w);
+    
+    // ✅ 設定初始狀態
+    if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+        currentState = CUP_SETTLED;
+        isModeLocked = true;
+    } else if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+        currentState = BOX_SETTLED;
+        isModeLocked = true;
+    } else {
+        if (current_w < EMPTY_LIMIT) {
+            currentState = STATE_IDLE;
+            isModeLocked = false;
+        } else if (current_w < MODE_CUP_THRESHOLD) {
+            currentState = BOX_SETTLED;
+            isModeLocked = true;
+        } else {
+            currentState = CUP_SETTLED;
+            isModeLocked = true;
+        }
+    }
+    
+    appPrint("✅ HX711 開機歸零成功！基準重: " + String(current_w, 2) + "g 狀態: " + getStateString(currentState));
 }
-
-float movingAverage(float value)
-{
+float movingAverage(float value) {
     avgBuffer[avgIndex] = value; 
     avgIndex++;
     if(avgIndex >= AVG_SIZE) { avgIndex = 0; avgReady = true; }
@@ -378,281 +501,447 @@ float movingAverage(float value)
     return sum / count;
 }
 
-//====================================================
-// 主程式 Setup
-//====================================================
-void setup()
-{
-    Serial.begin(115200);
-    delay(1000);
-    loadWiFiFromNVS();
-    setupBLE();
-    mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
-    mqttClient.setCallback(mqttCallback);
-    initHX711NonBlocking();
-}
 
 //====================================================
-// 主程式 Loop
+// setup() - 修正版
 //====================================================
-void loop()
-{
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("\n--- [ESP32S3 系統啟動] ---");
+    
+    // 1. WiFi 和 BLE 初始化（不影響 HX711）
+    WiFi.onEvent(WiFiEvent);
+    loadWiFiFromNVS();
+    setupBLE();
+    
+    // 2. MQTT 設定
+    mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+    mqttClient.setCallback(mqttCallback);
+    
+    // 3. ✅ HX711 初始化（確保完成去皮）
+    initHX711NonBlocking();
+    
+    // 4. 如果 HX711 初始化失敗，重試
+    if (!hx711Ready) {
+        Serial.println("⚠️ HX711 未就緒，將在 loop 中持續重試...");
+    }
+    
+    // 5. WiFi 連線
+    Serial.println("📡 [WiFi] 開始連線到: " + currentSSID);
+    WiFi.begin(currentSSID.c_str(), currentPassword.c_str());
+    wifiConnecting = true;
+    lastWiFiTryTime = millis();
+}
+//====================================================
+// loop()
+//====================================================
+void loop() {
     handleSerialCommand();
     connectWiFiNonBlocking();
     connectMQTTNonBlocking();
-
     if(mqttClient.connected()) mqttClient.loop();
 
+    // BLE 資料處理
     if (bleRxBuffer.length() > 0) {
-        if ((millis() - lastBleRxTime > BLE_PACKET_TIMEOUT) || (bleRxBuffer.indexOf('\n') >= 0)) {
-            bleRxBuffer.trim(); handleCommand(bleRxBuffer); bleRxBuffer = ""; 
+        int colonIndex = bleRxBuffer.indexOf(':');
+        if (colonIndex >= 0 && (millis() - lastBleRxTime > 500)) {
+            Serial.print("📨 [BLE 完整指令] >>> ");
+            Serial.println(bleRxBuffer);
+            handleCommand(bleRxBuffer);
+            bleRxBuffer = "";
+        }
+        else if (colonIndex == -1) {
+            String lowerBuffer = bleRxBuffer; lowerBuffer.toLowerCase(); lowerBuffer.trim();
+            if (lowerBuffer == "auto" || lowerBuffer == "forcecup" || lowerBuffer == "forcebox" || 
+                lowerBuffer == "resetauto" || lowerBuffer == "tare" || lowerBuffer == "clear" ||
+                lowerBuffer == "unlock" || lowerBuffer == "reset") {
+                Serial.print("📨 [BLE 完整指令] >>> ");
+                Serial.println(bleRxBuffer);
+                handleCommand(bleRxBuffer);
+                bleRxBuffer = "";
+            }
+        }
+        if (bleRxBuffer.length() > 0 && (millis() - lastBleRxTime > 5000)) {
+            Serial.println("⚠️ [BLE] 超時清空: " + bleRxBuffer);
+            bleRxBuffer = "";
+        }
+        if (bleRxBuffer.length() > 64) {
+            Serial.println("⚠️ [BLE] Buffer 過長，強制清空");
+            bleRxBuffer = "";
         }
     }
 
-    if(!hx711Ready || !scale.is_ready()) { delay(200); return; }
+    // HX711 檢查
+    if(!scale.is_ready()) { 
+        hx711Ready = false;
+        hx711_just_recovered = true;
+        unsigned long now = millis();
+        if(now - lastHX711TryTime > HX711_RETRY_INTERVAL) {
+            lastHX711TryTime = now;
+            logPrint("⚠️ [硬體錯誤] 找不到 HX711 晶片。正在嘗試重連...");
+            scale.begin(HX711_DT, HX711_SCK);
+            scale.set_scale(calibration_factor);
+        }
+        delay(200); 
+        return; 
+    }
 
+    long raw = scale.read(); 
+    if (raw == -1) {
+        hx711Ready = false;
+        hx711_just_recovered = true;
+        unsigned long now = millis();
+        if(now - lastHX711TryTime > HX711_RETRY_INTERVAL) {
+            lastHX711TryTime = now;
+            logPrint("❌ [數據異常] 偵測到 RAW = -1！訊號中斷保護中。");
+        }
+        delay(200); 
+        return;
+    }
+
+    hx711Ready = true;
     float weight = scale.get_units(1); 
     weight = movingAverage(weight);
-    long raw = scale.read(); 
 
-    // 初始化基準重量與模式
-    if (!is_initialized) {
+    // ✅ 問題3修正：動態加速後立即同步 weight
+    if (abs(weight - last_loop_weight) > 15.0) {
+        forceSyncFilterBuffer(weight);
+        weight = movingAverage(weight);
+        logPrint("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
+    }
+
+    // HX711 恢復邏輯
+    if (hx711_just_recovered) {
         last_reported_weight = weight;
         last_loop_weight = weight;
-        if (currentFsmMode == FSM_MODE_FORCE_CUP) is_cup_mode = true;
-        else if (currentFsmMode == FSM_MODE_FORCE_BOX) is_cup_mode = false;
-        else is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
-        is_initialized = true;
+        isModeLocked = false;
+        if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+            currentState = CUP_SETTLED;
+            isModeLocked = true;
+        } else if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+            currentState = BOX_SETTLED;
+            isModeLocked = true;
+        } else {
+            if (weight < EMPTY_LIMIT) currentState = STATE_IDLE;
+            else if (weight < MODE_CUP_THRESHOLD) { currentState = BOX_SETTLED; if(AUTODET_ONCE) isModeLocked = true; }
+            else { currentState = CUP_SETTLED; if(AUTODET_ONCE) isModeLocked = true; }
+        }
+        hx711_just_recovered = false;
+        logPrint("🔄 [硬體恢復] 重新同步系統狀態為: " + getStateString(currentState) + " 重量: " + String(weight, 2) + "g");
     }
 
-// ✨【動態加速濾波】**
-// 若重量瞬間變動超過 15g，代表物體被拿起或放下。
-// 這裡不只同步 avgBuffer，也要把本輪 weight 立即改成新值，避免畫面慢慢爬升。
-if (abs(weight - last_loop_weight) > 15.0) {
-    for(int i = 0; i < AVG_SIZE; i++) {
-        avgBuffer[i] = weight;
+    //====================================================
+    // ✅ 強制模式狀態保護（放在狀態移轉之前）
+    //====================================================
+    if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+        if (currentState == STATE_IDLE) {
+            currentState = CUP_SETTLED;
+            logPrint("🔄【強制保護】水杯模式：強制切換回 CUP_SETTLED");
+        }
+        // 重量低於 EMPTY_LIMIT 時保持 CUP 狀態
+        if (weight <= EMPTY_LIMIT && currentState == CUP_SETTLED) {
+            // 水杯可能被拿離，但保持 CUP_SETTLED
+        }
     }
-    avgReady = true;
+    else if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+        if (currentState == STATE_IDLE) {
+            currentState = BOX_SETTLED;
+            logPrint("🔄【強制保護】藥盒模式：強制切換回 BOX_SETTLED");
+        }
+        if (weight <= EMPTY_LIMIT && currentState == BOX_SETTLED) {
+            // 藥盒可能被拿離，但保持 BOX_SETTLED
+        }
+    }
 
-    // 🔥 新增：本輪重量立即同步，不再等移動平均慢慢追
-    last_loop_weight = weight;
+    // 每秒 Log
+    static unsigned long lastLogTime = 0;
+    if (millis() - lastLogTime > 1000) {
+        lastLogTime = millis();
+        String lockStatusStr = isModeLocked ? "[LOCKED]" : "[UNLOCKED]";
+        String modeStr = (currentFsmMode == FSM_MODE_FORCE_CUP) ? "FORCE_CUP" :
+                        (currentFsmMode == FSM_MODE_FORCE_BOX) ? "FORCE_BOX" : "AUTO";
+        String fullSerialLine = "RAW = " + String(raw) + 
+                                "    Weight = " + String(weight, 2) + 
+                                " g    [Base: " + String(last_reported_weight, 2) + 
+                                " g]   [State: " + getStateString(currentState) + 
+                                "] " + modeStr + " " + lockStatusStr;
+        Serial.println(fullSerialLine);
+        if(mqttClient.connected()) {
+            mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true);
+        }
+    }
 
-    logPrint("⚡【動態加速】偵測到重量劇烈變動，瞬間同步濾波緩衝區。");
-}
-    // 建立動態模式標籤文字
-    String modeStr = "BOX";
-    if (currentFsmMode == FSM_MODE_FORCE_CUP) modeStr = "FORCE_CUP";
-    else if (currentFsmMode == FSM_MODE_FORCE_BOX) modeStr = "FORCE_BOX";
-    else modeStr = is_cup_mode ? "AUTO_CUP" : "AUTO_BOX";
+    //====================================================
+    // 🔥 狀態移轉（拿起偵測）
+    //====================================================
+    if (currentState == CUP_SETTLED && (last_reported_weight - weight) > 10.0) {
+        weight_before_pickup = last_reported_weight;
+        currentState = CUP_PICKED_UP;
+        logPrint("🥛【狀態移轉】水杯被拿起！鎖定飲水前重量: " + String(weight_before_pickup, 2) + "g");
+    }
+    else if (currentState == BOX_SETTLED && (last_reported_weight - weight) > 1.50) {
+        weight_before_pickup = last_reported_weight;
+        currentState = BOX_PICKED_UP;
+        logPrint("📦【狀態移轉】藥盒被拿起！鎖定拿藥前重量: " + String(weight_before_pickup, 2) + "g");
+    }
 
-    // 1. 建立標準每輪狀態字串（常態純數據行）
-    String fullSerialLine = "RAW = " + String(raw) + 
-                            "    Weight = " + String(weight, 2) + 
-                            " g    [Base: " + String(last_reported_weight, 2) + 
-                            " g]   [Mode: " + modeStr + "]";
+    // ✅ 修正：判斷是否進入 WAIT_RETURN 時，檢查強制模式
+    if (currentState == CUP_PICKED_UP && weight <= EMPTY_LIMIT) {
+        if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+            currentState = CUP_SETTLED;
+            logPrint("🥛【強制模式】水杯離開秤面，保持水杯模式，等待放回");
+        } else {
+            currentState = CUP_WAIT_RETURN;
+            logPrint("🥛【狀態移轉】水杯已完全離開秤台！進入 WAIT_FOR_RETURN。");
+        }
+    }
+    if (currentState == BOX_PICKED_UP && weight <= EMPTY_LIMIT) {
+        if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+            currentState = BOX_SETTLED;
+            logPrint("📦【強制模式】藥盒離開秤面，保持藥盒模式，等待放回");
+        } else {
+            currentState = BOX_WAIT_RETURN;
+            logPrint("📦【狀態移轉】藥盒已完全離開秤台！進入 WAIT_FOR_RETURN。");
+        }
+    }
 
-    // 2. 複製一份給網頁通知端
-    String webMsgLine = fullSerialLine;
+    // ✅ 修正：FORCE 模式下完全跳過設備更換檢測
+    if ((currentFsmMode != FSM_MODE_FORCE_CUP && currentFsmMode != FSM_MODE_FORCE_BOX) && 
+        (!isModeLocked || currentFsmMode == FSM_MODE_AUTO)) {
+        // 藥盒模式 → 放回重物（≥40g）→ 秒切水杯
+        if (currentState == BOX_WAIT_RETURN && weight >= MODE_CUP_THRESHOLD) {
+            logPrint("⚡【設備更換】藥盒拿離後偵測到水杯重量（≥40g），取消藥盒結算，秒切至水杯模式！");
+            forceSyncFilterBuffer(weight);
+            last_reported_weight = weight;
+            currentState = CUP_SETTLED;
+            weight_before_pickup = 0.0;
+            stable_count = 0;
+            last_loop_weight = weight;
+            return;
+        }
+        
+        // 水杯模式 → 放回輕物（<40g）→ 秒切藥盒
+        if (currentState == CUP_WAIT_RETURN && weight > EMPTY_LIMIT && weight < MODE_CUP_THRESHOLD) {
+            if ((weight - last_loop_weight) < 5.0) {
+                logPrint("⚡【設備更換】水杯拿離後偵測到藥盒重量（<40g），取消水杯結算，秒切至藥盒模式！");
+                forceSyncFilterBuffer(weight);
+                last_reported_weight = weight;
+                currentState = BOX_SETTLED;
+                weight_before_pickup = 0.0;
+                stable_count = 0;
+                last_loop_weight = weight;
+                return;
+            }
+        }
+    }
 
-    // 印出即時狀態到物理 Serial 埠
-    Serial.println(fullSerialLine);
-
-    // ====================================================
-    // 智慧絕對值靜態比對演算法
-    // ====================================================
+    // 穩定偵測
     if (abs(weight - last_loop_weight) < STABLE_NOISE_LIMIT) { 
         stable_count++;
     } else {
         stable_count = 0; 
     }
 
-    // ✨【動態離手偵測】
-    if (last_reported_weight > EMPTY_LIMIT) {
-        // ----------------- 狀況一：水杯被拿起 -----------------
-        if (is_cup_mode && (last_reported_weight - weight) > 10.0 && !cup_was_picked_up) {
-            weight_before_pickup = last_reported_weight;
-            cup_was_picked_up = true;
-            logPrint("🥛【狀態鎖定】偵測到水杯被拿起！鎖定飲水前重量: " + String(weight_before_pickup, 2) + "g");
-        }
-        // ----------------- 狀況二：藥盒被拿起 -----------------
-        else if (!is_cup_mode && (last_reported_weight - weight) > 1.50 && !box_was_picked_up) {
-            weight_before_pickup = last_reported_weight; 
-            box_was_picked_up = true;
-            logPrint("🔥【狀態鎖定】偵測到藥盒被拿起！鎖定拿藥前重量: " + String(weight_before_pickup, 2) + "g");
-        }
-    }
-
+    //====================================================
+    // 🔥 穩定後結算
+    //====================================================
     if (stable_count >= STABLE_THRESHOLD) {
         stable_count = 0; 
 
-        // 1. 智慧空秤防呆判定
-        if (weight <= EMPTY_LIMIT) {
-            if (is_cup_mode) {
-                if (weight_before_pickup == 0.0) weight_before_pickup = last_reported_weight; 
-                last_reported_weight = weight; 
-                static unsigned long last_cup_msg = 0;
-                if (millis() - last_cup_msg > 5000) {
-                    logPrint("【狀態通知】水杯已拿離。保持水杯模式鎖定。");
-                    last_cup_msg = millis();
+        switch (currentState) {
+            case STATE_IDLE:
+                last_reported_weight = weight;
+                // ✅ FORCE 模式下從 IDLE 跳到對應狀態
+                if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+                    currentState = CUP_SETTLED;
+                    logPrint("🔄【強制模式】從 IDLE 切換到 CUP_SETTLED");
+                    break;
                 }
-            } 
-            else {
-                static unsigned long last_box_msg = 0;
-                if (millis() - last_box_msg > 5000) {
-                    logPrint("【狀態通知】藥盒已拿離。保持藥盒模式鎖定。");
-                    last_box_msg = millis();
+                if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+                    currentState = BOX_SETTLED;
+                    logPrint("🔄【強制模式】從 IDLE 切換到 BOX_SETTLED");
+                    break;
                 }
-            }
-        } 
-        else {
-            // 2. 有東西在秤上且完全穩定
-            // ✨【修正防覆寫】：只有在 AUTO 模式下，才允許動態透過重量改變 is_cup_mode
-            if (!cup_was_picked_up && !box_was_picked_up && currentFsmMode == FSM_MODE_AUTO) {
-                bool previous_mode = is_cup_mode;
-                is_cup_mode = (weight >= MODE_CUP_THRESHOLD); 
-                
-                if (previous_mode != is_cup_mode) {
-                    logPrint("🔄【模式切換】偵測到設備變更，目前切換至: " + String(is_cup_mode ? "水杯模式" : "藥盒模式"));
+                // 自動模式
+                if (weight >= MODE_CUP_THRESHOLD) {
+                    currentState = CUP_SETTLED;
+                    last_reported_weight = weight;
+                    if(AUTODET_ONCE) { isModeLocked = true; }
+                    logPrint("🔄【單次識別】偵測到重物，鎖定為：水杯模式。Base: " + String(weight, 2) + "g");
+                } 
+                else if (weight >= EMPTY_LIMIT) {
+                    currentState = BOX_SETTLED;
+                    last_reported_weight = weight;
+                    if(AUTODET_ONCE) { isModeLocked = true; }
+                    logPrint("🔄【單次識別】偵測到輕物，鎖定為：藥盒模式。Base: " + String(weight, 2) + "g");
                 }
-            }
+                break;
 
-            if (is_cup_mode) {
-                // =================【水杯模式結算】=================
-                float consumed = 0.0;
-                if (cup_was_picked_up && weight_before_pickup >= (currentFsmMode == FSM_MODE_FORCE_CUP ? 0.0 : MODE_CUP_THRESHOLD)) {
-                    consumed = weight_before_pickup - weight;
-                } else {
-                    consumed = last_reported_weight - weight;
-                }
-
-                if (cup_was_picked_up) {
-                    if (consumed >= WAT_THRESHOLD) {
-                        webMsgLine += "|Reason=WaterTaken|Consumed=" + String(consumed, 1) + "|Mode=CUP|RAW=" + String(raw);
-
-                        appPrint("【智慧紀錄】偵測到飲水！單次減少: " + String(consumed, 2) + " cc");
+            case CUP_SETTLED:
+                // ✅ FORCE_CUP 模式下，只在飲水或加水時更新基準
+                if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+                    if (last_reported_weight - weight >= WAT_THRESHOLD) {
+                        float direct_consumed = last_reported_weight - weight;
+                        appPrint("【智慧紀錄】吸管模式飲水！單次減少: " + String(direct_consumed, 2) + " cc");
                         if(mqttClient.connected()) {
-                            char msg[10]; dtostrf(consumed, 0, 2, msg); 
+                            char msg[16]; dtostrf(direct_consumed, 0, 2, msg); 
                             mqttClient.publish(TOPIC_WAT_TAKEN, msg, true);
                         }
-                    } 
-                    else if (consumed < -3.0) {
-                        logPrint("【狀態】偵測到水杯水量增加，已更新基準重.");
+                        last_reported_weight = weight;
                     }
-                    
-                    cup_was_picked_up = false;
-                }
-                last_reported_weight = weight; 
-                weight_before_pickup = 0.0;
-            } 
-            else {
-                // =================【藥盒模式結算】=================
-
-                // 🛡️【設備更換攔截】**
-                // 原本是藥盒拿起，但放回來重量已超過水杯門檻，代表使用者把水杯放上秤。
-                // 這不是吃藥結算，必須清掉藥盒拿起狀態，並切到水杯模式。
-                if (currentFsmMode == FSM_MODE_AUTO &&
-                    box_was_picked_up &&
-                    weight >= MODE_CUP_THRESHOLD) {
-
-                    is_cup_mode = true;
-                    box_was_picked_up = false;
-                    cup_was_picked_up = false;
-                    weight_before_pickup = 0.0;
-                    last_reported_weight = weight;
-
-                    logPrint("🔄【設備更換】藥盒拿離後偵測到水杯重量，取消藥盒結算並切換至水杯模式。");
-
-                    // 直接結束這次穩定結算，避免繼續跑藥盒判斷
-                    last_loop_weight = weight;
-                    return;
-                }
-
-                if (box_was_picked_up && weight_before_pickup > EMPTY_LIMIT) {
-                    
-                    float test_consumed = weight_before_pickup - weight;
-                    
-                    if (weight < 4.00 && test_consumed > 5.00) {
-                        logPrint("🛡️【攔截空秤誤判】目前重量 (" + String(weight, 2) + "g) 判定為空秤零點漂移，藥盒尚未放回，暫緩結算。");
-                        stable_count = 0; 
+                    else if (weight - last_reported_weight > WATER_ADD_THRESHOLD) {
+                        logPrint("🥛【強制模式】水杯加水，更新基準: " + String(weight, 2) + "g");
+                        last_reported_weight = weight;
                     }
-                    else if (weight > EMPTY_LIMIT) {
-                        float consumed = weight_before_pickup - weight;
-
-                        if (consumed >= MED_THRESHOLD) {
-                            webMsgLine += "|Reason=MedicationTaken|Consumed=" + String(consumed, 2) + "|Mode=BOX|RAW=" + String(raw);
-
-                            appPrint("【智慧紀錄】偵測服用藥物！單次減少: " + String(consumed, 2) + " g");
-                            if(mqttClient.connected()) {
-                                char msg[10]; dtostrf(consumed, 0, 2, msg); 
-                                mqttClient.publish(TOPIC_MED_TAKEN, msg, true);
-                            }
-                        } else {
-                            logPrint("【防誤觸】放回後重量無顯著減少，不發送紀錄。");
+                    // ✅ 微小漂移不更新基準
+                } else {
+                    // 自動模式
+                    if (last_reported_weight - weight >= WAT_THRESHOLD) {
+                        float direct_consumed = last_reported_weight - weight;
+                        appPrint("【智慧紀錄】吸管模式飲水！單次減少: " + String(direct_consumed, 2) + " cc");
+                        if(mqttClient.connected()) {
+                            char msg[16]; dtostrf(direct_consumed, 0, 2, msg); 
+                            mqttClient.publish(TOPIC_WAT_TAKEN, msg, true);
                         }
-                        
-                        weight_before_pickup = 0.0;
-                        box_was_picked_up = false;
-                        last_reported_weight = weight; 
+                        last_reported_weight = weight;
                     }
+                    else if (weight - last_reported_weight > WATER_ADD_THRESHOLD) {
+                        logPrint("🥛【基準校準】水杯就地加水，更新基準: " + String(weight, 2) + "g");
+                        last_reported_weight = weight;
+                    }
+                    else if (abs(weight - last_reported_weight) < 1.00) {
+                        last_reported_weight = weight;
+                    }
+                }
+                break;
+
+            case CUP_PICKED_UP:
+                if (weight <= EMPTY_LIMIT) {
+                    if (currentFsmMode == FSM_MODE_FORCE_CUP) {
+                        currentState = CUP_SETTLED;
+                    } else {
+                        currentState = CUP_WAIT_RETURN;
+                    }
+                }
+                break;
+
+            case CUP_WAIT_RETURN:
+                if (weight <= EMPTY_LIMIT) {
+                    // 維持空秤狀態
                 } 
                 else {
-                    float consumed = last_reported_weight - weight;
-                    
-                    if (consumed < -0.20) { 
-                        logPrint("【防誤觸】偵測到藥盒重量顯著增加，強制刷新基準，不作吃藥結算。");
-                        weight_before_pickup = 0.0;
-                        box_was_picked_up = false;
+                    float consumed_wat = weight_before_pickup - weight;
+                    if (weight_before_pickup <= EMPTY_LIMIT) {
+                        logPrint("🥛【精密結算】無先前重量紀錄，跳過基準更新");
+                        if (currentFsmMode != FSM_MODE_FORCE_CUP) {
+                            last_reported_weight = weight;
+                        }
+                        currentState = CUP_SETTLED;
                     }
-                    else if (consumed >= 0.0 && consumed < MED_THRESHOLD) {
-                        logPrint("【防誤觸】微幅自然環境漂移，不作吃藥結算. ");
+                    else if (abs(consumed_wat) <= NOISE_THRESHOLD) {
+                        logPrint("🥛【精密結算】原水杯放回，水量無顯著變化。");
+                        if (currentFsmMode != FSM_MODE_FORCE_CUP) {
+                            last_reported_weight = weight;
+                        }
+                        currentState = CUP_SETTLED;
                     }
-                    last_reported_weight = weight; 
+                    else if (consumed_wat >= WAT_THRESHOLD) {
+                        appPrint("【智慧紀錄】水杯飲水結算！飲用量: " + String(consumed_wat, 2) + " cc");
+                        if(mqttClient.connected()) {
+                            char msg[16]; dtostrf(consumed_wat, 0, 2, msg); 
+                            mqttClient.publish(TOPIC_WAT_TAKEN, msg, true);
+                        }
+                        // ✅ 飲水結算後更新基準
+                        last_reported_weight = weight;
+                        currentState = CUP_SETTLED;
+                    }
+                    else if (consumed_wat < -WATER_ADD_THRESHOLD) {
+                        logPrint("🥛【精密結算】水杯確認「加水」後放回，更新基準: " + String(weight, 2) + "g");
+                        last_reported_weight = weight;
+                        currentState = CUP_SETTLED;
+                    }
+                    else {
+                        logPrint("🥛【精密結算】微小異動放回，同步更新基準: " + String(weight, 2) + "g");
+                        if (currentFsmMode != FSM_MODE_FORCE_CUP) {
+                            last_reported_weight = weight;
+                        }
+                        currentState = CUP_SETTLED;
+                    }
+                    weight_before_pickup = 0.0; 
                 }
+                break;
+
+            case BOX_SETTLED:
+            {  
+                float box_delta = last_reported_weight - weight;
+                if (box_delta < -0.20) { 
+                    last_reported_weight = weight;
+                    logPrint("📦【基準校準】藥盒重量增加，更新基準: " + String(weight, 2) + "g");
+                }
+                break;
             }
+
+            case BOX_PICKED_UP:
+                if (weight <= EMPTY_LIMIT) {
+                    if (currentFsmMode == FSM_MODE_FORCE_BOX) {
+                        currentState = BOX_SETTLED;
+                    } else {
+                        currentState = BOX_WAIT_RETURN;
+                    }
+                }
+                break;
+
+            case BOX_WAIT_RETURN:
+                if (weight <= EMPTY_LIMIT) {
+                    // 維持空秤狀態
+                }
+                else {
+                    float consumed_med = weight_before_pickup - weight;
+                    if (consumed_med >= MED_THRESHOLD && weight_before_pickup > EMPTY_LIMIT) {
+                        appPrint("【智慧紀錄】藥物服用結算！減少: " + String(consumed_med, 2) + " g");
+                        if(mqttClient.connected()) {
+                            char msg[16]; 
+                            dtostrf(consumed_med, 0, 2, msg); 
+                            mqttClient.publish(TOPIC_MED_TAKEN, msg, true);
+                        }
+                        last_reported_weight = weight;
+                        currentState = BOX_SETTLED;
+                    }
+                    else if (abs(consumed_med) <= NOISE_THRESHOLD) {
+                        logPrint("📦【精密結算】原藥盒放回，藥物無顯著變化。");
+                        last_reported_weight = weight;
+                        currentState = BOX_SETTLED;
+                    }
+                    else {
+                        logPrint("📦【精密結算】藥盒放回，同步更新基準: " + String(weight, 2) + "g");
+                        last_reported_weight = weight;
+                        currentState = BOX_SETTLED;
+                    }
+                    weight_before_pickup = 0.0;
+                }
+                break;
+
+            default:
+                break;
         }
     }
 
-    last_loop_weight = weight; 
+    // 更新 last_loop_weight 供下一輪比較
+    last_loop_weight = weight;
 
-    // ====================================================
-    // 網頁數據美化與即時發佈（保持原始獨立 Raw/Weight 運作）
-    // ====================================================
-    if(mqttClient.connected())
-    {
-    float display_weight = weight;
-        
-        if (enBeautiful) {
-            // 情境 A：藥盒已被拿走 (小於空秤閥值)
-            if (weight <= EMPTY_LIMIT) {
-                // 網頁顯示拿起前的重量，讓使用者知道原本有多重
-                display_weight = (weight_before_pickup > EMPTY_LIMIT) ? weight_before_pickup : last_reported_weight;
-                
-                // 如果連原本重量都很輕，或者判定是要完全歸零，再強制作為 0
-                if (weight_before_pickup <= EMPTY_LIMIT && last_reported_weight <= EMPTY_LIMIT) {
-                    display_weight = 0.00;
-                }
-            } 
-            // 情境 B：藥盒還在，但只是小幅度的數位雜訊飄移
-            else if (abs(display_weight) < DISPLAY_DEADBAND) {
-                display_weight = 0.00;
-            }
-        } 
-        else {
-            // 未開啟美化，僅過濾極小死區
-            if (abs(display_weight) < DISPLAY_DEADBAND) display_weight = 0.00;
-        }
+    //====================================================
+    // 網頁數據發布
+    //====================================================
+    if(mqttClient.connected()) {
+         
+         // ✅ 直接發送 Weight 實際重量，不減基準
+         float display_weight = weight;  // ← 改為實際重量
 
-        // 發佈數據
+        if (abs(display_weight) < DISPLAY_DEADBAND) display_weight = 0.00;
         char weightText[20]; dtostrf(display_weight, 0, 2, weightText);
         mqttClient.publish(TOPIC_WEIGHT, weightText, true);
-
-        // 👇發佈數據: 包含所有 Serial 文字與數據的終極追 Log 主題
-        mqttClient.publish(TOPIC_SERIAL_RAW, fullSerialLine.c_str(), true); 
-        mqttClient.publish(TOPIC_MSG, webMsgLine.c_str(), true);
-
-        // 【記得在發佈後更新最後回報值】
-        last_reported_weight = display_weight;
     }
 
-    delay(150); 
+    delay(150);
 }
