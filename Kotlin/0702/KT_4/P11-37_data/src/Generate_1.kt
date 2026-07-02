@@ -9,7 +9,7 @@ fun <T1, T2> myFun(p1: T1, p2: T2) {
     println("p1 = $p1")
     println("p2 = $p2")
     println()
-}
+}貝
 
 //==============================
 // Generic Constraint
