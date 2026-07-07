@@ -1,0 +1,11 @@
+import math_operation as m
+m.test()
+m.test()
+print(".......1........")
+num1 = m.mul(9,2)
+print(f"mul(9,2): {num1}")
+num2 = m.add(9,2)
+print(f"add(9,2): {num2}")
+num3 = m.div(9,2)
+print(f"div(9,2): {num3}")
+print(f"minus(9,2): {num3}")
