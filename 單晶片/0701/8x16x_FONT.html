@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8x8 / 16x16 點陣字模生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            background: #f0f4fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            background: #ffffff;
+            padding: 30px 34px 34px;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px -16px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #0b1e33;
+            letter-spacing: 0.5px;
+        }
+        .header .tag {
+            background: #dbeafe;
+            color: #1e4b8a;
+            padding: 2px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .header .status {
+            background: #dcfce7;
+            color: #166534;
+            padding: 2px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .toolbar {
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-radius: 24px;
+            border: 1px solid #e9edf2;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px 24px;
+            margin-bottom: 24px;
+        }
+        .toolbar .group {
+            display: flex;
+            align-items: center;
+            gap: 8px 12px;
+            flex-wrap: wrap;
+        }
+        .toolbar .group label {
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toolbar input[type="file"] {
+            font-size: 0.82rem;
+            max-width: 150px;
+        }
+        .toolbar input[type="text"] {
+            width: 200px;
+            padding: 7px 12px;
+            border: 1px solid #cdd5df;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            font-family: inherit;
+        }
+        .toolbar input[type="range"] {
+            width: 120px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+        .toolbar .val {
+            min-width: 32px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .toolbar .btn {
+            background: #1e293b;
+            border: none;
+            color: white;
+            padding: 8px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.15s;
+            letter-spacing: 0.3px;
+        }
+        .toolbar .btn:hover {
+            background: #0f172a;
+            transform: scale(0.97);
+        }
+        .toolbar .btn-batch {
+            background: #2563eb;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .toolbar .btn-batch:hover {
+            background: #1d4ed8;
+        }
+        .toolbar .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef2f6;
+            padding: 2px 12px 2px 8px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+        .toolbar .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+        .toolbar .checkbox-group label {
+            cursor: pointer;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .toolbar .size-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #eef2f6;
+            padding: 2px 4px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        .toolbar .size-selector button {
+            padding: 4px 16px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.15s;
+            background: transparent;
+            color: #64748b;
+        }
+        .toolbar .size-selector button.active {
+            background: #1e293b;
+            color: white;
+        }
+        .toolbar .size-selector button:hover:not(.active) {
+            background: #d1d5db;
+        }
+
+        .preview-section {
+            margin-bottom: 20px;
+        }
+        .preview-section .title {
+            font-weight: 500;
+            font-size: 1.05rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        .preview-section .title small {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .preview-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: flex-start;
+            max-height: 460px;
+            overflow-y: auto;
+            padding: 12px 10px;
+            background: #fafcff;
+            border-radius: 18px;
+            border: 1px solid #e9edf2;
+            min-height: 100px;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 10px 12px 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            min-width: 96px;
+            flex: 0 0 auto;
+            transition: 0.15s;
+            cursor: pointer;
+            position: relative;
+        }
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border-color: #2563eb;
+            transform: translateY(-2px);
+        }
+        .card .label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #1e293b;
+            background: #eef2f6;
+            padding: 0 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+        .card .edit-badge {
+            font-size: 0.55rem;
+            color: #2563eb;
+            background: #dbeafe;
+            padding: 0 8px;
+            border-radius: 10px;
+            margin-left: 4px;
+        }
+        .card canvas {
+            display: block;
+            margin: 4px auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            image-rendering: pixelated;
+            background: white;
+            width: 76px;
+            height: 76px;
+            pointer-events: none;
+        }
+        .card .hex {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.48rem;
+            color: #334155;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-top: 4px;
+            word-break: break-all;
+            line-height: 1.3;
+            max-width: 130px;
+        }
+        .empty-hint {
+            color: #94a3b8;
+            padding: 30px;
+            text-align: center;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: 28px;
+            padding: 30px 34px 34px;
+            max-width: 600px;
+            width: 92%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            animation: modalIn 0.2s ease;
+            user-select: none;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal .modal-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0b1e33;
+        }
+        .modal .modal-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.15s;
+            line-height: 1;
+        }
+        .modal .modal-header .close-btn:hover {
+            color: #1e293b;
+        }
+        .modal .modal-options {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .modal .modal-options label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .modal .modal-options input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+        .modal .modal-options .simplify-hint {
+            font-size: 0.75rem;
+            color: #92400e;
+            background: #fef3c7;
+            padding: 2px 12px;
+            border-radius: 30px;
+        }
+        .modal .editor-grid {
+            display: grid;
+            gap: 2px;
+            max-width: 400px;
+            margin: 0 auto 16px;
+            aspect-ratio: 1/1;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 4px;
+            background: #f8fafc;
+        }
+        .modal .editor-grid .cell {
+            aspect-ratio: 1/1;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: 0.08s;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            touch-action: none;
+        }
+        .modal .editor-grid .cell.on {
+            background: #1e293b;
+            border-color: #1e293b;
+        }
+        .modal .editor-grid .cell:hover {
+            transform: scale(1.04);
+            border-color: #2563eb;
+        }
+        .modal .editor-grid.grid-8 {
+            grid-template-columns: repeat(8, 1fr);
+        }
+        .modal .editor-grid.grid-16 {
+            grid-template-columns: repeat(16, 1fr);
+        }
+        .modal .editor-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .modal .editor-info .hex-preview {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.75rem;
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 10px;
+            color: #0b1e33;
+            max-width: 280px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .modal .editor-info .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .modal .editor-info .btn-group button {
+            padding: 5px 14px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .modal .editor-info .btn-group .btn-clear {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .modal .editor-info .btn-group .btn-clear:hover {
+            background: #fecaca;
+        }
+        .modal .editor-info .btn-group .btn-invert {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        .modal .editor-info .btn-group .btn-invert:hover {
+            background: #c7d2fe;
+        }
+        .modal .editor-info .btn-group .btn-shift-down {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .modal .editor-info .btn-group .btn-shift-down:hover {
+            background: #fde68a;
+        }
+        .modal .editor-info .btn-group .btn-shift-up {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .modal .editor-info .btn-group .btn-shift-up:hover {
+            background: #bae6fd;
+        }
+        .modal .editor-info .btn-group .btn-save {
+            background: #2563eb;
+            color: white;
+        }
+        .modal .editor-info .btn-group .btn-save:hover {
+            background: #1d4ed8;
+        }
+        .modal .editor-index {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .modal .editor-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .modal .warning-msg {
+            font-size: 0.7rem;
+            color: #dc2626;
+            background: #fee2e2;
+            padding: 2px 12px;
+            border-radius: 30px;
+            display: none;
+        }
+        .modal .warning-msg.show {
+            display: inline-block;
+        }
+
+        .code-section {
+            margin-top: 6px;
+        }
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .code-header .title {
+            font-weight: 500;
+            font-size: 1.05rem;
+            color: #1e293b;
+        }
+        .code-header .opt {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 4px 14px 4px 10px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.88rem;
+        }
+        .code-header .opt input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+        .code-header .opt label {
+            cursor: pointer;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        textarea {
+            width: 100%;
+            height: 220px;
+            padding: 16px 20px;
+            border-radius: 18px;
+            border: 1px solid #d0d8e3;
+            font-family: "JetBrains Mono", "Fira Code", monospace;
+            font-size: 0.82rem;
+            background: #fafcff;
+            color: #0b1e33;
+            resize: vertical;
+            line-height: 1.7;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+        textarea:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        .string-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-top: 12px;
+            border: 1px solid #e2e8f0;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.82rem;
+            color: #0b1e33;
+            overflow-x: auto;
+            white-space: pre;
+            position: relative;
+        }
+        .string-box .label {
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .string-box .label .copy-btn {
+            background: #2563eb;
+            border: none;
+            color: white;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.15s;
+            margin-left: 8px;
+            font-family: inherit;
+        }
+        .string-box .label .copy-btn:hover {
+            background: #1d4ed8;
+        }
+        .string-box .label .copy-btn.done {
+            background: #16a34a;
+        }
+
+        .hint {
+            font-size: 0.88rem;
+            color: #475569;
+            margin-top: 8px;
+            padding-left: 4px;
+        }
+        .footer {
+            margin-top: 20px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            border-top: 1px solid #e9edf2;
+            padding-top: 16px;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 16px;
+            }
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .toolbar .group {
+                justify-content: space-between;
+            }
+            .toolbar input[type="text"] {
+                width: 100%;
+            }
+            .card {
+                min-width: 78px;
+            }
+            .card canvas {
+                width: 60px;
+                height: 60px;
+            }
+            .card .hex {
+                font-size: 0.4rem;
+                max-width: 80px;
+            }
+            .code-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .modal {
+                padding: 16px;
+            }
+            .modal .editor-grid {
+                max-width: 280px;
+            }
+            .modal .modal-options {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .modal .editor-info .btn-group {
+                justify-content: center;
+            }
+            .modal .editor-info .hex-preview {
+                font-size: 0.6rem;
+                max-width: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>📦 點陣字模生成器</h1>
+        <span class="tag">8x8 / 16x16</span>
+        <span class="status">✅ QuanPixel 8px</span>
+    </div>
+
+    <div class="toolbar">
+        <div class="group">
+            <label>📁 字體
+                <input type="file" id="fontFile" accept=".ttf,.otf,.ttc">
+            </label>
+        </div>
+        <div class="group" style="flex:2; min-width:180px;">
+            <label>字串
+                <input type="text" id="chString" value="黃百鳴" placeholder="輸入文字">
+            </label>
+        </div>
+        <div class="group">
+            <label>大小
+                <input type="range" id="size" min="30" max="300" value="236">
+                <span class="val" id="sizeLabel">236</span>
+            </label>
+        </div>
+        <div class="group">
+            <label>閾值
+                <input type="range" id="thr" min="0" max="255" value="158">
+                <span class="val" id="thrLabel">158</span>
+            </label>
+        </div>
+        <div class="group">
+            <div class="size-selector">
+                <button class="active" data-size="8" onclick="switchSize(8)">8x8</button>
+                <button data-size="16" onclick="switchSize(16)">16x16</button>
+            </div>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="centerCheck" checked>
+            <label for="centerCheck">⬆⬇ 垂直置中</label>
+        </div>
+        <button class="btn" onclick="generate()">⚡ 產生</button>
+        <button class="btn-batch" onclick="batchShiftDown()">⬇ 整排下移</button>
+    </div>
+
+    <div class="preview-section">
+        <div class="title">🔍 逐字預覽 <small>（點擊卡片可編輯 · 整排下移防切）</small></div>
+        <div class="preview-grid" id="previewGrid">
+            <div class="empty-hint">請輸入文字後點擊「產生」</div>
+        </div>
+    </div>
+
+    <div class="code-section">
+        <div class="code-header">
+            <span class="title">📟 C 字模陣列</span>
+            <div class="opt">
+                <input type="checkbox" id="mirrorCheck" checked>
+                <label for="mirrorCheck">左右反向掃描</label>
+            </div>
+        </div>
+        <textarea id="out" readonly></textarea>
+
+        <div class="string-box" id="stringBox">
+            <span class="label">
+                📋 索引對應表 (複製到您的程式)
+                <button class="copy-btn" onclick="copyString()">複製</button>
+            </span>
+            <span id="stringContent">// 請輸入文字後點擊「產生」</span>
+        </div>
+
+        <div class="hint">✅ 點擊卡片編輯 · 8x8 / 16x16 切換 · 整排下移防切保護</div>
+    </div>
+
+    <div class="footer">⚙️ 系統字體「QuanPixel 8px」· 支援中文/日文/韓文</div>
+</div>
+
+<!-- ====== 編輯器 Modal ====== -->
+<div class="modal-overlay" id="editorModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">✏️ 編輯點陣</h2>
+            <button class="close-btn" onclick="closeEditor()">✕</button>
+        </div>
+
+        <div class="modal-options">
+            <label>
+                <input type="checkbox" id="simplifyCheck">
+                ✂️ 減少筆畫 (轉簡體)
+            </label>
+            <span class="simplify-hint" id="simplifyStatus">目前: 繁體</span>
+            <span class="warning-msg" id="warningMsg">⚠️ 底部已滿，無法下移</span>
+        </div>
+
+        <div class="editor-grid grid-8" id="editorGrid"></div>
+
+        <div class="editor-info">
+            <span class="hex-preview" id="editorHex">0x00, 0x00, ...</span>
+            <div class="btn-group">
+                <button class="btn-shift-up" onclick="shiftUp()">↑ 上移</button>
+                <button class="btn-shift-down" onclick="shiftDown()">↓ 下移</button>
+                <button class="btn-clear" onclick="clearEditor()">清空</button>
+                <button class="btn-invert" onclick="invertEditor()">反轉</button>
+                <button class="btn-save" onclick="saveEditor()">✓ 儲存</button>
+            </div>
+        </div>
+        <div class="editor-index" id="editorIndex">編輯中: #0</div>
+        <div class="editor-hint">🖱 按住滑鼠拖曳可連續繪製 · ↓下移 / ↑上移 防切保護</div>
+    </div>
+</div>
+
+<script>
+    // ================================================================
+    //  核心
+    // ================================================================
+
+    let family = "QuanPixel 8px";
+    let gridSize = 8; // 8 或 16
+    let allChars = [];
+    let editingIndex = -1;
+    let editingBytes = [];
+    let editingChar = '';
+    let isDragging = false;
+    let dragMode = null;
+
+    const outEl = document.getElementById('out');
+    const gridEl = document.getElementById('previewGrid');
+    const strContent = document.getElementById('stringContent');
+    const warningMsg = document.getElementById('warningMsg');
+    const editorGrid = document.getElementById('editorGrid');
+
+    // 滑塊
+    document.getElementById('size').addEventListener('input', function() {
+        document.getElementById('sizeLabel').textContent = this.value;
+    });
+    document.getElementById('thr').addEventListener('input', function() {
+        document.getElementById('thrLabel').textContent = this.value;
+    });
+
+    // ---- 尺寸切換 ----
+    function switchSize(size) {
+        gridSize = size;
+        document.querySelectorAll('.size-selector button').forEach(b => {
+            b.classList.toggle('active', parseInt(b.dataset.size) === size);
+        });
+        // 更新編輯器網格 class
+        editorGrid.className = 'editor-grid ' + (size === 8 ? 'grid-8' : 'grid-16');
+        generate();
+    }
+
+    // ---- 載入字體 ----
+    document.getElementById('fontFile').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            const url = URL.createObjectURL(file);
+            const name = 'UserFont_' + Date.now();
+            const ff = new FontFace(name, `url(${url})`);
+            await ff.load();
+            document.fonts.add(ff);
+            family = name;
+            generate();
+        } catch (err) {
+            alert('字體載入失敗: ' + err.message);
+        }
+    });
+
+    // ---- 反向位元 ----
+    function reverseByte(b) {
+        let r = 0;
+        for (let i = 0; i < 8; i++) {
+            if (b & (1 << i)) r |= (1 << (7 - i));
+        }
+        return r;
+    }
+
+    // ---- 垂直置中 (8x8) ----
+    function verticalCenter8(bytes) {
+        let top = 8,
+            bottom = -1;
+        for (let y = 0; y < 8; y++) {
+            if (bytes[y] !== 0) {
+                if (y < top) top = y;
+                if (y > bottom) bottom = y;
+            }
+        }
+        if (top === 8 && bottom === -1) return bytes;
+        const height = bottom - top + 1;
+        const offset = Math.floor((8 - height) / 2) - top;
+        if (offset === 0) return bytes;
+        const newBytes = [0, 0, 0, 0, 0, 0, 0, 0];
+        for (let y = 0; y < 8; y++) {
+            const newY = y + offset;
+            if (newY >= 0 && newY < 8) newBytes[newY] = bytes[y];
+        }
+        return newBytes;
+    }
+
+    // ---- 垂直置中 (16x16) ----
+    function verticalCenter16(bytes) {
+        let top = 16,
+            bottom = -1;
+        for (let y = 0; y < 16; y++) {
+            if (bytes[y] !== 0) {
+                if (y < top) top = y;
+                if (y > bottom) bottom = y;
+            }
+        }
+        if (top === 16 && bottom === -1) return bytes;
+        const height = bottom - top + 1;
+        const offset = Math.floor((16 - height) / 2) - top;
+        if (offset === 0) return bytes;
+        const newBytes = new Array(16).fill(0);
+        for (let y = 0; y < 16; y++) {
+            const newY = y + offset;
+            if (newY >= 0 && newY < 16) newBytes[newY] = bytes[y];
+        }
+        return newBytes;
+    }
+
+    // ---- 產生單字 (支援 8x8 / 16x16) ----
+    function generateChar(ch, fontSize, threshold, center, size) {
+        const off = document.createElement('canvas');
+        const canvasSize = 256;
+        off.width = canvasSize;
+        off.height = canvasSize;
+        const ctx = off.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        ctx.fillStyle = '#111';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = fontSize + 'px ' + family;
+        ctx.fillText(ch, canvasSize / 2, canvasSize / 2);
+
+        // 採樣到指定大小
+        const tmp = document.createElement('canvas');
+        tmp.width = size;
+        tmp.height = size;
+        const tCtx = tmp.getContext('2d');
+        tCtx.imageSmoothingEnabled = true;
+        tCtx.drawImage(off, 0, 0, size, size);
+
+        const img = tCtx.getImageData(0, 0, size, size);
+        const data = img.data;
+        const total = size * size;
+        const small = new Uint8Array(total);
+
+        for (let py = 0; py < size; py++) {
+            for (let px = 0; px < size; px++) {
+                const idx = (py * size + px) * 4;
+                const g = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                small[py * size + px] = Math.round(g);
+            }
+        }
+
+        let bytes = [];
+        for (let y = 0; y < size; y++) {
+            let b = 0;
+            for (let x = 0; x < size; x++) {
+                const idx = y * size + x;
+                if (small[idx] < threshold) {
+                    b |= (1 << (size - 1 - x));
+                }
+            }
+            bytes.push(b);
+        }
+
+        // 垂直置中
+        if (center) {
+            if (size === 8) bytes = verticalCenter8(bytes);
+            else bytes = verticalCenter16(bytes);
+        }
+
+        return { bytes, gray: small, size: size };
+    }
+
+    // ---- 繪製預覽 (8x8 或 16x16) ----
+    function drawPreviewBytes(canvas, bytes, size) {
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#f0f2f5';
+        ctx.fillRect(0, 0, w, h);
+        const cell = w / size;
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const on = !!(bytes[y] & (1 << (size - 1 - x)));
+                ctx.fillStyle = on ? '#1e293b' : '#f8fafc';
+                ctx.fillRect(x * cell, y * cell, cell, cell);
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(x * cell, y * cell, cell, cell);
+            }
+        }
+    }
+
+    // ---- 繪製編輯器網格 (8x8 或 16x16) ----
+    function drawEditorGrid() {
+        const size = gridSize;
+        const total = size * size;
+        const grid = document.getElementById('editorGrid');
+        grid.innerHTML = '';
+        grid.className = 'editor-grid ' + (size === 8 ? 'grid-8' : 'grid-16');
+
+        for (let i = 0; i < total; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            const y = Math.floor(i / size);
+            const x = i % size;
+            if (editingBytes[y] & (1 << (size - 1 - x))) {
+                cell.classList.add('on');
+            }
+            cell.dataset.index = i;
+            cell.dataset.row = y;
+            cell.dataset.col = x;
+
+            cell.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const el = e.currentTarget;
+                const row = parseInt(el.dataset.row);
+                const col = parseInt(el.dataset.col);
+                const current = !!(editingBytes[row] & (1 << (size - 1 - col)));
+                dragMode = !current;
+                toggleCell(row, col);
+                isDragging = true;
+            });
+
+            cell.addEventListener('mouseenter', (e) => {
+                if (!isDragging) return;
+                const el = e.currentTarget;
+                const row = parseInt(el.dataset.row);
+                const col = parseInt(el.dataset.col);
+                const current = !!(editingBytes[row] & (1 << (size - 1 - col)));
+                if (current !== dragMode) {
+                    toggleCell(row, col);
+                }
+            });
+
+            cell.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            cell.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (!target || !target.classList.contains('cell')) return;
+                const row = parseInt(target.dataset.row);
+                const col = parseInt(target.dataset.col);
+                const current = !!(editingBytes[row] & (1 << (size - 1 - col)));
+                dragMode = !current;
+                toggleCell(row, col);
+                isDragging = true;
+            }, { passive: false });
+
+            cell.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (!target || !target.classList.contains('cell')) return;
+                const row = parseInt(target.dataset.row);
+                const col = parseInt(target.dataset.col);
+                const current = !!(editingBytes[row] & (1 << (size - 1 - col)));
+                if (current !== dragMode) {
+                    toggleCell(row, col);
+                }
+            }, { passive: false });
+
+            cell.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            grid.appendChild(cell);
+        }
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+    }
+
+    function toggleCell(row, col) {
+        const size = gridSize;
+        const mask = 1 << (size - 1 - col);
+        if (editingBytes[row] & mask) {
+            editingBytes[row] &= ~mask;
+        } else {
+            editingBytes[row] |= mask;
+        }
+        const idx = row * size + col;
+        const cells = document.querySelectorAll('#editorGrid .cell');
+        if (cells[idx]) {
+            if (editingBytes[row] & mask) {
+                cells[idx].classList.add('on');
+            } else {
+                cells[idx].classList.remove('on');
+            }
+        }
+        updateEditorHex();
+    }
+
+    function updateEditorHex() {
+        const size = gridSize;
+        const hex = editingBytes.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(', ');
+        document.getElementById('editorHex').textContent = hex;
+    }
+
+    // ---- Unicode ----
+    function unicodeHex(ch) {
+        return 'U+' + ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    function safeChar(ch) {
+        if (ch === ' ') return 'space';
+        if (ch === '\t') return 'tab';
+        if (ch === '\n') return 'newline';
+        if (ch === '\r') return 'return';
+        if (ch < ' ') return '0x' + ch.charCodeAt(0).toString(16).toUpperCase();
+        return ch;
+    }
+
+    // ---- 複製 ----
+    function copyString() {
+        const txt = strContent.textContent;
+        if (txt.startsWith('// 請輸入')) {
+            alert('請先產生字模！');
+            return;
+        }
+        navigator.clipboard.writeText(txt).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = '✓ 已複製';
+            btn.classList.add('done');
+            setTimeout(() => { btn.textContent = '複製';
+                btn.classList.remove('done'); }, 2000);
+        }).catch(() => {
+            const range = document.createRange();
+            range.selectNode(strContent);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = '✓ 已複製';
+            btn.classList.add('done');
+            setTimeout(() => { btn.textContent = '複製';
+                btn.classList.remove('done'); }, 2000);
+        });
+    }
+
+    // ================================================================
+    //  簡繁轉換
+    // ================================================================
+
+    function toSimplified(ch) {
+        const map = {
+            '臺': '台',
+            '灣': '湾',
+            '國': '国',
+            '黨': '党',
+            '選': '选',
+            '舉': '举',
+            '總': '总',
+            '統': '统',
+            '縣': '县',
+            '區': '区',
+            '鄉': '乡',
+            '鎮': '镇',
+            '長': '长',
+            '會': '会',
+            '處': '处',
+            '馬': '马',
+            '駕': '驾',
+            '騎': '骑',
+            '驅': '驱',
+            '驗': '验',
+            '葉': '叶',
+            '點': '点',
+            '鄭': '郑',
+            '強': '强',
+            '體': '体',
+            '學': '学',
+            '機': '机',
+            '電': '电',
+            '腦': '脑',
+            '資': '资',
+            '訊': '讯',
+            '發': '发',
+            '動': '动',
+            '態': '态',
+            '網': '网',
+            '頁': '页',
+            '設': '设',
+            '計': '计',
+            '開': '开',
+            '關': '关',
+            '數': '数',
+            '據': '据',
+            '庫': '库',
+            '線': '线',
+            '路': '路',
+            '碼': '码',
+            '編': '编',
+            '輯': '辑',
+            '簡': '简',
+            '專': '专',
+            '業': '业',
+            '經': '经',
+            '務': '务',
+            '實': '实',
+            '測': '测',
+            '試': '试',
+            '模': '模',
+            '組': '组',
+            '系': '系',
+            '列': '列',
+            '表': '表',
+            '格': '格',
+            '視': '视',
+            '窗': '窗',
+            '控': '控',
+            '制': '制',
+            '元': '元',
+            '件': '件',
+            '程': '程',
+            '式': '式',
+            '函': '函',
+            '變': '变',
+            '量': '量',
+            '結': '结',
+            '構': '构',
+            '指': '指',
+            '標': '标',
+            '陣': '阵',
+            '迴': '回',
+            '圈': '圈',
+            '條': '条',
+            '分': '分',
+            '析': '析',
+            '解': '解',
+            '決': '决',
+            '方': '方',
+            '案': '案',
+            '題': '题',
+            '目': '目',
+            '應': '应',
+            '用': '用',
+            '者': '者',
+            '時': '时',
+            '間': '间',
+            '記': '记',
+            '錄': '录',
+            '檔': '档',
+            '執': '执',
+            '行': '行',
+            '命': '命',
+            '令': '令',
+            '參': '参',
+            '範': '范',
+            '圍': '围',
+            '內': '内',
+            '容': '容',
+            '錯': '错',
+            '誤': '误',
+            '警': '警',
+            '告': '告',
+            '息': '息',
+            '進': '进',
+            '度': '度',
+            '狀': '状',
+            '啟': '启',
+            '停': '停',
+            '止': '止',
+            '繼': '继',
+            '續': '续',
+            '中': '中',
+            '文': '文',
+            '字': '字',
+            '型': '型',
+            '大': '大',
+            '小': '小',
+            '顏': '颜',
+            '色': '色',
+            '背': '背',
+            '景': '景',
+            '前': '前',
+            '後': '后',
+            '左': '左',
+            '右': '右',
+            '上': '上',
+            '下': '下',
+            '高': '高',
+            '低': '低',
+            '短': '短',
+            '寬': '宽',
+            '窄': '窄',
+            '厚': '厚',
+            '薄': '薄',
+            '重': '重',
+            '輕': '轻',
+            '軟': '软',
+            '硬': '硬',
+            '明': '明',
+            '暗': '暗',
+            '亮': '亮',
+            '黑': '黑',
+            '白': '白',
+            '紅': '红',
+            '綠': '绿',
+            '藍': '蓝',
+            '黃': '黄',
+            '紫': '紫',
+            '灰': '灰',
+            '粉': '粉',
+            '棕': '棕',
+            '橙': '橙',
+            '金': '金',
+            '銀': '银',
+            '銅': '铜',
+            '鐵': '铁',
+            '鋼': '钢',
+            '木': '木',
+            '水': '水',
+            '火': '火',
+            '土': '土',
+            '石': '石',
+            '田': '田',
+            '山': '山',
+            '川': '川',
+            '海': '海',
+            '洋': '洋',
+            '湖': '湖',
+            '泊': '泊',
+            '河': '河',
+            '流': '流',
+            '雨': '雨',
+            '雪': '雪',
+            '風': '风',
+            '雲': '云',
+            '月': '月',
+            '日': '日',
+            '星': '星',
+            '光': '光',
+            '音': '音',
+            '樂': '乐',
+            '歌': '歌',
+            '舞': '舞',
+            '畫': '画',
+            '書': '书',
+            '寫': '写',
+            '讀': '读',
+            '聽': '听',
+            '說': '说',
+            '話': '话',
+            '問': '问',
+            '答': '答',
+            '知': '知',
+            '識': '识',
+            '常': '常',
+            '見': '见',
+            '難': '难',
+            '易': '易',
+            '好': '好',
+            '壞': '坏',
+            '美': '美',
+            '醜': '丑',
+            '善': '善',
+            '惡': '恶',
+            '真': '真',
+            '假': '假',
+            '對': '对',
+            '錯': '错',
+            '是': '是',
+            '非': '非',
+            '有': '有',
+            '無': '无',
+            '多': '多',
+            '少': '少',
+            '全': '全',
+            '部': '部',
+            '個': '个',
+            '種': '种',
+            '類': '类',
+            '樣': '样',
+            '子': '子',
+            '女': '女',
+            '男': '男',
+            '老': '老',
+            '幼': '幼',
+            '童': '童',
+            '青': '青',
+            '年': '年',
+            '壯': '壮',
+            '人': '人',
+            '民': '民',
+            '眾': '众',
+            '群': '群',
+            '團': '团',
+            '隊': '队',
+            '員': '员',
+            '工': '工',
+            '作': '作',
+            '事': '事',
+            '情': '情',
+            '感': '感',
+            '覺': '觉',
+            '想': '想',
+            '法': '法',
+            '意': '意',
+            '思': '思',
+            '釋': '释',
+            '義': '义',
+            '關': '关',
+            '係': '系',
+            '聯': '联',
+            '繫': '系',
+            '練': '练',
+            '習': '习',
+            '則': '则',
+            '準': '准',
+            '備': '备',
+            '確': '确',
+            '認': '认',
+            '證': '证',
+            '載': '载',
+            '複': '复',
+            '製': '制',
+            '貼': '贴',
+            '傳': '传',
+            '為': '为',
+            '於': '于',
+            '與': '与',
+            '麼': '么',
+            '嗎': '吗',
+            '呢': '呢',
+            '吧': '吧',
+            '啊': '啊',
+            '這': '这',
+            '那': '那',
+            '哪': '哪',
+            '什': '什',
+            '來': '来',
+            '去': '去',
+            '到': '到',
+            '看': '看',
+            '講': '讲',
+            '能': '能',
+            '可': '可',
+            '以': '以',
+            '所': '所',
+            '因': '因',
+            '從': '从',
+            '過': '过',
+            '著': '着',
+            '了': '了',
+            '都': '都',
+            '還': '还',
+            '要': '要',
+            '沒': '没',
+            '也': '也',
+            '就': '就',
+            '不': '不',
+            '我': '我',
+            '你': '你',
+            '他': '他',
+            '她': '她',
+            '它': '它',
+            '們': '们',
+            '的': '的',
+            '得': '得',
+            '地': '地',
+            '等': '等',
+            '被': '被',
+            '把': '把',
+            '給': '给',
+            '讓': '让',
+            '叫': '叫',
+            '做': '做',
+            '吃': '吃',
+            '喝': '喝',
+            '玩': '玩',
+            '笑': '笑',
+            '哭': '哭',
+            '走': '走',
+            '跑': '跑',
+            '跳': '跳',
+            '飛': '飞'
+        };
+        const nfkc = ch.normalize('NFKC');
+        if (nfkc !== ch && nfkc.length === 1 && nfkc.charCodeAt(0) < 0x4E00) {
+            return nfkc;
+        }
+        return map[ch] || ch;
+    }
+
+    // ================================================================
+    //  編輯器
+    // ================================================================
+
+    function openEditor(index) {
+        if (index < 0 || index >= allChars.length) return;
+        editingIndex = index;
+        editingBytes = [...allChars[index].bytes];
+        editingChar = allChars[index].char;
+
+        const simplified = toSimplified(editingChar);
+        const isSimplified = (simplified !== editingChar);
+
+        document.getElementById('modalTitle').textContent = `✏️ 編輯: 「${editingChar}」 (${gridSize}x${gridSize})`;
+        document.getElementById('editorIndex').textContent = `編輯中: #${index}  ${editingChar}  (${unicodeHex(editingChar)})`;
+
+        const statusEl = document.getElementById('simplifyStatus');
+        if (isSimplified) {
+            statusEl.textContent = '✓ 可簡化 → ' + simplified;
+            statusEl.style.background = '#dbeafe';
+            statusEl.style.color = '#1e4b8a';
+        } else {
+            statusEl.textContent = '無簡體對應';
+            statusEl.style.background = '#f1f5f9';
+            statusEl.style.color = '#94a3b8';
+        }
+
+        const check = document.getElementById('simplifyCheck');
+        if (isSimplified) {
+            check.disabled = false;
+            check.checked = false;
+            check.nextSibling.textContent = ' ✂️ 減少筆畫 (→' + simplified + ')';
+        } else {
+            check.disabled = true;
+            check.checked = false;
+            check.nextSibling.textContent = ' ✂️ 無簡體對應';
+        }
+
+        warningMsg.classList.remove('show');
+        drawEditorGrid();
+        updateEditorHex();
+        document.getElementById('editorModal').classList.add('active');
+        isDragging = false;
+    }
+
+    function closeEditor() {
+        document.getElementById('editorModal').classList.remove('active');
+        isDragging = false;
+        warningMsg.classList.remove('show');
+    }
+
+    // ---- 單字下移 (防切) ----
+    function shiftDown() {
+        const size = gridSize;
+        const lastRow = size - 1;
+        if (editingBytes[lastRow] !== 0) {
+            warningMsg.classList.add('show');
+            setTimeout(() => warningMsg.classList.remove('show'), 2000);
+            return;
+        }
+        warningMsg.classList.remove('show');
+        const newBytes = new Array(size).fill(0);
+        for (let y = 0; y < size - 1; y++) {
+            newBytes[y + 1] = editingBytes[y];
+        }
+        editingBytes = newBytes;
+        drawEditorGrid();
+        updateEditorHex();
+    }
+
+    // ---- 單字上移 ----
+    function shiftUp() {
+        const size = gridSize;
+        const newBytes = new Array(size).fill(0);
+        for (let y = 1; y < size; y++) {
+            newBytes[y - 1] = editingBytes[y];
+        }
+        editingBytes = newBytes;
+        drawEditorGrid();
+        updateEditorHex();
+    }
+
+    // ---- 整排下移 ----
+    function batchShiftDown() {
+        if (allChars.length === 0) {
+            alert('請先產生字模！');
+            return;
+        }
+        const size = gridSize;
+        const lastRow = size - 1;
+        let canShift = true;
+        for (let i = 0; i < allChars.length; i++) {
+            if (allChars[i].bytes[lastRow] !== 0) {
+                canShift = false;
+                break;
+            }
+        }
+        if (!canShift) {
+            alert('⚠️ 部分字底部已滿 (第' + (lastRow + 1) + '行有內容)，無法整排下移！請先手動編輯清空底部。');
+            return;
+        }
+
+        for (let i = 0; i < allChars.length; i++) {
+            const bytes = allChars[i].bytes;
+            const newBytes = new Array(size).fill(0);
+            for (let y = 0; y < size - 1; y++) {
+                newBytes[y + 1] = bytes[y];
+            }
+            allChars[i].bytes = newBytes;
+        }
+
+        const cards = gridEl.querySelectorAll('.card');
+        for (let i = 0; i < cards.length && i < allChars.length; i++) {
+            const cvs = cards[i].querySelector('canvas');
+            drawPreviewBytes(cvs, allChars[i].bytes, size);
+            const hexEl = cards[i].querySelector('.hex');
+            hexEl.textContent = allChars[i].bytes.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+        }
+        regenerateOutput();
+    }
+
+    function applySimplify() {
+        const check = document.getElementById('simplifyCheck');
+        if (!check.checked) return;
+        if (editingIndex < 0 || editingIndex >= allChars.length) return;
+
+        const origChar = allChars[editingIndex].char;
+        const simpChar = toSimplified(origChar);
+        if (simpChar === origChar) return;
+
+        const fontSize = parseInt(document.getElementById('size').value, 10);
+        const threshold = parseInt(document.getElementById('thr').value, 10);
+        const center = document.getElementById('centerCheck').checked;
+        const result = generateChar(simpChar, fontSize, threshold, center, gridSize);
+
+        editingBytes = [...result.bytes];
+        editingChar = simpChar;
+
+        document.getElementById('modalTitle').textContent = `✏️ 編輯: 「${simpChar}」 (簡化) (${gridSize}x${gridSize})`;
+        document.getElementById('editorIndex').textContent = `編輯中: #${editingIndex}  ${simpChar}  (${unicodeHex(simpChar)})`;
+
+        const statusEl = document.getElementById('simplifyStatus');
+        statusEl.textContent = '✓ 已簡化 → ' + simpChar;
+        statusEl.style.background = '#dcfce7';
+        statusEl.style.color = '#166534';
+
+        warningMsg.classList.remove('show');
+        drawEditorGrid();
+        updateEditorHex();
+    }
+
+    document.getElementById('simplifyCheck').addEventListener('change', function() {
+        if (this.checked) {
+            applySimplify();
+        } else {
+            if (editingIndex < 0 || editingIndex >= allChars.length) return;
+            const origChar = allChars[editingIndex].char;
+            const fontSize = parseInt(document.getElementById('size').value, 10);
+            const threshold = parseInt(document.getElementById('thr').value, 10);
+            const center = document.getElementById('centerCheck').checked;
+            const result = generateChar(origChar, fontSize, threshold, center, gridSize);
+
+            editingBytes = [...result.bytes];
+            editingChar = origChar;
+
+            document.getElementById('modalTitle').textContent = `✏️ 編輯: 「${origChar}」 (還原) (${gridSize}x${gridSize})`;
+            document.getElementById('editorIndex').textContent = `編輯中: #${editingIndex}  ${origChar}  (${unicodeHex(origChar)})`;
+
+            const statusEl = document.getElementById('simplifyStatus');
+            statusEl.textContent = '✓ 已還原 → 繁體';
+            statusEl.style.background = '#dcfce7';
+            statusEl.style.color = '#166534';
+
+            warningMsg.classList.remove('show');
+            drawEditorGrid();
+            updateEditorHex();
+        }
+    });
+
+    function clearEditor() {
+        const size = gridSize;
+        editingBytes = new Array(size).fill(0);
+        warningMsg.classList.remove('show');
+        drawEditorGrid();
+        updateEditorHex();
+    }
+
+    function invertEditor() {
+        const size = gridSize;
+        for (let i = 0; i < size; i++) {
+            editingBytes[i] = (~editingBytes[i]) & 0xFF;
+        }
+        warningMsg.classList.remove('show');
+        drawEditorGrid();
+        updateEditorHex();
+    }
+
+    function saveEditor() {
+        if (editingIndex < 0 || editingIndex >= allChars.length) return;
+        allChars[editingIndex].bytes = [...editingBytes];
+        allChars[editingIndex].char = editingChar;
+
+        const cards = gridEl.querySelectorAll('.card');
+        if (cards[editingIndex]) {
+            const cvs = cards[editingIndex].querySelector('canvas');
+            drawPreviewBytes(cvs, editingBytes, gridSize);
+            const hexEl = cards[editingIndex].querySelector('.hex');
+            hexEl.textContent = editingBytes.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+            const label = cards[editingIndex].querySelector('.label');
+            const disp = editingChar === ' ' ? '␣' : editingChar;
+            const sizeLabel = gridSize === 8 ? '' : ' (16)';
+            label.innerHTML = `#${editingIndex} 「${disp}」${sizeLabel} <span class="edit-badge">✎</span>`;
+        }
+        regenerateOutput();
+        closeEditor();
+    }
+
+    function regenerateOutput() {
+        const mirror = document.getElementById('mirrorCheck').checked;
+        const size = gridSize;
+        const rows = size;
+
+        let out = '/*  8x8 點陣字模 */\n';
+        if (size === 16) out = '/*  16x16 點陣字模 */\n';
+        out += 'const u8 font[][8] = {\n';
+
+        for (let i = 0; i < allChars.length; i++) {
+            const { char, bytes } = allChars[i];
+            let fb = bytes;
+            if (mirror) fb = bytes.map(b => reverseByte(b));
+            const hex = fb.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(', ');
+            const idx = '0x' + (0x80 + i).toString(16).toUpperCase();
+            const comma = i < allChars.length - 1 ? ',' : '';
+            out += `    { ${hex} }${comma}   // ${idx} (${safeChar(char)})\n`;
+        }
+        out += '};';
+        outEl.value = out;
+
+        let s = '';
+        const comments = allChars.map((v, i) => '0x' + (0x80 + i).toString(16).toUpperCase() + '=' + v.char);
+        s += '// ' + comments.join(', ') + '\n';
+        const parts = allChars.map((v, i) => '0x' + (0x80 + i).toString(16).toUpperCase());
+        parts.push('0x00');
+        s += 'const u8 string[] = { ' + parts.join(', ') + ' };';
+        strContent.textContent = s;
+    }
+
+    document.getElementById('editorModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditor();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeEditor();
+    });
+
+    // ---- 暴露函數給全域 ----
+    window.shiftDown = shiftDown;
+    window.shiftUp = shiftUp;
+    window.batchShiftDown = batchShiftDown;
+    window.switchSize = switchSize;
+
+    // ================================================================
+    //  主要產生
+    // ================================================================
+
+    function generate() {
+        const raw = document.getElementById('chString').value;
+        const chars = Array.from(raw);
+        const size = gridSize;
+        if (chars.length === 0) {
+            gridEl.innerHTML = `<div class="empty-hint">請輸入文字後點擊「產生」</div>`;
+            outEl.value = '// 請輸入有效字串';
+            strContent.textContent = '// 請輸入文字後點擊「產生」';
+            allChars = [];
+            return;
+        }
+
+        const fontSize = parseInt(document.getElementById('size').value, 10);
+        const threshold = parseInt(document.getElementById('thr').value, 10);
+        const center = document.getElementById('centerCheck').checked;
+
+        gridEl.innerHTML = '';
+        allChars = [];
+
+        for (let i = 0; i < chars.length; i++) {
+            const ch = chars[i];
+            const disp = ch === ' ' ? '␣' : ch;
+            const r = generateChar(ch, fontSize, threshold, center, size);
+            allChars.push({ char: ch, bytes: r.bytes, gray: r.gray });
+
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            const sizeLabel = size === 8 ? '' : ' (16)';
+            label.innerHTML = `#${i} 「${disp}」${sizeLabel} <span class="edit-badge">✎</span>`;
+            card.appendChild(label);
+
+            const cvs = document.createElement('canvas');
+            cvs.width = 76;
+            cvs.height = 76;
+            drawPreviewBytes(cvs, r.bytes, size);
+            card.appendChild(cvs);
+
+            const hex = document.createElement('div');
+            hex.className = 'hex';
+            hex.textContent = r.bytes.map(b => '0x' + b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+            card.appendChild(hex);
+
+            card.addEventListener('click', (function(idx) {
+                return function() { openEditor(idx); };
+            })(i));
+
+            gridEl.appendChild(card);
+        }
+
+        regenerateOutput();
+    }
+
+    // ---- 事件 ----
+    document.getElementById('chString').addEventListener('change', generate);
+    document.getElementById('size').addEventListener('change', generate);
+    document.getElementById('thr').addEventListener('change', generate);
+    document.getElementById('centerCheck').addEventListener('change', generate);
+    document.getElementById('mirrorCheck').addEventListener('change', regenerateOutput);
+
+    document.getElementById('chString').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault();
+            generate(); }
+    });
+
+    window.generate = generate;
+    window.copyString = copyString;
+    window.openEditor = openEditor;
+    window.closeEditor = closeEditor;
+    window.clearEditor = clearEditor;
+    window.invertEditor = invertEditor;
+    window.saveEditor = saveEditor;
+
+    // 啟動
+    generate();
+
+    console.log('✅ 字體:', family);
+    console.log('✅ 預設大小: 236 · 閾值: 158');
+    console.log('✅ 可切換 8x8 / 16x16');
+</script>
+
+</body>
+</html>

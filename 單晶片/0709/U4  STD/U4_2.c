@@ -7,8 +7,8 @@
 #define KeyPort		_pc
 #define KeyPortC	_pcc
 #define KeyPortPU	_pcpu
-#define fSYS   8000000								//fSYS=8MHz
-//#define fSYS    11059200							
+//#define fSYS   8000000								//fSYS=8MHz
+#define fSYS    11059200							
 const u8 SEG_TAB[] = { 0x3F,0x06,					//7-Segment Table(0~F)
 		0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,
 		0x67,0x77,0x7C,0x58,0x5E,0x79,0x71};
@@ -24,14 +24,15 @@ u8 ScanKey(void);
 void main()
 {	u8 Key;
 	_wdtc=0b10101111;								//關閉看們狗計時器
-/*	
+	
+#if fSYS==11059200
 	_pbs1=0xF0;										//Set PB6/PB7 as OSC1/2 Function
 	_hxtm=1;										//Set Mode, ESK303 XTAL=11.059MHz>10MHz
 	_hxten=1;										//Enable HXT
 	while(!_hxtf);									//Wait Stable
 	_fhs=1;											//Switch to HXT
 	_hircen=0;										//Disable LIRC	
-*/	
+#endif	
 	
 	SEGPort=0; SEGPortC=0;							//清除SEGPort並規劃為輸出屬性
 	_stm2c0=0; _stm2c1=0b00110001;					//STM2:比對吻合輸出模式,CCRA吻合清除
