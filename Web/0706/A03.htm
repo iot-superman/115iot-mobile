@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+<style>
+    [class^="col"] {
+        border: 1px solid #c2c2c2;
+        background-color: #e1e1e1;
+        height: 100px;
+    }
+    .row {
+        margin: 10px;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-2">1</div>
+            <div class="col-2">2</div>
+            <div class="col-2">3</div>
+            <div class="col-2">4</div>
+            <div class="col-2">5</div>
+            <div class="col-2">6</div>
+        </div>
+        <!-- 我看到截圖中第二個 row 使用了 `order-last` 和 `order-first` 來重新排序欄位。
+- `order-last`：讓欄位 1 排到最後
+- `order-first`：讓欄位 5 排到最前面
+第二列顯示順序會是：5 → 2 → 3 → 4 → 6 → 1 -->
+        <div class="row">
+            <div class="col-2 order-last">1</div>
+            <div class="col-2">2</div>
+            <div class="col-2">3</div>
+            <div class="col-2">4</div>
+            <div class="col-2 order-first">5</div>
+            <div class="col-2">6</div>
+        </div>
+        <div class="row">
+            <!-- 我看到截圖中第三個 row 使用了 `order-2` 和 `order-3` 來重新排序欄位。
+- `order-1`：讓欄位 1 排到第一個位置
+- `order-2`：讓欄位 2 排到第二個位置
+- `order-3`：讓欄位 3 排到第三個位置
+第三列顯示順序會是：2 → 3 → 4 → 5 → 6 → 1 -->
+            <div class="col-2">1</div>
+            <div class="col-2">2</div>
+            <div class="col-2">3</div>
+            <div class="col-2 order-3">4</div>
+            <div class="col-2 order-2">5</div>
+            <div class="col-2 order-1">6</div>
+        </div>
+    </div>
+   
+    <!--  我看到截圖中第四個 row 使用了 `order-0` 到 `order-5` 來重新排序欄位。
+- `order-0`：讓欄位 1 排到第一個位置
+- `order-1`：讓欄位 2 排到第二個位置
+- `order-2`：讓欄位 3 排到第三個位置
+- `order-3`：讓欄位 4 排到第四個位置
+- `order-4`：讓欄位 5 排到第五個位置
+- `order-5`：讓欄位 6 排到第六個位置
+第四列顯示順序會是：1 → 2 → 3 → 4 → 5 → 6 -->
+    <div class="row">
+        <div class="col-2 order">1</div>
+        <div class="col-2 order-5">2</div>
+        <div class="col-2 order-4">3</div>
+        <div class="col-2 order-1">4</div>
+        <div class="col-2 order-2">5</div>
+        <div class="col-2 order-3">6</div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

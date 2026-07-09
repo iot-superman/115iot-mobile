@@ -1,0 +1,110 @@
+
+Linker Version 8.7.7.220718
+Input Object File: C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ
+Input Object File: C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\STARTUP1_L.OBJ
+
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
+Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
+
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ)
+     00h     0005h     004dh    0049h      CODE               _main (C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ)
+     00h     0080h     0080h    0001h      DATA     3         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0081h     0081h    0001h      DATA     4         @data_rb (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0082h     0082h    0001h      DATA     4         @data_rc (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0083h     0083h    0001h      DATA     2         @data_rd (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0084h     0084h    0001h      DATA     2         @data_re (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0085h     0085h    0001h      DATA     2         @data_rf (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0086h     0086h    0001h      DATA     2         @data_rg (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+     00h     0087h     0087h    0001h      DATA     2         @data_rh (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
+
+     Local Sections
+
+     Bank    Start     End      Length     Class    AvgIns    Name
+     00h     008ch     008ch    0000h      LOCAL    0         @dummy (C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ)
+     00h     0088h     008bh    0004h      LOCAL    3         _main (C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ)
+
+     Public Symbols Information
+     Address            Public by Name
+     0005h              _main
+     0080h              ra
+     0081h              rb
+     0082h              rc
+     0083h              rd
+     0084h              re
+     0085h              rf
+     0086h              rg
+     0087h              rh
+
+     Address            Public by Value
+     0005h              _main
+     0080h              ra
+     0081h              rb
+     0082h              rc
+     0083h              rd
+     0084h              re
+     0085h              rf
+     0086h              rg
+     0087h              rh
+
+
+ROM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       2000h     004eh    0%
+     01h       2000h     0000h    0%
+     02h       2000h     0000h    0%
+     03h       2000h     0000h    0%
+     04h       2000h     0000h    0%
+     05h       2000h     0000h    0%
+     06h       2000h     0000h    0%
+     07h       2000h     0000h    0%
+     Total     10000h     004eh    0%
+
+RAM Usage Statistics
+    Bank      Size      Used     Percentage
+     00h       0080h     000ch    9%
+     01h       0080h     0000h    0%
+     02h       0080h     0080h    100%
+     03h       0080h     0000h    0%
+     04h       0080h     0000h    0%
+     05h       0080h     0000h    0%
+     06h       0080h     0000h    0%
+     07h       0080h     0000h    0%
+     08h       0080h     0000h    0%
+     09h       0080h     0000h    0%
+     0ah       0080h     0000h    0%
+     0bh       0080h     0000h    0%
+     0ch       0080h     0000h    0%
+     0dh       0080h     0000h    0%
+     0eh       0080h     0000h    0%
+     0fh       0080h     0000h    0%
+     10h       0080h     0000h    0%
+     11h       0080h     0000h    0%
+     12h       0080h     0000h    0%
+     13h       0080h     0000h    0%
+     14h       0080h     0000h    0%
+     15h       0080h     0000h    0%
+     16h       0080h     0000h    0%
+     17h       0080h     0000h    0%
+     18h       0080h     0000h    0%
+     19h       0080h     0000h    0%
+     1ah       0080h     0000h    0%
+     1bh       0080h     0000h    0%
+     1ch       0080h     0000h    0%
+     1dh       0080h     0000h    0%
+     1eh       0080h     0000h    0%
+     1fh       0080h     0000h    0%
+     Total     1000h     008ch    3%
+
+Use Stack Count
+_main: 0
+
+Call Tree
+    @dummy
+        _main (0)
+
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Documents\115iot-mobile\單晶片\0709\U3_5\U3_5_2.OBJ'
+
+Total 0 error(s), Total 0 Warning(s)

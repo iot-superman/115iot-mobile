@@ -1,0 +1,15 @@
+from math_operation import mul, add, test
+test()
+test()
+print(".......1........")
+num1 = mul(9,2)
+print(f"mul(9,2): {num1}")
+num2 = add(9,2)
+print(f"add(9,2): {num2}")
+num3 = div(9,2)
+print(f"div(9,2): {num3}")
+print(f"minus(9,2): {num3}")
+print(".......2........")
+list_num = operations1(9,2)
+for value in list_num:
+    print(value)

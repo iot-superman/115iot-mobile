@@ -1,0 +1,18 @@
+import math_operation
+num = math_operation.operations1(5, 3)
+print(".......1.........")
+math_operation.test()
+math_operation.test()
+print(".......2.........")
+num1 = math_operation.mul(9,2)
+print(f"mul(9,2) = {num1}")
+num2 = math_operation.add(9,2)
+print(f"add(9,2) = {num2}")
+num3 = math_operation.div(9,2)
+print(f"div(9,2) = {num3}")
+num4 = math_operation.minus(9,2)
+print(f"minus(9,2) = {num4}")
+print(".......3.........")
+list_num = math_operation.operations1(9,2)
+for value in list_num:
+    print(value)
