@@ -49,7 +49,7 @@ DEFINE_ISR(ISR_STM2,0x38)
 	_stm2af=0;										//清除STM2AF
 }
 u8 ScanKey()
-{	u8 i,key=0;
+{	u8 i,key=0;	
 	KeyPortC=0xF0; KeyPortPU=0xF0;			   		//規劃KeyPort[7:4]/[3:0]為輸入/輸出屬性，並致能KeyPort[7:4]提升電阻
 	KeyPort=0b11111110;					         	//送出掃描碼KeyPort[3:0]=1110
 	for(i=0;i<=3;i++)								//依序檢查四列
