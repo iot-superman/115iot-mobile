@@ -1,4 +1,6 @@
-// PROGRAM	: U4_1.c								2017.0428
+// https://youtu.be/vMjlly0fISg
+// PROGRAM	: U4_1.c								
+2017.0428
 //https://chatgpt.com/s/m_6a4f4419d8c48191ac65640ae77724f0
 #include <HT66F2390.h>
 #include "MyType.H"
