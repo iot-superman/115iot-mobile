@@ -43,3 +43,17 @@ build/
 
 # 不要忽略 Java（很重要）
 # *.java  ❌ 千萬不要寫
+# Android
+Android/
+
+# Android Studio
+.idea/
+.gradle/
+local.properties
+
+# Build
+build/
+app/build/
+
+# Emulator
+*.avd
