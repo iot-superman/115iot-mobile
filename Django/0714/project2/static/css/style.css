@@ -1,0 +1,15 @@
+h1{
+    color: rgb(104, 68, 163);
+    text-align: center;
+    font-size: 36px;
+}
+h2{
+    color:red;
+    text-align: center;
+    font-size: 18px;
+}
+.logo{
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Django網站</h1>
+    <form action="/post1_old/" method="post">
+        {% csrf_token %}
+        <div>
+            <label for="username">帳號:</label>
+            <input type="text" name="username" id="username" required placeholder="請輸入帳號">
+        </div>
+        <div>
+            <label for="passwd">密碼:</label>
+            <input type="password" name="passwd" id="passwd" required placeholder="請輸入密碼">
+        </div>
+        <div>
+            <button type="submit">登入</button>
+            <button type="reset">清除</button>
+        </div>
+    </form>
+</body>
+</html>

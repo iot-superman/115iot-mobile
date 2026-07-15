@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入結果</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+            color: #243042;
+            background:
+                radial-gradient(circle at top left, rgba(74, 144, 226, 0.18), transparent 32rem),
+                linear-gradient(135deg, #f7fafc 0%, #eef3f8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .result-card {
+            width: min(100%, 420px);
+            padding: 36px 32px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(212, 220, 230, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 18px 45px rgba(36, 48, 66, 0.12);
+        }
+
+        .status-mark {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .status-mark.success {
+            color: #157347;
+            background: #dff6e9;
+        }
+
+        .status-mark.error {
+            color: #b42318;
+            background: #fde4e1;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 28px;
+            line-height: 1.25;
+        }
+
+        p {
+            margin: 0 0 26px;
+            color: #5b6778;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 132px;
+            padding: 11px 18px;
+            border-radius: 8px;
+            color: #ffffff;
+            background: #4a90e2;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .home-link:hover {
+            background: #357abd;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 480px) {
+            .result-card {
+                padding: 30px 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="result-card">
+        {% if status %}
+            <div class="status-mark success" aria-hidden="true">✓</div>
+            <h1>Django 網站</h1>
+            <p>歡迎光臨，{{ username }}！您已成功登入。</p>
+        {% else %}
+            <div class="status-mark error" aria-hidden="true">!</div>
+            <h1>登入失敗</h1>
+            <p>帳號或密碼錯誤，請回到登入頁重新輸入。</p>
+        {% endif %}
+        <a class="home-link" href="/post1/">回登入頁</a>
+    </main>
+</body>
+</html>

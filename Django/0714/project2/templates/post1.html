@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>會員登入</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            width: 320px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 22px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+        }
+
+        /* 密碼區塊 */
+        .password-box {
+            position: relative;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            background: #4a90e2;
+            color: white;
+            margin-right: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background: #357abd;
+        }
+
+        button[type="reset"] {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>會員登入</h1>
+
+        <form action="/post1/" method="post">
+            {% csrf_token %}
+
+            <label for="username">帳號</label>
+            <input type="text" name="username" id="username" placeholder="輸入帳號" required>
+
+            <label for="passwd">密碼</label>
+            <div class="password-box">
+                <input type="password" name="passwd" id="passwd" placeholder="輸入密碼" required>
+                <span class="toggle-btn" onclick="togglePassword()">👁</span>
+            </div>
+
+            <div class="buttons">
+                <button type="submit">登入</button>
+                <button type="reset">清除</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById("passwd");
+            const btn = document.querySelector(".toggle-btn");
+
+            if (pwd.type === "password") {
+                pwd.type = "text";
+                btn.textContent = "🙈";
+            } else {
+                pwd.type = "password";
+                btn.textContent = "👁";
+            }
+        }
+    </script>
+</body>
+</html>
