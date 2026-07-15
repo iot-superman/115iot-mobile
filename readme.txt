@@ -9,8 +9,7 @@ This repository contains my personal learning projects, technical research, and 
 
 ## Topics｜技術主題
 
-- Android (Kotlin)｜Android（Kotlin）
-- Python｜Python
+- Android (Kotlin)｜｜Python
 - AI / LLM｜人工智慧／大型語言模型
 - ESP32 / ESP8266｜ESP32／ESP8266
 - Embedded Systems｜嵌入式系統
