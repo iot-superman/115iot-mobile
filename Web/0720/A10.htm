@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超連結練習</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4">超連結練習 (Link Practice)</h1>
+        
+        <div class="row mb-5">
+            <div class="col">
+                <h3>基本超連結 (Basic Link)</h3>
+                <p>
+                    <a href="https://www.google.com" target="_blank">前往 Google (Go to Google)</a>
+                </p>
+                <p>
+                    <a href="#" onclick="alert('這是回首頁按鈕！This is back to home button!'); return false;">回首頁 (Back to Home)</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col">
+                <h3>按鈕樣式的超連結 (Button Style Links)</h3>
+                <p>
+                    <a href="#" onclick="alert('這是主要按鈕！Primary button clicked!'); return false;" class="btn btn-primary">主要按鈕 (Primary)</a>
+                    <a href="#" onclick="alert('這是次要按鈕！Secondary button clicked!'); return false;" class="btn btn-secondary">次要按鈕 (Secondary)</a>
+                    <a href="#" onclick="alert('這是成功按鈕！Success button clicked!'); return false;" class="btn btn-success">成功按鈕 (Success)</a>
+                    <a href="#" onclick="alert('這是危險按鈕！Danger button clicked!'); return false;" class="btn btn-danger">危險按鈕 (Danger)</a>
+                </p>
+                <p>
+                    <a href="#" onclick="alert('這是警告按鈕！Warning button clicked!'); return false;" class="btn btn-warning">警告按鈕 (Warning)</a>
+                    <a href="#" onclick="alert('這是資訊按鈕！Info button clicked!'); return false;" class="btn btn-info">資訊按鈕 (Info)</a>
+                    <a href="#" onclick="alert('這是淺色按鈕！Light button clicked!'); return false;" class="btn btn-light">淺色按鈕 (Light)</a>
+                    <a href="#" onclick="alert('這是深色按鈕！Dark button clicked!'); return false;" class="btn btn-dark">深色按鈕 (Dark)</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col">
+                <h3>外框按鈕樣式 (Outline Buttons)</h3>
+                <p>
+                    <a href="#" onclick="alert('這是主要外框按鈕！Outline Primary clicked!'); return false;" class="btn btn-outline-primary">主要外框 (Outline Primary)</a>
+                    <a href="#" onclick="alert('這是次要外框按鈕！Outline Secondary clicked!'); return false;" class="btn btn-outline-secondary">次要外框 (Outline Secondary)</a>
+                    <a href="#" onclick="alert('這是成功外框按鈕！Outline Success clicked!'); return false;" class="btn btn-outline-success">成功外框 (Outline Success)</a>
+                    <a href="#" onclick="alert('這是危險外框按鈕！Outline Danger clicked!'); return false;" class="btn btn-outline-danger">危險外框 (Outline Danger)</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col">
+                <h3>不同大小的按鈕 (Different Sizes)</h3>
+                <p>
+                    <a href="#" onclick="alert('這是大按鈕！Large button clicked!'); return false;" class="btn btn-primary btn-lg">大按鈕 (Large)</a>
+                    <a href="#" onclick="alert('這是預設按鈕！Default button clicked!'); return false;" class="btn btn-primary">預設按鈕 (Default)</a>
+                    <a href="#" onclick="alert('這是小按鈕！Small button clicked!'); return false;" class="btn btn-primary btn-sm">小按鈕 (Small)</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col">
+                <h3>連結移除底線 (No Underline)</h3>
+                <p>
+                    <a href="#" onclick="alert('這是無底線連結！No underline link clicked!'); return false;" class="text-decoration-none">沒有底線的連結 (No Underline Link)</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col">
+                <h3>圖片超連結 (Image Link)</h3>
+                <p>
+                    <a href="#" onclick="alert('這是圖片連結！Image link clicked!'); return false;">
+                        <img src="flower1.jpg" class="img-thumbnail" width="200" alt="flower">
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <h3>下拉選單連結 (Dropdown Links)</h3>
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        選擇練習 (Select Practice)
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="#" onclick="alert('表格練習被點選！Table practice selected!'); return false;">表格練習 (Table)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="alert('文字樣式被點選！Text styles selected!'); return false;">文字樣式 (Text Styles)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="alert('列表樣式被點選！List styles selected!'); return false;">列表樣式 (List Styles)</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="alert('回首頁被點選！Back to home selected!'); return false;">回首頁 (Home)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
