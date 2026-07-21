@@ -1,21 +1,21 @@
 
 Linker Version 8.8.1.250507
-Input Object File: C:\Users\User\Desktop\U3 STD\STARTUP1_L.OBJ
-Input Object File: C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ
+Input Object File: C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\STARTUP1_L.OBJ
+Input Object File: C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ
 
 Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB
 Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\v3_lmrmc.lib
 
 
      Bank    Start     End      Length     Class    AvgIns    Name
-     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     0005h     0009h    0005h      CODE               @crom (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
+     00h     0000h     0001h    0002h      CODE               @code (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     0002h     0004h    0003h      CODE               @start (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     0005h     0009h    0005h      CODE               @crom (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
      00h     000ah     0017h    000eh      CODE               _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
-     00h     0024h     0027h    0004h      CODE               @ISR_TB0_code (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     0028h     006fh    0048h      CODE               _ISR_TB0 (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     007ch     0092h    0017h      CODE               _Delayms (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     0093h     0185h    00f3h      CODE               _main (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
+     00h     0024h     0027h    0004h      CODE               @ISR_TB0_code (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     0028h     006fh    0048h      CODE               _ISR_TB0 (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     007ch     0092h    0017h      CODE               _Delayms (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     0093h     0185h    00f3h      CODE               _main (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
      00h     0186h     0193h    000eh      CODE               _CROM2PROM (CROM2PROM)
      00h     0080h     0080h    0001h      DATA     6         @data_ra (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
      00h     0081h     0081h    0001h      DATA     9         @data_rb (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
@@ -29,9 +29,9 @@ Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x
      00h     0089h     0089h    0001h      DATA     5         @data_rb24 (isr:ra~rh)
      00h     008ah     008ah    0001h      DATA     4         @data_ra24 (isr:ra~rh)
      00h     008bh     008bh    0001h      DATA     3         @data_rc24 (isr:ra~rh)
-     00h     0091h     0091h    0001h      DATA     5         @HCCINIT0_ScanCode (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     0092h     0093h    0002h      DATA     4         @HCCINIT0_ptr (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     0094h     0097h    0004h      DATA     2         @HCCINIT0_Buffer (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
+     00h     0091h     0091h    0001h      DATA     5         @HCCINIT0_ScanCode (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     0092h     0093h    0002h      DATA     4         @HCCINIT0_ptr (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     0094h     0097h    0004h      DATA     2         @HCCINIT0_Buffer (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
      00h     0098h     0098h    0001h      DATA     2         @data_r324 (isr:ra~rh)
      00h     0099h     0099h    0001h      DATA     2         @data_r424 (isr:ra~rh)
      00h     009ah     009ah    0001h      DATA     2         @data_r524 (isr:ra~rh)
@@ -41,12 +41,12 @@ Input Library File: C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x
      Local Sections
 
      Bank    Start     End      Length     Class    AvgIns    Name
-     00h     008ch     008ch    0000h      LOCAL    0         @dummy36 (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     008ch     008ch    0000h      LOCAL    0         _ISR_TB0 (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
+     00h     008ch     008ch    0000h      LOCAL    0         @dummy36 (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     008ch     008ch    0000h      LOCAL    0         _ISR_TB0 (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
      00h     008ch     008ch    0000h      LOCAL    0         _Crom2Prom (CROM2PROM)
-     00h     0091h     0091h    0000h      LOCAL    0         @dummy (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     008fh     0090h    0002h      LOCAL    2         _main (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
-     00h     008dh     008eh    0002h      LOCAL    2         _Delayms (C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ)
+     00h     0091h     0091h    0000h      LOCAL    0         @dummy (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     008fh     0090h    0002h      LOCAL    2         _main (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
+     00h     008dh     008eh    0002h      LOCAL    2         _Delayms (C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ)
      00h     008ch     008ch    0001h      LOCAL    2         _builtin_holtek_delay_isr00 (C:\Program Files\Holtek MCU Development Tools\HT-IDE3000V8.x\LIB\LIBHOLTEKGCC.LIB)
 
      Public Symbols Information
@@ -184,6 +184,6 @@ Call Tree
             _Delayms (1)
                 _builtin_holtek_delay_isr00 (2)
 
-HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Desktop\U3 STD\U7_1_PLUS.OBJ'
+HLINK: Program entry point at section '@code' (address 0) of file 'C:\Users\User\Documents\115iot-mobile\單晶片\0604\U3 STD\U7_1_PLUS.OBJ'
 
 Total 0 error(s), Total 0 Warning(s)
