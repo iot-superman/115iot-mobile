@@ -1,3 +1,14 @@
+# 排除 DLL 與模擬器大檔
+*.dll
+Android/*/emulator/
+Android/**/build/
+Android/**/.gradle/
+
+
+Android/0708/emulator/
+
+*.dll
+
 # 忽略 Windows 執行檔
 *.exe
 
@@ -44,8 +55,29 @@ build/
 # 不要忽略 Java（很重要）
 # *.java  ❌ 千萬不要寫
 # Android
-Android/
+#Android/
 
+
+# Android Studio
+**/.gradle/
+**/.idea/
+**/build/
+**/app/build/
+local.properties
+
+# Kotlin
+.kotlin/
+
+# APK
+*.apk
+
+# AAB
+*.aab
+
+
+
+
+#---
 # Android Studio
 .idea/
 .gradle/
@@ -57,3 +89,4 @@ app/build/
 
 # Emulator
 *.avd
+Android/**/emulator/

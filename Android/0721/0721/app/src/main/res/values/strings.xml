@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Widget_5</string>
+    <string name="draw">Draw with compter </string>
+    <string name="win">Player win </string>
+    <string name="lost">Player lost </string>
+
+
+</resources>
