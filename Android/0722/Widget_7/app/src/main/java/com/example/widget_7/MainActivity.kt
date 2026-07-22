@@ -67,6 +67,17 @@ class MainActivity : AppCompatActivity() {
                 override fun onRatingChanged(ratingBar: RatingBar?, rating: Float, fromUser: Boolean
                 ) {
                    Log.d("Main","rating=$rating")
+                    var data = textViewArticle.text.toString()
+                    val ratingString = rating.toString()
+                    var newData = StringBuilder(data)
+                    var index = data.indexOf("rating=")
+                    Log.d("main","index=$index")
+                    if (index!=-1){
+                        index += "rating=".length
+                        // 動態顯示Rating
+                        newData.replace(index,index+3,ratingString)  //+3 is length of rating
+                        textViewArticle.text = newData.toString()
+                    }
                 }
             }
 
