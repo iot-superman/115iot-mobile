@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -60,12 +61,13 @@ class MainActivity : AppCompatActivity() {
             rbgender.clearCheck()
             height.setText("")
             weight.setText("")
+            tvResult.text = ""
+            ivResult.setImageDrawable(null)
         }
 
         btnBMI.setOnClickListener {
             val nameStr = name.text.toString()
             val ageStr = age.text.toString()
-
             val heightStr = height.text.toString()
             val weightStr = weight.text.toString()
 
@@ -77,7 +79,13 @@ class MainActivity : AppCompatActivity() {
                     bmi < 27.0 -> "過重"
                     else -> "肥胖"
                 }
-                val gender = if (rbMale.isChecked) "男" else if (rbFemale.isChecked) "女" else "未指定"
+
+                val gender = when (rbgender.checkedRadioButtonId) {
+                    R.id.rbMale -> "男"
+                    R.id.rbFemale -> "女"
+                    else -> "未指定"
+                }
+
                 tvResult.text = "Name: $nameStr\nAge: $ageStr\nSex: $gender\nBMI: ${String.format("%.2f", bmi)}\nBMI 結果: $result"
 
                 if (rbMale.isChecked) {
@@ -96,6 +104,8 @@ class MainActivity : AppCompatActivity() {
                         else -> ivResult.setImageResource(R.drawable.woman_fat1)
                     }
                 }
+            }else{
+                Toast.makeText(this, "請輸入所有欄位", Toast.LENGTH_SHORT).show()
             }
         }
 
