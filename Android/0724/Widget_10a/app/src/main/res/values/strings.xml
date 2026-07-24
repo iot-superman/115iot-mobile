@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="flower_1">Flower 1</string>
+    <string name="flower_2">Flower 2</string>
+    <string name="flower_3">Flower 3</string>
+    <string name="android">Android</string>
+    <string name="html">HTML</string>
+    <string name="java">Java</string>
+</resources>
