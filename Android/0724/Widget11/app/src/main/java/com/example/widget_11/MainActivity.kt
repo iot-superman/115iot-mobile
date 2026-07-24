@@ -5,6 +5,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -28,10 +29,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rbCola: RadioButton
     private lateinit var rbTea: RadioButton
     private lateinit var rbCoffee: RadioButton
+    private lateinit var rgDrinks: RadioGroup
     
     private var drinkNum = 1
 
     private fun updateMenu(menuNum: Int) {
+        rgDrinks.clearCheck()
         drinkNum = menuNum
         if (menuNum == 1) {
             rbCola.text = "Cola , $50"
@@ -64,6 +67,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        rgDrinks = findViewById<RadioGroup>(R.id.rgDrinks)
+
         rbCola = findViewById<RadioButton>(R.id.rbCola)
         rbTea = findViewById<RadioButton>(R.id.rbTea)
         rbCoffee = findViewById<RadioButton>(R.id.rbCoffee)
@@ -88,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         updateMenu(1)
 
         btnDrink1.setOnClickListener {
+
             updateMenu(1)
         }
 
