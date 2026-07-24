@@ -1,6 +1,8 @@
 package com.example.widget_11
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -89,6 +91,22 @@ class MainActivity : AppCompatActivity() {
 
         tvResult = findViewById<TextView>(R.id.tvResult)
 
+        // Add TextWatchers for auto-check logic
+        val dessertQtyWatcher = { editText: EditText, checkBox: CheckBox ->
+            object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable?) {
+                    val qty = s.toString().toIntOrNull() ?: 0
+                    checkBox.isChecked = qty >= 1
+                }
+            }
+        }
+
+        etWaffleQty.addTextChangedListener(dessertQtyWatcher(etWaffleQty, cbWaffle))
+        etPancakeQty.addTextChangedListener(dessertQtyWatcher(etPancakeQty, cbPancake))
+        etMuffinQty.addTextChangedListener(dessertQtyWatcher(etMuffinQty, cbMuffin))
+
         // Initialize with Menu 1
         updateMenu(1)
 
@@ -116,8 +134,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnCheckout.setOnClickListener {
+            if (!(rbCola.isChecked || rbTea.isChecked || rbCoffee.isChecked)) {
+                Toast.makeText(this, "Please select at least one drink", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             var total = 0
-            val summary = StringBuilder("Order Details:\n")
+            val summary = StringBuilder("*Order Details*\n\n Your Order is: \n")
+
             
             val drinkQtyText = etDrinkQty.text.toString()
             val drinkQty = if (drinkQtyText.isEmpty()) 1 else drinkQtyText.toIntOrNull() ?: 1

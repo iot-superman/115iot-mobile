@@ -5,7 +5,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:padding="32dp"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -30,6 +32,7 @@
                 android:id="@+id/btnDrink1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 android:backgroundTint="#2196F3"
                 android:text="Drink 1" />
@@ -39,6 +42,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 android:backgroundTint="#00BCD4"
                 android:text="Drink 2" />
