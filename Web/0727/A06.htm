@@ -1,0 +1,54 @@
+p<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>form</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <form class="bg-info">
+                    <label for="select_1" class="control-label m-2 h4">選單A</label>
+                    <select name="select_1" id="select_1" class="form-select">
+                        <option value="3">小團圓</option>
+                        <option value="4">半生緣</option>
+                        <option value="5">再回首</option>
+                    </select>
+                </form>
+            </div>
+            <div class="col">
+                <form style="background-color: #ffaa00;">
+                    <label for="select_2" class="control-label m-2 h4">選單B</label>
+                    <select name="select_2" id="select_2" class="form-select">
+                        <option value="1">小團圓</option>
+                        <option value="2">雷峰塔</option>
+                        <option value="3" selected>愛相隨</option>
+                        <option value="4">半生緣</option>
+                        <option value="5">再回首</option>
+                    </select>
+                </form>
+            </div>
+            <div class="col">
+                <form class="bg-success">
+                    <label for="select_3" class="control-label m-2 h4">選單C</label>
+                    <p class="m-2">輸入複選 <kbd>Ctrl+MouseClick</kbd></p>
+                    <select name="select_3" id="select_3" class="form-select" multiple>
+                        <option value="1">小團圓</option>
+                        <option value="2">雷峰塔</option>
+                        <option value="3">愛相隨</option>
+                        <option value="4">半生緣</option>
+                        <option value="5">再回首</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

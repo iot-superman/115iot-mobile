@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>form</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <!-- tab 同一時間只能顯示一個 -->
+                <ul class="nav nav-tabs" id="myTab">
+                    <!-- tab-item 同一時間只能顯示一個 -->
+                    <li class="nav-item"><a href="#tab_1" class="nav-link active" data-bs-toggle="tab">唐詩</a></li>
+                    <li class="nav-item"><a href="#tab_2" class="nav-link" data-bs-toggle="tab">宋詞</a></li>
+                    <li class="nav-item"><a href="#tab_3" class="nav-link" data-bs-toggle="tab">元曲</a></li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <!-- tab-pane 同一時間只能顯示一個 -->
+                    <div class="tab-pane active" id="tab_1">唐詩泛指創作於唐代（西元618年─907年）的詩，也可以引申指以唐朝風格創作的詩。唐詩上承魏晉南朝詩，下開宋詞，唐代也被視為中國歷來詩歌發展最盛的黃金時期。唐詩大致可分作四個階段：初唐、盛唐、中唐和晚唐。初唐通常指唐朝建國至唐玄宗之前的約100年，盛唐指唐玄宗至代宗的約50年，中唐是德宗至文宗的約50年，而晚唐則是文宗後期至唐朝滅亡的約70年。實際上階段之間並無嚴格的分界。</div>
+                    <div class="tab-pane" id="tab_2">宋詞是中國古代宋代流行的音樂文學，又稱長短句、詩餘、曲子詞。它的主要特色是配合樂曲歌唱，分為不同的詞牌與格律，並在宋代達到文學最高峰。是中國1924年編定辭錄的宋詞選，不分卷，共收宋代詞人88家。編者是清朝末年民國初年的上疆村民（朱祖謀，又名朱孝臧），所選作品以周邦彥、姜夔、吳文英的為多。</div>
+                    <div class="tab-pane" id="tab_3">元曲是盛行於元代的新興韻文藝術，主要包含散曲與雜劇（又稱北曲）兩大類。它是繼唐詩、宋詞之後的中國古代文學高峰，語言通俗生動、風格豪放自然。元曲，或稱元雜劇，是盛行於元代的戲曲藝術，為散曲和雜劇的合稱。相對於明朝的傳奇（南曲），後世又將元曲稱為北曲。元曲與宋詞及唐詩、漢賦並稱。廣義的曲泛指秦漢以來各種可入樂的樂曲，如漢大曲、唐宋大曲、民間小曲等。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
