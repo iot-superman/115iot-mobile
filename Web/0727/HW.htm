@@ -16,12 +16,14 @@
 
         <div class="row mt-5">
             <div class="col-3">
+                <!-- 3/12 古典音樂分類 tab-pane 1/4 -->
                 <h2 class="mb-3">古典樂曲</h2>
                 <ul class="nav nav-pills flex-column" id="musicTab">
                     <li class="nav-item"><a href="#baroque" class="nav-link active" data-bs-toggle="pill">巴洛克音樂</a></li>
                     <li class="nav-item"><a href="#classical" class="nav-link" data-bs-toggle="pill">古典主義音樂</a></li>
                     <li class="nav-item"><a href="#romantic" class="nav-link" data-bs-toggle="pill">浪漫主義音樂</a></li>
                 </ul>
+                <!-- 4/12 古典音樂分類 tab-pane 3/4 -->
                 <div class="tab-content mt-4" id="musicTabContent">
                     <div class="tab-pane active" id="baroque">巴洛克音樂是指約1600年至1750年間的音樂風格，強調對比、裝飾和情感表達。代表作曲家包括巴赫、亨德爾等。</div>
                     <div class="tab-pane" id="classical">古典主義音樂是指約1750年至1820年間的音樂風格，強調平衡、和諧和形式。代表作曲家包括海頓、莫札特等。</div>
@@ -32,12 +34,13 @@
             <div class="col-9">
                 <h2 class="mb-3">詩詞欣賞</h2>
                 <div class="mb-3">
-                    <!-- 七言律詩按鍵 collapse -->
+                    <!-- 七言律詩按鍵 collapse ,data-bs-target 目標元素 -->
                     <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#poemCollapse">
                         七言律詩
                     </button>
                 </div>
-                <div class="collapse" id="poemCollapse">
+                <!-- id 目標元素 要與 data-bs-target 目標元素 一致 -->
+                               <div class="collapse" id="poemCollapse">
                     <div class="row">
                         <div class="col-3">
                             <div class="card">
