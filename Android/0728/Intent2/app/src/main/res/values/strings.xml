@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Intent2</string>
+    <string name="input_name">Input name</string>
+    <string name="input_height">input height</string>
+    <string name="input_weight">input weight</string>
+    <string name="bmi">BMI</string>
+    <string name="bmi_result">Name: %1$s\nHeight: %2$d\nWeight: %3$d\nBMI: %4$.2f\nCategory: %5$s</string>
+    <string name="bmi_underweight">Underweight</string>
+    <string name="bmi_normal">Normal weight</string>
+    <string name="bmi_overweight">Overweight</string>
+    <string name="bmi_obese">Obese</string>
 </resources>

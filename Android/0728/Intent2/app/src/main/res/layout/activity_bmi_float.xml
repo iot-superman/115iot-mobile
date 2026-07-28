@@ -7,4 +7,28 @@
     android:layout_height="match_parent"
     tools:context=".BmiFloatActivity">
 
+    <TextView
+        android:id="@+id/textView_floatData"
+        android:layout_width="195dp"
+        android:layout_height="163dp"
+        android:layout_marginTop="61dp"
+        android:text="TextView"
+        android:textColor="#E91E63"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_floatBack"
+        android:layout_width="117dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="76dp"
+        android:text="Finish"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_floatData" />
 </androidx.constraintlayout.widget.ConstraintLayout>
