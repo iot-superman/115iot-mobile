@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Intent_3" parent="Theme.Material3.DayNight">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+
+        <!-- Teacher's Style: White background with black text -->
+        <item name="actionBarStyle">@style/TeacherActionBarStyle</item>
+    </style>
+
+    <style name="TeacherActionBarStyle" parent="Widget.AppCompat.ActionBar.Solid">
+        <item name="background">@color/light_gray</item>
+        <item name="titleTextStyle">@style/TeacherActionBarTitleText</item>
+    </style>
+
+    <style name="TeacherActionBarTitleText" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="Theme.Intent_3" parent="Base.Theme.Intent_3" />
+</resources>

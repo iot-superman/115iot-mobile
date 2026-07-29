@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Intent_5</string>
+    <string name="order_drink">Order drink</string>
+    <string name="select">Select</string>
+    <string name="drink">Drink name</string>
+    <string name="sugar">Sugar level</string>
+    <string name="ice">Ice level</string>
+    <string name="nosugar">No sugar</string>
+    <string name="littlesugar">Little sugar</string>
+    <string name="halfsugar">Half sugar</string>
+    <string name="fullsugar">Full sugar</string>
+    <string name="noselect_wrapper">No selection</string>
+    <string name="noice">No ice</string>
+    <string name="littleice">Little ice</string>
+    <string name="halfice">Half ice</string>
+    <string name="normalice">Normal ice</string>
+    <string name="confirm_order">Confirm Order:</string>
+    <string name="send">Send</string>
+    <string name="drink_label">Drink: %1$s</string>
+    <string name="sugar_label">Sugar: %1$s</string>
+    <string name="ice_label">Ice: %1$s</string>
+    <string name="drink_title">Drink:</string>
+    <string name="sugar_title">Sugar:</string>
+    <string name="ice_title">Ice:</string>
+</resources>

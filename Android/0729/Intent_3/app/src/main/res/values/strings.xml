@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Intent_3</string>
+    <string name="taipei">台北市</string>
+    <string name="new_taipei">新北市</string>
+    <string name="taoyuan">桃園市</string>
+    <string name="hsinchu">新竹市</string>
+    <string name="taipei_desc">台北市是中華民國的首都及直轄市，位於台灣北部的台北盆地，是台灣的政治、經濟、文化及教育中心。全市劃分為12個行政區，擁有著名的台北101與國立故宮博物院，是全球知名的現代化大都市。</string>
+    <string name="new_taipei_desc">新北市是中華民國的直轄市，位於台灣最北端，全境環繞台北市，是台灣人口最多的城市。境內包含淡水、九份等豐富的觀光資源，並與台北市、基隆市共同構成全台最大的大台北都會區。</string>
+    <string name="taoyuan_desc">桃園市是中華民國的直轄市，位於台灣西北部，被譽為「國家門戶」。境內擁有台灣最大的國際機場——桃園國際機場，且為全台第一工業大市，產業發展蓬勃，族群文化多元。</string>
+    <string name="hsinchu_desc">新竹市是位於台灣西北部的省轄市，古名「竹塹」，因冬季強風顯著而有「風城」之稱。市內的新竹科學園區是台灣高科技產業重鎮，被譽為「台灣矽谷」，並擁有清華大學等頂尖學術機構。</string>
+</resources>
