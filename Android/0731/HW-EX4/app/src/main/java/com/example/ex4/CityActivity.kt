@@ -14,8 +14,11 @@ class CityActivity : AppCompatActivity() {
         setContentView(R.layout.activity_city)
 
         val cityName = intent.getStringExtra("CITY_NAME") ?: ""
-        val tvCityTitle = findViewById<TextView>(R.id.tvCityTitle)
-        tvCityTitle.text = cityName
+        
+        // 將 AppBar 標題設定為傳遞過來的城市名稱
+        supportActionBar?.title = cityName
+
+
 
         val cbFood1 = findViewById<CheckBox>(R.id.cbFood1)
         val cbFood2 = findViewById<CheckBox>(R.id.cbFood2)
