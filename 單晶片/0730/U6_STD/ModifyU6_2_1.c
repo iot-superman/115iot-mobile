@@ -11,10 +11,10 @@
 #include "SST25V.h"
 //#include "MKitty2_128.h"							//**(1)改檔名(注意檔頭必須包含X,Y Size資訊)-x
 //#include "MKitty1_128.h"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -4
-#include "MKitty2_128.h"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -1
+#include "Mli.h"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -2
 //#include "Mpicapi_128.H"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   
 //#include "MPuppy.h"									//**改檔名(注意檔頭必須包含X,Y Size資訊)
-#define  NUM	(u32)1								//**(2)改編號
+#define  NUM	(u32)2								//**(2)改編號
 void CRCDisplay(u8 x,u8 y,u16 CRC);
 void main()
 {	u16 i,WrCRC,RdCRC; u32 address=NUM<<15;
@@ -59,6 +59,7 @@ void main()
 	Delayms(2000);									//延遲兩秒
 	while(1)
 	{	eDisplayClear(0,128,0,128);
+	    Delayms(80);   // must delay more
 		if(WrCRC==RdCRC) 							//判定CRC是否一致
 		{	ForeColor=Black;
 			eDisplayStr(10,60,(u8*)"Verify OK...");

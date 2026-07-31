@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Intent_11</string>
+    <string name="menu">Menu</string>
+    <string name="name_label">Name :</string>
+    <string name="password_label">Password :</string>
+    <string name="email_label">Email :</string>
+    <string name="name_value">Mary</string>
+    <string name="email_value">mary@example.com</string>
+    <string name="password_value">12345</string>
 </resources>

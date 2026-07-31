@@ -1,11 +1,13 @@
-package com.example.widget_11
+package com.example.intent_11
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -15,7 +17,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class MainActivity : AppCompatActivity() {
+class OrderActivity : AppCompatActivity() {
+    val orderCode = 100
     private lateinit var etMuffinQty: EditText
     private lateinit var etPancakeQty: EditText
     private lateinit var etWaffleQty: EditText
@@ -32,6 +35,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rbTea: RadioButton
     private lateinit var rbCoffee: RadioButton
     private lateinit var rgDrinks: RadioGroup
+    private lateinit var ivDrink1: ImageView
+    private lateinit var ivDrink2: ImageView
+    private lateinit var ivDrink3: ImageView
     
     private var drinkNum = 1
 
@@ -40,29 +46,29 @@ class MainActivity : AppCompatActivity() {
         drinkNum = menuNum
         if (menuNum == 1) {
             rbCola.text = "Cola , $50"
-            rbCola.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.cola_1, 0)
+            ivDrink1.setImageResource(R.drawable.cola_1)
 
             rbTea.text = "Tea , $60"
-            rbTea.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.blacktea, 0)
+            ivDrink2.setImageResource(R.drawable.blacktea)
 
             rbCoffee.text = "Coffee , $100"
-            rbCoffee.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.latte, 0)
+            ivDrink3.setImageResource(R.drawable.latte)
         } else {
             rbCola.text = "Ice cream , $150"
-            rbCola.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.icecream, 0)
+            ivDrink1.setImageResource(R.drawable.icecream)
 
             rbTea.text = "Milk tea , $100"
-            rbTea.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.milk_tea_icon, 0)
+            ivDrink2.setImageResource(R.drawable.milk_tea_icon)
 
             rbCoffee.text = "Milk , $80"
-            rbCoffee.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.milk_icon, 0)
+            ivDrink3.setImageResource(R.drawable.milk_icon)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_order)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -82,6 +88,10 @@ class MainActivity : AppCompatActivity() {
         etPancakeQty = findViewById<EditText>(R.id.etPancakeQty)
         etMuffinQty = findViewById<EditText>(R.id.etMuffinQty)
         etDrinkQty = findViewById<EditText>(R.id.etDrinkQty)
+
+        ivDrink1 = findViewById(R.id.ivDrink1)
+        ivDrink2 = findViewById(R.id.ivDrink2)
+        ivDrink3 = findViewById(R.id.ivDrink3)
 
 
         btnCheckout = findViewById<Button>(R.id.btnCheckout)
@@ -139,55 +149,62 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             var total = 0
-            val summary = StringBuilder("*Order Details*\n\n Your Order is: \n")
+            val summary = StringBuilder("Your order is :\n")
 
-            
             val drinkQtyText = etDrinkQty.text.toString()
             val drinkQty = if (drinkQtyText.isEmpty()) 1 else drinkQtyText.toIntOrNull() ?: 1
-            
+
             if (rbCola.isChecked) {
                 val unitPrice = if (drinkNum == 1) 50 else 150
                 val name = if (drinkNum == 1) "Cola" else "Ice cream"
                 val price = unitPrice * drinkQty
                 total += price
-                summary.append("- $name ($$unitPrice) x $drinkQty = $$price\n")
+                summary.append("Drink : $name -> $$unitPrice x $drinkQty = $price\n")
             }
             if (rbTea.isChecked) {
                 val unitPrice = if (drinkNum == 1) 60 else 100
                 val name = if (drinkNum == 1) "Tea" else "Milk tea"
                 val price = unitPrice * drinkQty
                 total += price
-                summary.append("- $name ($$unitPrice) x $drinkQty = $$price\n")
+                summary.append("Drink : $name -> $$unitPrice x $drinkQty = $price\n")
             }
             if (rbCoffee.isChecked) {
                 val unitPrice = if (drinkNum == 1) 100 else 80
                 val name = if (drinkNum == 1) "Coffee" else "Milk"
                 val price = unitPrice * drinkQty
                 total += price
-                summary.append("- $name ($$unitPrice) x $drinkQty = $$price\n")
+                summary.append("Drink : $name -> $$unitPrice x $drinkQty = $price\n")
             }
 
+            summary.append("Dessert :\n")
             if (cbWaffle.isChecked) {
                 val qty = etWaffleQty.text.toString().toIntOrNull() ?: 0
                 val price = 100 * qty
                 total += price
-                summary.append("- Waffle ($100) x $qty = $$price\n")
+                summary.append("Waffle -> $100 x $qty = $price\n")
             }
             if (cbPancake.isChecked) {
                 val qty = etPancakeQty.text.toString().toIntOrNull() ?: 0
                 val price = 120 * qty
                 total += price
-                summary.append("- Pancake ($120) x $qty = $$price\n")
+                summary.append("Pancake -> 120 x $qty = $price\n")
             }
             if (cbMuffin.isChecked) {
                 val qty = etMuffinQty.text.toString().toIntOrNull() ?: 0
                 val price = 80 * qty
                 total += price
-                summary.append("- Muffin ($80) x $qty = $$price\n")
+                summary.append("Muffin -> 80 x $qty = $price\n")
             }
 
-            summary.append("\nTotal: $$total")
+            summary.append("\nThe total fee is $$total")
             tvResult.text = summary.toString()
+
+            val data = tvResult.text.toString()
+            val intent = Intent()
+            intent.putExtra("order", data)
+            setResult(orderCode, intent)
+            finish()
+
         }
     }
 }

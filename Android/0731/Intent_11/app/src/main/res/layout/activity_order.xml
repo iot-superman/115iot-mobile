@@ -74,38 +74,78 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp">
 
-            <RadioButton
-                android:id="@+id/rbCola"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:drawableRight="@drawable/cola_1"
-                android:text="Cola, $50"
-                android:textColor="#3F51B5"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/rbTea"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:drawableRight="@drawable/blacktea"
-                android:text="Tea, $60"
-                android:textColor="#3F51B5"
-                android:textStyle="bold" />
+                <RadioButton
+                    android:id="@+id/rbCola"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cola, $50"
+                    android:textColor="#3F51B5"
+                    android:textStyle="bold" />
 
-            <RadioButton
-                android:id="@+id/rbCoffee"
+                <ImageView
+                    android:id="@+id/ivDrink1"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="10dp"
+                    android:scaleType="fitCenter"
+                    tools:src="@drawable/cola_1" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:drawableRight="@drawable/latte"
-                android:text="Coffee, $100"
-                android:textColor="#3F51B5"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbTea"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tea, $60"
+                    android:textColor="#3F51B5"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/ivDrink2"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="10dp"
+                    android:scaleType="fitCenter"
+                    tools:src="@drawable/blacktea" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:textCursorDrawable="@drawable/milk_icon">
+
+                <RadioButton
+                    android:id="@+id/rbCoffee"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Coffee, $100"
+                    android:textColor="#3F51B5"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/ivDrink3"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="10dp"
+                    android:scaleType="fitCenter"
+                    tools:src="@drawable/latte" />
+            </LinearLayout>
         </RadioGroup>
 
         <LinearLayout
@@ -142,8 +182,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableRight="@drawable/waffle"
                 android:text="Waffle, $100" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/waffle" />
 
             <EditText
                 android:id="@+id/etWaffleQty"
@@ -169,8 +214,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableRight="@drawable/pancake"
                 android:text="Pancake, $120" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/pancake" />
 
             <EditText
                 android:id="@+id/etPancakeQty"
@@ -197,8 +247,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableRight="@drawable/mulffin"
                 android:text="Muffin, $80" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/mulffin" />
 
             <EditText
                 android:id="@+id/etMuffinQty"
