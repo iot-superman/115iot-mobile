@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Intent_5</string>
+    <string name="order_drink">點餐：</string>
+    <string name="select">選擇</string>
+    <string name="drink">飲料名稱</string>
+    <string name="sugar">甜度：</string>
+    <string name="ice">冰塊：</string>
+    <string name="nosugar">無糖</string>
+    <string name="littlesugar">微糖</string>
+    <string name="halfsugar">半糖</string>
+    <string name="fullsugar">全糖</string>
+    <string name="noselect_wrapper">未選擇</string>
+    <string name="noice">去冰</string>
+    <string name="littleice">微冰</string>
+    <string name="halfice">少冰</string>
+    <string name="normalice">正常冰</string>
+    <string name="confirm_order">確認餐點：</string>
+    <string name="finish">完成</string>
+    <string name="drink_label">飲料：%1$s</string>
+    <string name="sugar_label">甜度：%1$s</string>
+    <string name="ice_label">冰塊：%1$s</string>
+    <string name="drink_title">飲料：</string>
+    <string name="sugar_title">甜度：</string>
+    <string name="ice_title">冰塊：</string>
+</resources>

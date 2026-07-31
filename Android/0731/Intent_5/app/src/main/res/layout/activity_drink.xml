@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drink_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/drink_title"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/et_drink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/drink"
+        android:inputType="text"
+        android:autofillHints="none"
+        android:minHeight="48dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/sugar_title"
+        android:textSize="18sp" />
+
+    <RadioGroup
+        android:id="@+id/rg_sugar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_sugar1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/nosugar" />
+
+        <RadioButton
+            android:id="@+id/rb_sugar2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/littlesugar" />
+
+        <RadioButton
+            android:id="@+id/rb_sugar3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/halfsugar" />
+
+        <RadioButton
+            android:id="@+id/rb_sugar4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fullsugar" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/ice_title"
+        android:textSize="18sp" />
+
+    <RadioGroup
+        android:id="@+id/rg_ice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_ice1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/noice" />
+
+        <RadioButton
+            android:id="@+id/rb_ice2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/littleice" />
+
+        <RadioButton
+            android:id="@+id/rb_ice3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/halfice" />
+
+        <RadioButton
+            android:id="@+id/rb_ice4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/normalice" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btn_finish"
+        android:layout_width="341dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
+        android:text="@string/finish" />
+
+</LinearLayout>
