@@ -6,87 +6,29 @@
     android:padding="16dp"
     android:fitsSystemWindows="true">
 
-    <TextView
-        android:id="@+id/tvCityTitle"
+    <CheckBox
+        android:id="@+id/cbFood1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp"
-        android:text="城市名稱" />
+        android:text="美食 1" />
 
-    <LinearLayout
+    <CheckBox
+        android:id="@+id/cbFood2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <CheckBox
-            android:id="@+id/cbFood1"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="美食 1" />
-        <ImageView
-            android:id="@+id/ivFood1"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_gallery" />
-    </LinearLayout>
+        android:text="美食 2" />
 
-    <LinearLayout
+    <CheckBox
+        android:id="@+id/cbFood3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <CheckBox
-            android:id="@+id/cbFood2"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="美食 2" />
-        <ImageView
-            android:id="@+id/ivFood2"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_gallery" />
-    </LinearLayout>
+        android:text="美食 3" />
 
-    <LinearLayout
+    <CheckBox
+        android:id="@+id/cbFood4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <CheckBox
-            android:id="@+id/cbFood3"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="美食 3" />
-        <ImageView
-            android:id="@+id/ivFood3"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_gallery" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-        <CheckBox
-            android:id="@+id/cbFood4"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="美食 4" />
-        <ImageView
-            android:id="@+id/ivFood4"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_gallery" />
-    </LinearLayout>
+        android:text="美食 4" />
 
     <Button
         android:id="@+id/btnSelect"
