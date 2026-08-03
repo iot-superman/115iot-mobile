@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Javascript</title>
+  <style>
+  </style>
+</head>
+<body>
+  <h1>Javascript</h1>
+  <h3>Bake</h3>
+  <script>
+function setTemp(degree)
+{
+  document.write(degree+" degree"+"<br/>");
+}
+function bake(degree)
+{
+  let message;
+  if (degree>500)
+  {
+    message="I am not a furnace!";
+  }
+  else if (degree<20)
+  {
+    message="I am not a refrigerator!";
+  }
+  else
+  {
+    message="This is a suitable temperature!";
+    setTemp(degree);
+  }
+  return message;
+}
+let status=bake(260);
+document.write(status+"<br/>");
+
+  </script>
+</body>
+</html>

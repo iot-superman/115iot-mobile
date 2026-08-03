@@ -1,0 +1,79 @@
+
+
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Javascript</title>
+  <style>
+  </style>
+</head>
+<body>
+  <h1>Javascript</h1>
+  <h3>BMI</h3>
+  <script>
+/*
+1.  請試寫一個 JavaScript 程式，令它要求使用者輸入身高與體重，然
+後計算 BMI 等於體重  (公斤) /  身高 2 (公尺 2)。若低於 18.5 (不含)，
+就印出「過輕」，若介於 18.5 ~ 24，就印出「正常」，若超過 24 (不
+含)，就印出「過重」，若超過 27 (不含)，就印出「肥胖」，若超過
+35 (不含)，就印出「極肥胖」。對話視窗 BMI  印出小數後 1 位，再
+跳出另一個對話視窗印出過重… 
+*/
+ //inputbox
+ let height=prompt("請輸入身高（公分或公尺）：");
+ let weight=prompt("請輸入體重（公斤）：");
+ height=parseFloat(height);
+ weight=parseFloat(weight);
+ let bmi=0;
+ if (!height || !weight)
+ {
+   document.write("輸入錯誤<br/>");
+ }
+ else
+ {
+   if (height>3)
+   {
+     height=height/100;
+   }
+   bmi=weight/(height**2);
+   let bmiText=bmi.toFixed(1);
+   document.write("您的 BMI 為："+bmiText+"<br/>");
+
+// WAIT 1 second
+   setTimeout(() => {
+     requestAnimationFrame(function(){
+       requestAnimationFrame(function(){
+         alert(result);
+       });
+     });
+   }, 1000);
+
+   let result;
+   if (bmi<18.5)
+   {
+     result="過輕";
+   }
+   else if (bmi<=24)
+   {
+     result="正常";
+   }
+   else if (bmi<=27)
+   {
+     result="過重";
+   }
+   else if (bmi<=35)
+   {
+     result="肥胖";
+   }
+   else
+   {
+     result="極肥胖";
+   }
+ 
+ }
+  </script>
+</body>
+</html>
