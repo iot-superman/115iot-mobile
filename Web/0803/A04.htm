@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bootstrap</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-6">
+        <div class="accordion" id="accordionExample">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="head_1">
+                <!-- accordion-button -->
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_1" aria-expanded="false" aria-controls="collapse_1">
+                無題
+              </button>
+            </h2>
+            <!-- accordion-collapse -->
+            <div class="collapse accordion-collapse" data-bs-parent="#accordionExample" id="collapse_1" aria-labelledby="head_1">
+              <div class="accordion-body">
+                昨夜星辰昨夜風，畫樓西畔桂堂東。身無彩鳳雙飛翼，心有靈犀一點通。隔座送鉤春酒暖，分曹射覆蠟燈紅。嗟余聽鼓應官去，走馬蘭臺類轉蓬。
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="head_2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_2" aria-expanded="false" aria-controls="collapse_2">
+                黃鶴樓
+              </button>
+            </h2>
+            <div class="collapse accordion-collapse" data-bs-parent="#accordionExample" id="collapse_2" aria-labelledby="head_2">
+              <div class="accordion-body">
+                昔人已乘黃鶴去，此地空餘黃鶴樓。黃鶴一去不復返，白雲千載空悠悠。晴川歷歷漢陽樹，芳草萋萋鸚鵡洲。日暮鄉關何處是？煙波江上使人愁。
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="head_3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_3" aria-expanded="false" aria-controls="collapse_3">
+                其他
+              </button>
+            </h2>
+            <div class="collapse accordion-collapse" data-bs-parent="#accordionExample" id="collapse_3" aria-labelledby="head_3">
+              <div class="accordion-body">
+                內容 3
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
