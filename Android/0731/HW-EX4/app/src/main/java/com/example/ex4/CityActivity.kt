@@ -7,7 +7,7 @@ import android.widget.CheckBox
 import androidx.appcompat.app.AppCompatActivity
 
 class CityActivity : AppCompatActivity() {
-
+    private val citycode = 200
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_city)
@@ -63,7 +63,7 @@ class CityActivity : AppCompatActivity() {
             val resultIntent = Intent()
             resultIntent.putExtra("CITY_NAME", cityName)
             resultIntent.putExtra("SELECTED_FOODS", selectedFoods.joinToString(", "))
-            setResult(RESULT_OK, resultIntent)
+            setResult(citycode, resultIntent)
             finish()
         }
     }

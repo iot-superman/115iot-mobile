@@ -12,15 +12,19 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="8dp"
         android:text="城市"
-        android:textSize="24sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="24sp" />
 
     <RadioGroup
         android:id="@+id/rgCity"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:background="@android:color/darker_gray"
+        android:backgroundTint="#0A060707"
         android:padding="8dp">
 
         <RadioButton
@@ -57,6 +61,7 @@
         android:id="@+id/tvResult"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
         android:layout_marginTop="32dp"
         android:text="城市名稱：\n美食建議："
         android:textSize="18sp" />

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bootstrap</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+  <h1>Javascript</h1>
+  <script>
+let username_1=new Array();
+username_1[0]="關羽";
+username_1[1]="張飛";
+username_1[2]="趙雲";
+username_1[3]="馬超";
+username_1[4]="黃忠";
+let username_2=new Array("曹操", "孫權", "劉備");
+for (let i=0; i<username_1.length; i++)
+{
+  document.write(username_1[i]+"<br/>");
+}
+document.write("<hr/>");
+for (let i=0; i<username_2.length; i++)
+{
+  document.write(username_2[i]+"<br/>");
+}
+document.write("<hr/>");
+let username=username_2.concat(username_1);
+for (let i=0; i<username.length; i++)
+{
+  document.write(username[i]+"<br/>");
+}
+  </script>
+</body>
+</html>

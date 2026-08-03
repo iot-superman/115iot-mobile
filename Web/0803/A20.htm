@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bootstrap</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+  <h1>Javascript</h1>
+  <script>
+let arr=new Array("楊林", "劉一", "陳二", "張三", "李四", "王五", "趙六");
+arr.push("王朝");
+arr.push("馬漢");
+for (let i=0; i<arr.length; i++)
+{
+  document.write(arr[i]+"<br/>");
+ 
+  arr.pop();
+  document.write(arr[i]+"<br/>");
+}
+
+  </script>
+</body>
+</html>

@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == citycode && resultCode == RESULT_OK) {
+        if (requestCode == citycode ) {
             val cityName = data?.getStringExtra("CITY_NAME") ?: ""
             val selectedFoods = data?.getStringExtra("SELECTED_FOODS") ?: ""
             
