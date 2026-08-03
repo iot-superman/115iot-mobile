@@ -42,14 +42,19 @@
    let bmiText=bmi.toFixed(1);
    document.write("您的 BMI 為："+bmiText+"<br/>");
 
-// WAIT 1 second
-   setTimeout(() => {
-     requestAnimationFrame(function(){
-       requestAnimationFrame(function(){
-         alert(result);
-       });
-     });
-   }, 1000);
+   // Wait for the window to fully load before showing the result
+window.addEventListener('load', () => {
+  alert(result);
+});
+
+// // WAIT 500 milliseconds
+//    setTimeout(() => {
+//      requestAnimationFrame(function(){
+//        requestAnimationFrame(function(){
+//          alert(result);
+//        });
+//      });
+//    }, 500);
 
    let result;
    if (bmi<18.5)
