@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
     // onOptionItemSelected is called when a menu item is selected.
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
             ChangPicture -> {
                 Toast.makeText(this, "Change picture clicked", Toast.LENGTH_SHORT).show()
                 // Teacher Version:
@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
                     imgView.setImageResource(R.drawable.flower1)
                     picFlag = true
                 }
-                true
             }
             ChangeColor -> {
                 Toast.makeText(this, "Change color clicked", Toast.LENGTH_SHORT).show()
@@ -93,15 +92,12 @@ class MainActivity : AppCompatActivity() {
                     textViewData.tag = "color1"
                 }
                 */
-                true
             }
             Text1 -> {
                 textViewData.text = "There are lots of flowers"
-                true
             }
             Text2 -> {
                 textViewData.text = "This is a pretty flower"
-                true
             }
             About -> {
                 val builder = AlertDialog.Builder(this@MainActivity)
@@ -120,10 +116,9 @@ class MainActivity : AppCompatActivity() {
                     }
                 })
                 builder.show()
-                true
             }
-            else -> super.onOptionsItemSelected(item)
-
         }
+        //解釋
+        return super.onOptionsItemSelected(item)
     }
 }
