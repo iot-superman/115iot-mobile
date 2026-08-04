@@ -1,5 +1,6 @@
 package com.example.menu_2
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
@@ -8,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -75,6 +77,16 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.about -> {
                 Toast.makeText(this, "Menu App v1.0", Toast.LENGTH_SHORT).show()
+                val builder = AlertDialog.Builder(this@MainActivity)
+                builder.setTitle("Menu App")
+                builder.setIcon(R.drawable.flower2)
+                builder.setMessage("Would you like to change to Display Activity?")
+                builder.setPositiveButton("OK") { dialog, _ ->
+                    val intent = Intent(this@MainActivity, DisplayActivity::class.java)
+                    startActivity(intent)
+                    dialog.dismiss()
+                }
+                builder.show()
                 return true
             }
         }

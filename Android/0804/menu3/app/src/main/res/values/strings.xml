@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">menu3</string>
+    <string name="menu_flower">Flower</string>
+    <string name="menu_dog">Dog</string>
+    <string name="menu_dog1">Dog 1</string>
+    <string name="menu_dog2">Dog 2</string>
+    <string name="menu_dog3">Dog 3</string>
+    <string name="menu_cat">Cat</string>
+    <string name="menu_cat1">Cat 1</string>
+    <string name="menu_cat2">Cat 2</string>
+    <string name="menu_cat3">Cat 3</string>
+</resources>

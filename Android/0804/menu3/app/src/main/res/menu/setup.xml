@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/menu_dog"
+        app:showAsAction="always|withText">
+        <menu>
+            <item
+                android:id="@+id/menu_dog1"
+                android:icon="@drawable/dog_1_icon"
+                android:title="@string/menu_dog1" />
+            <item
+                android:id="@+id/menu_dog2"
+                android:icon="@drawable/dog_2_icon"
+                android:title="@string/menu_dog2" />
+            <item
+                android:id="@+id/menu_dog3"
+                android:icon="@drawable/dog_3_icon"
+                android:title="@string/menu_dog3" />
+        </menu>
+    </item>
+
+    <item
+        android:title="@string/menu_cat"
+        android:icon="@drawable/cat_1_icon"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/menu_cat1"
+                android:icon="@drawable/cat_1_icon"
+                android:title="@string/menu_cat1" />
+            <item
+                android:id="@+id/menu_cat2"
+                android:icon="@drawable/cat_2_icon"
+                android:title="@string/menu_cat2" />
+            <item
+                android:id="@+id/menu_cat3"
+                android:icon="@drawable/cat_3_icon"
+                android:title="@string/menu_cat3" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_flower"
+        android:title="@string/menu_flower" />
+</menu>
