@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var numberPicker: NumberPicker
     private lateinit var numberPicker1: NumberPicker
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) { /
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -23,10 +23,12 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        
 
         textViewResult = findViewById(R.id.textView_result)
         numberPicker = findViewById(R.id.NumberPicker)
         numberPicker1 = findViewById(R.id.numberPicker_1)
+
 
         numberPicker.minValue = 0
         numberPicker.maxValue = 100
