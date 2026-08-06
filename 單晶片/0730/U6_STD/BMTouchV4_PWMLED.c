@@ -3,10 +3,10 @@
 // LIBRARY	: eDisplay.c
 // Hardwired: PF6->SDA(BM Module), PF5->eDisplay RES  
 //			  PF7->SCL(BM Module), PA1->BM Module INT
-//			  PD0(STP1)->RGB-R	
+//			  PD0(STP1)->RGB-R **
 // NOTE 	: Define BMTouch in eDisplay.h	
-// ª`·N		: eDisplay.h¤¤ªºePAUSEªº©w¸q­Y<65¡A¶ê½L«¬ªº·|·í¾÷¡A
-//	     	  ªø±ø«¬ªº¤£±o¤p©ó60!!! 
+// æ³¨æ„		: eDisplay.hä¸­çš„ePAUSEçš„å®šç¾©è‹¥<65ï¼Œåœ“ç›¤å‹çš„æœƒç•¶æ©Ÿï¼Œ
+//	     	  é•·æ¢å‹çš„ä¸å¾—å°æ–¼60!!! 
 #include <HT66F2390.h>
 #include <stdlib.h>
 #include "MyType.H"
@@ -19,35 +19,35 @@
 u8 ScanTouch(void);
 void main()
 {	u8 prekey=3,key; s8 factor; s16 duty=0;
-	_wdtc=0b10101111;										//Ãö³¬¬İ­Ìª¯­p®É¾¹
-	Init_I2C();												//ª`·N¥¼©I¥seDisplayReset()¥²¶·¥ı¥HInit_I2C()³W¹º¸}¦ì
+	_wdtc=0b10101111;										//é—œé–‰çœ‹å€‘ç‹—è¨ˆæ™‚å™¨
+	Init_I2C();												//æ³¨æ„æœªå‘¼å«eDisplayReset()å¿…é ˆå…ˆä»¥Init_I2C()è¦åŠƒè…³ä½
  	pINTC=1; pINTPU=1;										//I/P and Pull-high Enable
 	_stm1c0=0b00011000;										//fINT=fSYS(8MHz),ST1ON=1
-	_stm1c1=0b10101000;										//PWM¼Ò¦¡,Active High,STM1RP±±¨î¶g´Á
-	_stm1rp=128;											//PWM ¶g´Á=32768/fINT
+	_stm1c1=0b10101000;										//PWMæ¨¡å¼,Active High,STM1RPæ§åˆ¶é€±æœŸ
+	_stm1rp=128;											//PWM é€±æœŸ=32768/fINT
 	_stm1al=0; _stm1ah=0;									//Duty=0	
 	_pds0=0x02;												//PD0->STP1(R)
 	while(1)
-	{	while(pINT);										//µ¥«İ«öÀ£Ä²±±	
+	{	while(pINT);										//ç­‰å¾…æŒ‰å£“è§¸æ§	
 		key=ScanTouch();
-		factor=prekey-key;									//­pºâ¨â¦¸·P´ú«öÁä¤§¶ZÂ÷
-		if(abs(factor)<3 && factor!=0)						//­Y¹L¤jªí¥Ü­«¨ê·P´úªO
-		{	duty+=factor*750;								//½Õ¾ãDuty
-			if(duty<0) duty=(factor>0)?32768:0;				//­Y¤p©ó0«h½Õ¾ã¦Ü¤W¡B¤U­­­È
+		factor=prekey-key;									//è¨ˆç®—å…©æ¬¡æ„Ÿæ¸¬æŒ‰éµä¹‹è·é›¢
+		if(abs(factor)<3 && factor!=0)						//è‹¥éå¤§è¡¨ç¤ºé‡åˆ·æ„Ÿæ¸¬æ¿
+		{	duty+=factor*750;								//èª¿æ•´Duty
+			if(duty<0) duty=(factor>0)?32768:0;				//è‹¥å°æ–¼0å‰‡èª¿æ•´è‡³ä¸Šã€ä¸‹é™å€¼
 			_stm1al=duty; _stm1ah=duty>>8;
 		}
-		prekey=key;											//§ó·sprekay
+		prekey=key;											//æ›´æ–°prekay
 	}
 }
 u8 ScanTouch(void)
 {	u8 keyNum;
-	I2C_START();											//°e¥XI2C START«H¸¹ 
-	WriteByte(TouchID|0); CheckACK();						//°e¥X¸Ë¸mID+¼g¤J
-	WriteByte(TouchCMD); CheckACK();						//°e¥X¸Ë¸mCommand
-	I2C_START();											//°e¥XI2C START«H¸¹ 
-	WriteByte(TouchID|1); CheckACK();						//°e¥X¸Ë¸mID+Åª¨ú
+	I2C_START();											//é€å‡ºI2C STARTä¿¡è™Ÿ 
+	WriteByte(TouchID|0); CheckACK();						//é€å‡ºè£ç½®ID+å¯«å…¥
+	WriteByte(TouchCMD); CheckACK();						//é€å‡ºè£ç½®Command
+	I2C_START();											//é€å‡ºI2C STARTä¿¡è™Ÿ 
+	WriteByte(TouchID|1); CheckACK();						//é€å‡ºè£ç½®ID+è®€å–
 	keyNum=ReadByte();
-	SendACK(1);												//°e¥XNO_ACK«H¸¹
-	I2C_STOP(); 											//°e¥XI2C STOP«H¸¹
+	SendACK(1);												//é€å‡ºNO_ACKä¿¡è™Ÿ
+	I2C_STOP(); 											//é€å‡ºI2C STOPä¿¡è™Ÿ
 	return keyNum;
 }

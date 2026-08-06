@@ -1,3 +1,4 @@
+//https://chatgpt.com/s/m_6a73dff10bf881918c71a5be50e85eb0
 // PROGRAM	: ModifyU6_2_1.c						2026.0213
 // FUNCTION	: SavePicture to SST25VF032B(CRC Demo) 	By Steven
 // LIBRARY	: eDisplayV2.c,SST25V.c 
@@ -11,10 +12,10 @@
 #include "SST25V.h"
 //#include "MKitty2_128.h"							//**(1)改檔名(注意檔頭必須包含X,Y Size資訊)-x
 //#include "MKitty1_128.h"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -4
-#include "Mli.h"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -2
-//#include "Mpicapi_128.H"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   
+//#include "Mli.h"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -2
+//#include "Mpicapi_128.H"							//**改檔名(注意檔頭必須包含X,Y Size資訊)   -0
 //#include "MPuppy.h"									//**改檔名(注意檔頭必須包含X,Y Size資訊)
-#define  NUM	(u32)2								//**(2)改編號
+#define  NUM	(u32)0								//**(2)改編號
 void CRCDisplay(u8 x,u8 y,u16 CRC);
 void main()
 {	u16 i,WrCRC,RdCRC; u32 address=NUM<<15;
