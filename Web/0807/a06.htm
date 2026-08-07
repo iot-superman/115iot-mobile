@@ -9,6 +9,33 @@
     </script>
 </head>
 <body>
+    <div class="container-fluid">
+    <nav class="navbar navbar-light bg-light navbar-expand-md">
+        <a href="http:\\tw.yahoo.com" class="navbar-brand">
+        <img src="H.png" alt="logo" class="me-2" width="30px"><strong>幼獅創意旅遊</strong>
+        </a>
+        <div class="collapse navbar-collapse" id="navbar1">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a href="#" class="nav-link">客運</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">餐廳</a></li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">行程</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item">東部旅遊</a>
+                        <a href="#" class="dropdown-item">離島旅遊</a>
+                        <a href="#" class="dropdown-item">溫泉旅遊</a>
+                    </div>
+                </li>
+            </ul>
+            <form class="d-flex">
+                <input type="search" class="form-control me-2" placeholder="輸入景點">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar1">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </nav>
     <div class="carousel" id="myCarousel" data-bs-ride="carousel">
         <ol class="carousel-indicators">
             <li data-bs-target="#myCarousel" data-bs-slide-to="0" class="active"></li>
@@ -16,21 +43,18 @@
             <li data-bs-target="#myCarousel" data-bs-slide-to="2"></li>
         </ol>
         <div class="carousel-inner">
-            <!--  每秒切換一次 -->
             <div class="carousel-item active" data-bs-interval="1000">
                 <img src="tour1.jpg" alt="合掌村" class="d-block w-100">
                 <div class="carousel-caption d-none d-md-block">
                     <h5>超值行程-日本白川鄉合掌村</h5>
                 </div>
             </div>
-            <!--  每秒切換一次 -->
             <div class="carousel-item" data-bs-interval="1000">
                 <img src="tour2.jpg" alt="貝維德雷宮" class="d-block w-100">
                 <div class="carousel-caption d-none d-md-block">
                     <h5>超美行程-奧地利貝維德雷宮</h5>
                 </div>
             </div>
-            <!--  每秒切換一次 -->
             <div class="carousel-item" data-bs-interval="1000">
                 <img src="tour3.jpg" alt="布拉格" class="d-block w-100">
                 <div class="carousel-caption d-none d-md-block">
@@ -44,6 +68,7 @@
         <a href="#myCarousel" class="carousel-control-next" data-bs-slide="next">
             <span class="carousel-control-next-icon"></span>
         </a>
+    </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
 </body>
