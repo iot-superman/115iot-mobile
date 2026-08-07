@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javascript</title>
+    <script>
+        function showText() {
+            let li= document.getElementById("myLi");
+            alert(li.innerHTML);
+        }
+        function changText() {
+            let c= document.getElementById("content");
+            c.innerHTML= "Javascript and DOM";
+            alert(c.innerHTML);
+        }
+    </script>
+</head>
+<body>
+    <h1>Javascript</h1>
+    <h2>取得元素更改內容</h2>
+    <hr/>
+    <p id="content">取得元素更改內容</p>
+    <ul id="myUl">
+        <li>HTML</li>
+        <li id="myLi">Javascript</li>
+        <li>PHP</li>
+    </ul>
+    <input type="button" onclick="showText()" value="Display element content">
+    <input type="button" onclick="changText()" value="change element content">
+</body>
+</html>
