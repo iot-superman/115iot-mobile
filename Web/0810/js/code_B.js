@@ -1,0 +1,1 @@
+alert("The cat is in the kitchen");

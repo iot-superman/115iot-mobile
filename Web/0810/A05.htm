@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <script>
+        function makeCar() {
+            // 品牌列表
+            let makes = new Array("Chevy", "BMW", "Skoda", "TOYOTA", "Honda", "KIA", "FORD");
+            // 生產年份列表
+            let years = new Array(1997, 2001, 2009, 2013, 2020, 2024);
+            // 車輛顏色列表
+            let colors = new Array("red", "blue", "tan", "yellow", "white");
+            // 是否為敞篷車
+            let convertible = new Array(true, false);
+            // 隨機選取品牌
+            let rand1 = Math.floor(Math.random() * makes.length);
+            // 隨機選取年份
+            let rand2 = Math.floor(Math.random() * years.length);
+            // 隨機選取顏色
+            let rand3 = Math.floor(Math.random() * colors.length);
+            // 座位數選項
+            let seater = [1, 3, 4];
+            // 隨機選取座位數
+            let rand4 = Math.floor(Math.random() * seater.length)+1;
+            // 隨機選取是否為敞篷
+            let rand5 = Math.floor(Math.random() * 2);
+            let car =
+            {
+                make: makes[rand1],
+                year: years[rand2],
+                color: colors[rand3],
+                passengers: rand4,
+                convertible: convertible[rand5]
+            };
+            return car;
+        }
+        function displayCar (car) {
+            let newCar = "Your new car is a " + car.color + " " + car.year + " " + car.make + ", " + car.passengers + "-seater. ";
+            if (car.convertible) {
+                newCar += " It is a convertible.";
+            }
+            document.write(newCar);
+        }
+        let carToSell = makeCar();
+        displayCar(carToSell);
+    </script>
+</body>
+</html>

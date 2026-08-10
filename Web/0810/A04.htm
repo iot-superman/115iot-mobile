@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <script>
+        function prequal(car)
+        {
+            if (car.kilometer>70000)
+            {
+                return false;
+            }
+            else if (car.year<2018)
+            {
+                return false;
+            }
+            return true;
+        }
+        let taxi=
+        {
+            make: "FORD",
+            model: "Taxi",
+            year: 2022,
+            color: "yellow",
+            passenger: 4,
+            kilometer: 107826
+        };
+        let privateCar=
+        {
+            make: "TOYOTA",
+            model: "sedan",
+            year: 2019,
+            color: "silver",
+            passenger: 4,
+            kilometer: 67826
+        };
+
+        // let car=privateCar;
+        let car=Math.random()<0.5 ? privateCar : taxi;
+        let worthALook=prequal(car);
+        if (worthALook)
+        {
+            document.write("You gotta check out this "+ car.make +" "+ car.model +"<br/>");
+        }
+        else
+        {
+            document.write("You should really pass on the "+ car.make +" "+ car.color +"<br/>");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic nostalgic songs</title>
+    <style>
+        body {
+            background-color: #fff;
+            padding: 20px;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+        .song-box {
+            background-color: #DBDD7C;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .song-header {
+            background-color: #B9B635;
+            padding: 20px;
+            text-align: center;
+            font-size: 42px;
+            font-weight: bold;
+            color: #000;
+        }
+        .song-body {
+            padding: 30px 40px;
+        }
+        .list-title {
+            color: #FF4400;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .song-list {
+            font-size: 20px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            padding-left: 25px;
+            /* font-weight: bold; */
+               }
+        .song-list li {
+            padding: 4px 0;
+        }
+        .btn-change {
+            background-color: #F8D921;
+            font-size: 22px;
+            padding: 10px 20px;
+            border: 3px solid #222;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-change:hover {
+            background-color: #F8E840;
+        }
+        .song-footer {
+            background-color: #F8D921;
+            padding: 18px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="song-box">
+        <div class="song-header" id="titleArea">Classic nostalgic songs</div>
+        <div class="song-body">
+            <div class="list-title">LIST</div>
+            <ul class="song-list" id="songList">
+                <li>Song A</li>
+                <li>Song B</li>
+                <li>Song C</li>
+            </ul>
+            <input type="button" class="btn-change" value="Change text content" onclick="changeSongContent()">
+        </div>
+        <div class="song-footer">©Copyright 2025 幼獅創意流行中心</div>
+    </div>
+
+    <script>
+        function changeSongContent() {
+            document.getElementById("titleArea").innerHTML = "My playlist";
+            document.getElementById("songList").innerHTML =
+                "<li>See You Again</li>" +
+                "<li>Because of you</li>" +
+                "<li>Yesterday once more</li>";
+        }
+    </script>
+</body>
+</html>

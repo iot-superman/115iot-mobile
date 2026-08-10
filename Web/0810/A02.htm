@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>A02 - 新聞編輯</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div id="wrap">
+        <div id="header">
+            <div class="logo">
+                <img src="static/images/DWonline.png" alt="news" width="180" height="40">
+            </div>
+        </div>
+        <div class="contentbox">
+            <form id="form1" name="form1">
+                <table>
+                    <tr>
+                        <td valign="baseline">
+                            <select name="news_type" id="news_type">
+                                <option value="notice">公告</option>
+                                <option value="update">更新</option>
+                                <option value="activity">活動</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>標題</strong></td>
+                        <td><input type="text" id="news_subject" name="news_subject"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>編輯者</strong></td>
+                        <td><input type="text" id="news_editor" name="news_editor"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>內容</strong></td>
+                        <td><textarea name="news_content" id="news_content" cols="30" rows="10"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>審核</strong></td>
+                        <td>
+                            <input type="radio" name="news_ok" id="news_ok" value="1">
+                            <label for="news_ok">通過</label>
+                            <input type="radio" name="news_ok" id="news_no" value="0">
+                            <label for="news_no">未通過</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2" style="text-align: center;">
+                            <input type="submit" class="btn" name="button1" id="button1" value="送出">
+                            <input type="reset" class="btn" name="button2" id="button2" value="重設">
+                            <input type="button" class="btn" name="button3" id="button3" value="取消">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <div id="footer">
+            &copy;Copyright 2026 Happy Day 新聞系統
+        </div>
+    </div>
+</body>
+</html>
