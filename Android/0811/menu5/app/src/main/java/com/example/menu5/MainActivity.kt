@@ -34,30 +34,25 @@ class MainActivity : AppCompatActivity() {
         numberPicker1 = findViewById(R.id.numberPicker1)
         numberPicker2 = findViewById(R.id.numberPicker2)
 
-        val country = arrayOf("Korea", "Thailand", "Indonesia")
+        val countryArray = resources.getStringArray(R.array.country)
 
         numberPicker1.minValue = 0
         numberPicker1.maxValue = 100
         numberPicker1.value = 5
 
         numberPicker2.minValue = 0
-        numberPicker2.maxValue = country.size - 1
-        numberPicker2.displayedValues = country
+        numberPicker2.maxValue = countryArray.size - 1
+        numberPicker2.displayedValues = countryArray
         numberPicker2.value = 0
 
         numberPicker2.setOnValueChangedListener(object : NumberPicker.OnValueChangeListener {
             override fun onValueChange(picker: NumberPicker?, oldVal: Int, newVal: Int) {
-                textViewResult.text = "picker 2 = ${country[newVal]}"
+                textViewResult.text = "picker 2 = ${countryArray[newVal]}"
             }
         })
 
         spinner1 = findViewById<Spinner>(R.id.spinner_1)
         spinner2 = findViewById<Spinner>(R.id.spinner_2)
-
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, country)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner1.adapter = adapter
-        spinner2.adapter = adapter
 
         spinner1.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -73,6 +68,17 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
         }
+
+        // val adapter = ArrayAdapter.createFromResource(this@MainActivity, R.array.country,
+        //     android.R.layout.simple_spinner_item)
+
+        val adapter = ArrayAdapter.createFromResource(this@MainActivity, R.array.country,
+            R.layout.simple_spinner_item)
+
+        // adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        spinner2.adapter = adapter
+        spinner1.adapter = adapter
 
         spinner2.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(

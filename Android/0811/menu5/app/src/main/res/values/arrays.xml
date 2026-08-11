@@ -1,0 +1,10 @@
+<resources>
+    <string-array name="country">
+        <item>Taiwan</item>
+        <item>Japan</item>
+        <item>Korea</item>
+        <item>Thailand</item>
+        <item>Indonesia</item>
+        <item>Singapore</item>
+    </string-array>
+</resources>

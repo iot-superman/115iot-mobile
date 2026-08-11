@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">menu6_webview</string>
+    <string name="login_data_title">Please login data :</string>
+    <string name="label_name">Name :</string>
+    <string name="label_email">Email :</string>
+    <string name="hint_name">Input name</string>
+    <string name="hint_email">e-mail</string>
+    <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="user_icon">User Icon</string>
+</resources>
