@@ -1,6 +1,7 @@
 package com.example.menu6_webview
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -41,6 +42,8 @@ class MainActivity : AppCompatActivity() {
                 val name = editTextName.text.toString()
                 val email = editTextEmail.text.toString()
                 Toast.makeText(this@MainActivity, "name = $name , email = $email", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this@MainActivity, WebActivity::class.java)
+                startActivity(intent)
                 myBuilder.dismiss()
             }
         }
