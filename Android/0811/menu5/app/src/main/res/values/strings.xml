@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Menu5</string>
+    <string name="result_format">%1$d, %2$d</string>
+    <string name="text_view_default">TextView</string>
+</resources>
