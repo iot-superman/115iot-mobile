@@ -38,11 +38,17 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("main", "list data = $listData")
 
+        /**
+         * 将花朵名称和图片数据绑定到自定义列表项布局中。
+         */
         val adapter = SimpleAdapter(this, listData, R.layout.item_layout, arrayOf("name", "pic"), intArrayOf(R.id.textView_itemName, R.id.imageView_itemPic))
 
         listViewFlower.adapter = adapter
 
-        listViewFlower.setOnItemClickListener { parent, view, position, id ->
+        /**
+         * 当用户点击某一项时，显示被点击花朵的名称。
+         */
+        listViewFlower.setOnItemClickListener { _, _, position, _ ->
             val flowerName = nameArray[position]
             Toast.makeText(this, "You clicked: $flowerName", Toast.LENGTH_SHORT).show()
         }
