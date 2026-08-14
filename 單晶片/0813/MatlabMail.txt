@@ -1,0 +1,36 @@
+%{
+alert_body = 'This is the text that will be emailed';
+alert_subject = 'This will be the subject of the email';
+alert_api_key = 'TAKF/btXXMfe6eITdOV';                          % alert_api_key
+alert_url= "https://api.thingspeak.com/alerts/send";
+jsonmessage = sprintf(['{"subject": "%s", "body": "%s"}'], alert_subject,alert_body);
+options = weboptions("HeaderFields", {'Thingspeak-Alerts-API-Key', alert_api_key; 'Content-Type','application/json'});
+
+%result = webwrite(alert_url, jsonmessage, options);
+%}
+
+name = 'xxxxxxxx';                             	% $$sender name
+mail = 'yyyyyy@gmail.com';                     	% $$your Gmail address
+password = 'zzzzzz';                     	% $$應用程式密碼
+host = 'smtp.gmail.com';                       	% server name    
+port = '465';                                  	% port number
+sendto = 'wwwwwwww';             		% $$the e-mail address that you want to send to 
+subject = '來自ThingSpeak MATLAB的警示！';      % $$寄信主旨    
+
+body = '超標數值=';                                
+str=num2str(thingSpeakRead(通道編號,'Fields',[3],NumPoints=1));
+
+subject=[subject ' '];                           % for test
+subject=[subject str]                            % for test
+str=[str '℃'];                                  % 加上單位
+% preferences
+setpref('Internet','E_mail',name);
+setpref('Internet','SMTP_Server', host);
+setpref('Internet','SMTP_Username',mail);
+setpref('Internet','SMTP_Password',password);
+props = java.lang.System.getProperties;
+props.setProperty('mail.smtp.auth','true');
+props.setProperty('mail.smtp.socketFactory.class','javax.net.ssl.SSLSocketFactory');
+props.setProperty('mail.smtp.socketFactory.port',port);
+% execute
+sendmail(sendto,subject,[body str]);

@@ -1,0 +1,15 @@
+% https://ww2.mathworks.cn/matlabcentral/answers/1970524-matlab-net-vs-webwrite
+% Define the URL
+url = "https://api.line.me/v2/bot/message/push";
+% Define the API key from Line Developers Console Channel Message API Setting
+access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";							% $$ your Line Bot Channel access token
+% Define the USER ID from from Line Developers Console Channel Basic Setting
+user_id="yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy";								% $$ your Line Bot Channel ID	
+%建構JSON格式之傳送訊息內容
+message="""數值超標,已達"+num2str(thingSpeakRead(zzzzzzzz,'Fields',[3],NumPoints=1))+"℃!!!"""; 	% $$ your ThingSpeak Channel ID                         
+data="{""to"":"""+user_id+""",""messages"":[{""type"":""text"",""text"":"+message+"}]}";
+% Define the headers for the API request
+headers = ["Content-Type", "application/json;charset=UTF-8"; "Authorization", "Bearer "+access_token];
+% Define the request message
+options = weboptions('RequestMethod', 'post', 'HeaderFields', headers);
+response = webwrite(url, data, options)
