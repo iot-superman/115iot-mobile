@@ -1,6 +1,8 @@
 import random as rd
-import tools
-
+from tools import weather
 if __name__ == "__main__":
-    # print(rd.randint(1, 100))
-    tools.weather.get_weather_of_taiwan()
+ 
+    weatherList=weather.get_weather_of_taiwan()
+    if weatherList is not None:
+        for item in weatherList:
+            print(item)
