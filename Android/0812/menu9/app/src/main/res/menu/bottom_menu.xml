@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/menu_cat1"
+        android:title=""
+        android:icon="@drawable/cat_1_icon"
+        app:showAsAction="always"/>
+    <item android:id="@+id/menu_cat2"
+        android:title=""
+        android:icon="@drawable/cat_2_icon"
+        app:showAsAction="always"/>
+    <item android:id="@+id/menu_cat3"
+        android:title=""
+        android:icon="@drawable/cat_3_icon"
+        app:showAsAction="always"/>
+    <item android:id="@+id/menu_dog1"
+        android:title=""
+        android:icon="@drawable/cat_1_icon"
+        app:showAsAction="always"/>
+    <item android:id="@+id/menu_dog2"
+        android:title="DOG 2"
+        app:showAsAction="always|withText"/>
+
+    <item android:id="@+id/menu_about"
+        android:title="⋮"
+        app:showAsAction="always"/>
+
+</menu>

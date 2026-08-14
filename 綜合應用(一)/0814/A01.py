@@ -1,0 +1,12 @@
+a="123"
+b=50
+c='AA'
+d=33
+print(b+d)
+d=int(a)+b
+print(d)
+d=float(a)+b
+print(d)
+print(type(d))
+c=a+str(b)
+print(c)

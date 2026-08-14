@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">ListView</string>
+    <string name="population_label">Population: %1$s</string>
+
+    <string-array name="city">
+        <item>New Taipei 新北市</item>
+        <item>Taoyuan 桃園市</item>
+        <item>Taichung 臺中市</item>
+        <item>Tainan 臺南市</item>
+        <item>Kaohsiung 高雄市</item>
+        <item>Keelung 基隆市</item>
+        <item>Hsinchu City 新竹市</item>
+        <item>Chiayi City 嘉義市</item>
+        <item>Hsinchu County 新竹縣</item>
+        <item>Miaoli County 苗栗縣</item>
+        <item>Changhua County 彰化縣</item>
+        <item>Nantou County 南投縣</item>
+        <item>Yunlin County 雲林縣</item>
+        <item>Chiayi County 嘉義縣</item>
+        <item>Pingtung County 屏東縣</item>
+        <item>Yilan County 宜蘭縣</item>
+        <item>Hualien County 花蓮縣</item>
+        <item>Taitung County 臺東縣</item>
+        <item>Penghu County 澎湖縣</item>
+        <item>Kinmen County 金門縣</item>
+        <item>Lienchiang County 連江縣</item>
+    </string-array>
+
+    <string-array name="population">
+        <item>4,047,131</item>
+        <item>2,320,518</item>
+        <item>2,845,907</item>
+        <item>1,859,946</item>
+        <item>2,737,505</item>
+        <item>361,487</item>
+        <item>456,632</item>
+        <item>262,196</item>
+        <item>589,806</item>
+        <item>535,221</item>
+        <item>1,239,048</item>
+        <item>486,104</item>
+        <item>664,126</item>
+        <item>487,067</item>
+        <item>790,860</item>
+        <item>449,062</item>
+        <item>318,111</item>
+        <item>211,880</item>
+        <item>107,739</item>
+        <item>142,235</item>
+        <item>14,308</item>
+    </string-array>
+
+
+</resources>
