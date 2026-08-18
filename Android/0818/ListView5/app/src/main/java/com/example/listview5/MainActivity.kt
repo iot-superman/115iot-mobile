@@ -1,8 +1,11 @@
 package com.example.listview5
 
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.activity.enableEdgeToEdge
@@ -24,13 +27,41 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        listViewSensor = findViewById(R.id.listView_Id)
+        listViewSensor = findViewById<ListView>(R.id.listView_Id)
+
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        val sensorData = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        val listData = mutableListOf<String>()
 
-        val deviceSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        val sensorNames = deviceSensors.map { it.name }
+        for (sensor in sensorData) {
+            listData.add("${sensor.type.toString()} : ${sensor.name} - ${sensor.vendor}")
+        }
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, sensorNames)
+        title = "Sensor number : ${listData.size}"
+
+        val adapter = ArrayAdapter<String>(this@MainActivity, R.layout.item_layout, R.id.textView_itemData, listData)
         listViewSensor.adapter = adapter
+        listViewSensor.onItemClickListener = object : AdapterView.OnItemClickListener {
+            override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                 val  sensor =sensorData.get(position)
+                 when(sensor.type){
+                     Sensor.TYPE_LIGHT ->{
+                         val intent = Intent(this@MainActivity, LightActivity::class.java)
+                         startActivity(intent)
+
+                     }
+                     Sensor.TYPE_PROXIMITY ->{
+                         val intent = Intent(this@MainActivity, ProxiActivity::class.java)
+                         startActivity(intent)
+
+                     }
+                     Sensor.TYPE_ACCELEROMETER->{
+                         val intent = Intent(this@MainActivity, AccActivity::class.java)
+                         startActivity(intent)
+
+                     }
+                }
+            }
+        }
     }
 }
