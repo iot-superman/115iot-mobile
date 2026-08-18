@@ -13,7 +13,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="60dp"
-        android:layout_marginBottom="28dp"
         android:fontFamily="monospace"
         android:gravity="start"
         android:lineSpacingExtra="8dp"
@@ -21,21 +20,16 @@
         android:textColor="@android:color/black"
         android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/iv_up"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- 方向指示圖示，初始 alpha 設為 0 (隱藏) -->
-    <!-- 使用 tools:alpha="1" 讓你在 Android Studio 的設計畫面中看得到它們 -->
 
     <ImageView
         android:id="@+id/imageView_accPic"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_accData"
         app:srcCompat="@drawable/ppp" />
@@ -92,12 +86,13 @@
         android:id="@+id/iv_z_in"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginBottom="228dp"
         android:alpha="0"
         android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_v"
+        app:layout_constraintHorizontal_bias="0.23"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView_accPic"
         app:srcCompat="@drawable/acc_z_in"
         tools:alpha="1" />
 
@@ -105,14 +100,24 @@
         android:id="@+id/iv_z_out"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginTop="192dp"
-        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="488dp"
         android:alpha="0"
         android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.775"
+        app:layout_constraintStart_toEndOf="@+id/guideline_v"
         app:srcCompat="@drawable/acc_z_out"
         tools:alpha="1" />
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/gl_earth_view"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_v"
