@@ -1,28 +1,18 @@
+//https://chatgpt.com/s/m_6a840fa4d51881918ba37cc3810692e5
 package com.example.listview6
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.AdapterView
-import android.widget.BaseAdapter
 import android.widget.GridView
 import android.widget.ImageView
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity() {
-
-    private val flowerImages = intArrayOf(
-        R.drawable.flower1, R.drawable.flower2, R.drawable.flower3,
-        R.drawable.flower4, R.drawable.flower5, R.drawable.flower6
-    )
-
-    private val flowerNames = arrayOf(
-        "Flower 1", "Flower 2", "Flower 3",
-        "Flower 4", "Flower 5", "Flower 6"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,48 +23,52 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+//Teacher Version:
+        val gridViewData = findViewById<GridView>(R.id.gridView_id)
+        val imageViewPic = findViewById<ImageView>(R.id.ImageView_pic)
 
-        val gridView = findViewById<GridView>(R.id.gridView_id)
-        val imageView = findViewById<ImageView>(R.id.ImageView_pic)
+        val nameArray = resources.getStringArray(R.array.name)
+        val picArray = resources.obtainTypedArray(R.array.picture)
 
-        gridView.adapter = ImageAdapter()
+        val listData = mutableListOf<MutableMap<String, Any>>()
 
-        gridView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            imageView.setImageResource(flowerImages[position])
+        for (i in 0 .. nameArray.size - 1) {
+            val data = mutableMapOf<String, Any>()
+            data.put("name", nameArray[i])
+            // 從資源陣列中取得圖片 ID，若無則預設為 flower1
+            data.put("pic", picArray.getResourceId(i, R.drawable.flower1))
+            listData.add(data)
         }
-    }
+        picArray.recycle()
 
-    inner class ImageAdapter : BaseAdapter() {
-        override fun getCount(): Int = flowerImages.size
+        Log.d("main", "list data = $listData")
 
-        override fun getItem(position: Int): Any = flowerImages[position]
+        
+        /**
+         * 建立自訂的 `MyAdapter`，將 `listData` 內的名稱與圖片資料
+         * 轉換成 `GridView` 可以顯示的每一個格子項目。
+         *
+         * - `this@MainActivity`：提供 Adapter 所需的畫面內容與資源存取環境（Context）。
+         * - `listData`：作為 Adapter 的資料來源，包含每筆要顯示的名稱與圖片資源。
+         */
+        // 使用自訂的 Adapter
+        val adapter = MyAdapter(myContext = this@MainActivity, listData = listData)
 
-        override fun getItemId(position: Int): Long = position.toLong()
+        gridViewData.adapter = adapter
 
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            val view: View
-            val holder: ViewHolder
-
-            if (convertView == null) {
-                view = layoutInflater.inflate(R.layout.item_layout, parent, false)
-                holder = ViewHolder()
-                holder.imageView = view.findViewById(R.id.imageView_itemPic)
-                holder.textView = view.findViewById(R.id.textView_itemName)
-                view.tag = holder
-            } else {
-                view = convertView
-                holder = view.tag as ViewHolder
+        // 設定 GridView 項目的點擊監聽器
+        gridViewData.onItemClickListener = object : AdapterView.OnItemClickListener {
+            override fun onItemClick(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                // 從 Adapter 中取得點擊位置的資料物件
+                val item = parent?.getItemAtPosition(position) as MutableMap<String, Any>
+                // 將下方的大圖更新為點選的圖片
+                imageViewPic.setImageResource(item["pic"] as Int)
             }
-
-            holder.imageView.setImageResource(flowerImages[position])
-            holder.textView.text = flowerNames[position]
-
-            return view
         }
-    }
-
-    private class ViewHolder {
-        lateinit var imageView: ImageView
-        lateinit var textView: android.widget.TextView
     }
 }
