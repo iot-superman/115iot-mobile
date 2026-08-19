@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="nameArray">
+        <item>Ice Cream</item>
+        <item>Latte</item>
+        <item>Milk</item>
+        <item>Milk Tea</item>
+    </string-array>
+    <array name="picArray">
+        <item>@drawable/icecream</item>
+        <item>@drawable/latte</item>
+        <item>@drawable/milk_icon</item>
+        <item>@drawable/milk_tea_icon</item>
+    </array>
+</resources>
