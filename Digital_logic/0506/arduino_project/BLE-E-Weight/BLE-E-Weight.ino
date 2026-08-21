@@ -1,3 +1,16 @@
+/*
+ * | Arduino IDE 設定   | 建議                                      |
+| ---------------- | --------------------------------------- |
+| Board            | **ESP32S3 Dev Module**                  |
+| USB CDC On Boot  | **Enabled**                             |
+| CPU Frequency    | **240MHz (WiFi)**                       |
+| Core Debug Level | **None**                                |
+| Flash Mode       | **QIO 80MHz**                           |
+| Partition Scheme | **Default**                             |
+| Upload Speed     | **921600**；失敗再改 **460800** 或 **115200** |
+| Port             | 選插入 ESP32-S3 後出現的 **COMx**              |
+
+ */
 //====================================================
 // 2026 完整穩定版 - 終極修正版 v4（修復藥盒放回偵測問題）
 // 修正：新增動態放回偵測，解決緩慢取藥導致狀態卡死
