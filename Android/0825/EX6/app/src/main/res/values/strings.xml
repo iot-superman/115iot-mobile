@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">EX6</string>
+
+    <!-- 台灣飲品名稱 -->
+    <string-array name="drink_names">
+        <item>黑糖珍珠鮮奶</item>
+        <item>台灣珍珠奶茶</item>
+        <item>百香鮮果茶</item>
+        <item>芒果雪花冰</item>
+        <item>仙草鮮奶</item>
+        <item>高山烏龍茶</item>
+    </string-array>
+
+    <!-- 價格：單位為新台幣 NT$ -->
+    <integer-array name="drink_prices">
+        <item>65</item>
+        <item>60</item>
+        <item>70</item>
+        <item>120</item>
+        <item>65</item>
+        <item>50</item>
+    </integer-array>
+
+    <!-- 對應 res/drawable/drank1.png ~ drank6.png -->
+    <array name="drink_images">
+        <item>@drawable/drank1</item>
+        <item>@drawable/drank2</item>
+        <item>@drawable/drank3</item>
+        <item>@drawable/drank4</item>
+        <item>@drawable/drank5</item>
+        <item>@drawable/drank6</item>
+    </array>
+
+
+
+
+
+
+
+</resources>

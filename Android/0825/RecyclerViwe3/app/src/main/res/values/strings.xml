@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">RecyclerViwe3</string>
+    <string-array name="name">
+
+        <item>Black tea</item>
+        <item>Ice cream</item>
+        <item>Latte</item>
+        <item>Mika tea</item>
+        <item>Muffin</item>
+        <item>Pancake</item>
+        <item>Waffle</item>
+    </string-array>
+
+    <array name="picture">
+        <item>@drawable/blacktea</item>
+        <item>@drawable/icecream</item>
+        <item>@drawable/latte</item>
+        <item>@drawable/milk_tea_icon</item>
+        <item>@drawable/mulffin</item>
+        <item>@drawable/pancake</item>
+        <item>@drawable/icecream</item> <!-- Placeholder for waffle -->
+    </array>
+
+    <integer-array name="price">
+        <item>80</item>
+        <item>120</item>
+        <item>150</item>
+        <item>60</item>
+        <item>50</item>
+        <item>160</item>
+        <item>200</item>
+    </integer-array>
+</resources>
