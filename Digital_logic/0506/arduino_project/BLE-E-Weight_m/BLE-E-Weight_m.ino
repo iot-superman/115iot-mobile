@@ -1,5 +1,5 @@
 /*
- * | Arduino IDE 設定   | 建議                                      |
+| Arduino IDE 設定   | 建議                                      |
 | ---------------- | --------------------------------------- |
 | Board            | **ESP32S3 Dev Module**                  |
 | USB CDC On Boot  | **Enabled**                             |
@@ -16,7 +16,7 @@
 ===
 seiral debug:115200bps
  */
- 
+
 //====================================================
 // 2026 完整穩定版 - 終極修正版 v4（修復藥盒放回偵測問題）
 // 修正：新增動態放回偵測，解決緩慢取藥導致狀態卡死
@@ -57,6 +57,18 @@ enum NetworkLedState {
 };
 
 NetworkLedState currentNetworkLedState = NETWORK_LED_UNKNOWN;
+
+// 【新增】全部正常時的綠燈播放階段。
+// 採用 millis() 非阻塞計時，不使用 delay()，避免影響 HX711、MQTT 與 BLE。
+enum GreenLedPhase {
+    GREEN_LED_IDLE = 0,
+    GREEN_LED_HOLD,
+    GREEN_LED_FINISHED
+};
+
+GreenLedPhase greenLedPhase = GREEN_LED_IDLE;
+unsigned long greenLedPhaseStartedAt = 0;
+const unsigned long GREEN_HOLD_MS = 1000;  // 【修改】全部正常時綠燈只亮 1 秒
 
 HX711 scale;
 bool hx711Ready = false;
@@ -214,6 +226,12 @@ void setNetworkStatusLed(NetworkLedState newState) {
     if(newState == currentNetworkLedState) return;
     currentNetworkLedState = newState;
 
+    // 【新增】只要離開「全部正常」，就重設綠燈動畫。
+    // 下次 Wi-Fi、MQTT、HX711 再次全部正常時，才會重新播放一次。
+    if(newState != NETWORK_LED_ALL_CONNECTED) {
+        greenLedPhase = GREEN_LED_IDLE;
+    }
+
     switch(newState) {
         case NETWORK_LED_HX711_ERROR:
             // 【新增】白色：HX711 找不到或資料訊號中斷。
@@ -235,14 +253,48 @@ void setNetworkStatusLed(NetworkLedState newState) {
             break;
 
         case NETWORK_LED_ALL_CONNECTED:
-            // 綠色：Wi-Fi 與 MQTT Broker 都已正常連線。
+            // 【修改】全部正常時立即亮綠燈，持續 1 秒後自動關閉。
             rgbLedWrite(STATUS_RGB_LED_PIN, 0, 255, 0);
-            Serial.println("🟢 [狀態燈] Wi-Fi 與 MQTT Broker 連線正常");
+            greenLedPhase = GREEN_LED_HOLD;
+            greenLedPhaseStartedAt = millis();
+            Serial.println("🟢 [狀態燈] Wi-Fi、MQTT Broker、HX711 均正常");
             break;
 
         default:
             // 未知狀態時關閉 LED。
             rgbLedWrite(STATUS_RGB_LED_PIN, 0, 0, 0);
+            break;
+    }
+}
+
+// 【修改】非阻塞處理全部正常時的綠燈提示。
+// 流程：綠燈持續亮 1 秒 → 關閉並保持關燈。
+void serviceAllConnectedGreenLed() {
+    if(currentNetworkLedState != NETWORK_LED_ALL_CONNECTED) return;
+
+    const unsigned long now = millis();
+    const unsigned long elapsed = now - greenLedPhaseStartedAt;
+
+    switch(greenLedPhase) {
+        case GREEN_LED_HOLD:
+            if(elapsed >= GREEN_HOLD_MS) {
+                rgbLedWrite(STATUS_RGB_LED_PIN, 0, 0, 0);
+                greenLedPhase = GREEN_LED_FINISHED;
+                Serial.println("⚫ [狀態燈] 全部正常提示完成，綠燈已自動關閉");
+            }
+            break;
+
+        case GREEN_LED_IDLE:
+            break;
+
+        case GREEN_LED_FINISHED:
+            // 【修正】關燈鎖定：提示播放完成後，每一圈都強制寫入黑色。
+            // 部分 ESP32-S3 RGB LED 驅動或其他狀態刷新可能讓最後顏色殘留；
+            // 重複送出 (0,0,0) 可確保 LED 真正保持關閉，直到狀態改變。
+            rgbLedWrite(STATUS_RGB_LED_PIN, 0, 0, 0);
+            break;
+
+        default:
             break;
     }
 }
@@ -261,6 +313,9 @@ void updateNetworkStatusLed() {
     else {
         setNetworkStatusLed(NETWORK_LED_ALL_CONNECTED);
     }
+
+    // 【新增】每圈推進一次綠燈動畫，不阻塞其他通訊與秤重工作。
+    serviceAllConnectedGreenLed();
 }
 
 // 僅透過 BLE Notify 回傳資料，不重複發布至 MQTT 訊息主題。
