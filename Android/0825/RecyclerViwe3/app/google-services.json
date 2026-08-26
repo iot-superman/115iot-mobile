@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069144349207",
+    "project_id": "recyclerviwe3",
+    "storage_bucket": "recyclerviwe3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069144349207:android:8bd9bda11a01df10971a52",
+        "android_client_info": {
+          "package_name": "com.example.recyclerviwe3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8F7IWHhqE_bWSnapQDfJ9vCXyTa_rYM0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
