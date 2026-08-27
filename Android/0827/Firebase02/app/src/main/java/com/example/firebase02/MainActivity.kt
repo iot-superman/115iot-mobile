@@ -1,8 +1,6 @@
 package com.example.firebase02
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -11,31 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 
 class MainActivity : AppCompatActivity() {
-    
-    private lateinit var fbControl: FirebaseDatabase
-    private lateinit var dataRef: DatabaseReference
-    private val DisplayAll = 1
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            insets
-        }
-
-        fbControl = FirebaseDatabase.getInstance()
-        dataRef = fbControl.getReference().child("customer")
-        val data = mutableMapOf<String, String>()
-        data["name"] = "AAAA"
-        data["email"] = "aaa@gmail.com"
-        data["phone"] = "12345"
-        dataRef.child("1").setValue(data)
 
         val edId = findViewById<EditText>(R.id.editText_id)
         val edName = findViewById<EditText>(R.id.editText_name)
@@ -72,18 +51,11 @@ class MainActivity : AppCompatActivity() {
             tvData.text = "TextView"
             Toast.makeText(this, "Fields cleared", Toast.LENGTH_SHORT).show()
         }
-    }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        super.onCreateOptionsMenu(menu)
-        menu?.add(1, DisplayAll, Menu.NONE, "Display all")
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == DisplayAll) {
-            // Logic for Display all
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
-        return super.onOptionsItemSelected(item)
     }
 }
