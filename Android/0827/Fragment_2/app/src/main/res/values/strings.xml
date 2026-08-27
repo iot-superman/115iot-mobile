@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Fragment_2</string>
+    <string name="frag_1">Frag-1</string>
+    <string name="frag_2">Frag-2</string>
+    <string name="frag_3">Frag-3</string>
+    <string name="input_data">Input data</string>
+    <string name="frag_1_text">Fragment 1</string>
+    <string name="frag_2_text">Fragment 2</string>
+    <string name="frag_3_text">Fragment 3</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
