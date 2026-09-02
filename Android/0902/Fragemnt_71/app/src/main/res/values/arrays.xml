@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="nameArray">
+        <item>Muffin</item>
+        <item>Pancake</item>
+        <item>Waffle</item>
+    </string-array>
+    <string-array name="priceArray">
+        <item>50</item>
+        <item>160</item>
+        <item>200</item>
+    </string-array>
+    <array name="picArray">
+        <item>@drawable/mulffin</item>
+        <item>@drawable/pancake</item>
+        <item>@drawable/waffle</item>
+    </array>
+</resources>
