@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="/post2/" method="post">
+        {% csrf_token %}
+        <div>
+            您學會的項目為:
+        </div>
+        <div>
+            {% comment %} checkbox {% endcomment %}
+            <input type="checkbox" name="itmes" id="linux" value="linux"> Linux<br>
+            <input type="checkbox" name="itmes" id="python" value="python"> Python<br>
+            <input type="checkbox" name="itmes" id="android" value="android"> Android<br>
+            <input type="checkbox" name="itmes" id="mcu" value="mcu"> MCU<br>
+        </div>
+        <div>
+            <input type="submit" value="送出">
+        </div>
+    </form>
+</body>
+</html>
