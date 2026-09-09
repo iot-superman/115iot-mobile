@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+</head>
+<body>
+    <div>
+        <img class="logo" src="{% static 'image/sample1.png' %}" alt="logo" width="500px">
+    </div>
+    <h1>歡迎光臨：{{ username }}</h1>
+    <h2>現在時間：{{ now }}</h2>
+    <!-- 西元/月/日 時:分秒 -->
+    <h2>現在時間：{{ now|date:"Y/m/d H:i:s" }}</h2>
+    
+</body>
+</html>

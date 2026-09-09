@@ -1,0 +1,5 @@
+SELECT `myapp_student`.`cID`, `myapp_student`.`cName` 
+, SUM(`myapp_scorelist`.`score`), AVG(`myapp_scorelist`.`score`)  
+FROM `myapp_student` INNER JOIN `myapp_scorelist`  
+ON `myapp_student`.`cID` = `myapp_scorelist`.`cID_id`  
+GROUP BY `myapp_student`.`cID`;
