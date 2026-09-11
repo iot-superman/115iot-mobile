@@ -1,5 +1,6 @@
 package com.example.http_1
 
+import android.graphics.Color
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
@@ -10,177 +11,930 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import org.json.JSONObject
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var textViewData: TextView
     private lateinit var buttonGetData: Button
     private lateinit var buttonPostSet: Button
     private lateinit var buttonGetSet: Button
-    private lateinit var editTextField2: EditText
     private lateinit var editTextField1: EditText
-
-    private val client = OkHttpClient()
+    private lateinit var editTextField2: EditText
 
     companion object {
-        private const val webAddress = "https://api.thingspeak.com/"
-        private const val writeApiKey = "GI5MENZRYXUAZY04"
-        private const val readApiKey = "E56801DZUIC03MBS"
-        private const val channelId = "3277252"
-        
-        // 寫入網址
-        private const val getUpdateUrl = "${webAddress}update?api_key=$writeApiKey"
-        
-        // 讀取網址 (最後 3 筆)
-        private const val getField1Data = "${webAddress}channels/$channelId/fields/1.json?api_key=$readApiKey&results=3"
-        private const val getField2Data = "${webAddress}channels/$channelId/fields/2.json?api_key=$readApiKey&results=3"
+
+        private const val TAG = "ThingSpeak"
+
+        // ThingSpeak API Server
+        private const val WEB_ADDRESS =
+            "https://api.thingspeak.com"
+
+        // ★ 請換成你重新產生的 Write API Key
+        private const val WRITE_API_KEY =
+                    "GI5MENZRYXUAZY04"
+
+        // ★ 請換成你重新產生的 Read API Key
+        private const val READ_API_KEY =
+                    "E56801DZUIC03MBS"
+
+        // ThingSpeak Channel ID
+        private const val CHANNEL_ID =
+            "3490041"
+
+        // ============================================================
+        // Get Data 使用
+        // results=2：讀取最近 2 筆
+        // ============================================================
+        private const val GET_FEEDS_URL =
+            "$WEB_ADDRESS/channels/$CHANNEL_ID/feeds.json" +
+                    "?api_key=$READ_API_KEY&results=2"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
+
         setContentView(R.layout.activity_main)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+        ViewCompat.setOnApplyWindowInsetsListener(
+            findViewById(R.id.main)
+        ) { v, insets ->
+
+            val systemBars =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                )
+
+            v.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                systemBars.bottom
+            )
+
             insets
         }
 
-        textViewData = findViewById(R.id.textViewData)
-        textViewData.movementMethod = ScrollingMovementMethod()
-        buttonGetData = findViewById(R.id.buttonGetData)
-        buttonPostSet = findViewById(R.id.buttonPostSet)
-        buttonGetSet = findViewById(R.id.buttonGetSet)
-        editTextField1 = findViewById(R.id.editTextField1)
-        editTextField2 = findViewById(R.id.editTextField2)
+        // ============================================================
+        // View 初始化
+        // ============================================================
 
-        // 使用 GET 方式寫入 (Update)
+        textViewData =
+            findViewById(R.id.textViewData)
+
+        buttonGetData =
+            findViewById(R.id.buttonGetData)
+
+        buttonPostSet =
+            findViewById(R.id.buttonPostSet)
+
+        buttonGetSet =
+            findViewById(R.id.buttonGetSet)
+
+        editTextField1 =
+            findViewById(R.id.editTextField1)
+
+        editTextField2 =
+            findViewById(R.id.editTextField2)
+
+        textViewData.movementMethod =
+            ScrollingMovementMethod()
+
+        // ============================================================
+        // ① Get-Set
+        //
+        // 使用 HTTP GET 寫入 ThingSpeak
+        //
+        // 官方格式：
+        //
+        // https://api.thingspeak.com/update.json
+        // ?api_key=WRITE_KEY
+        // &field1=155
+        // &field2=86
+        //
+        // ============================================================
+
         buttonGetSet.setOnClickListener {
-            val f1 = editTextField1.text.toString()
-            val f2 = editTextField2.text.toString()
-            val url = "$getUpdateUrl&field1=$f1&field2=$f2"
-            executeRequest(Request.Builder().url(url).build(), "GET Update")
-        }
 
-        // 使用 POST 方式寫入 (Update)
-        buttonPostSet.setOnClickListener {
-            val f1 = editTextField1.text.toString()
-            val f2 = editTextField2.text.toString()
-            val formBody = FormBody.Builder()
-                .add("api_key", writeApiKey)
-                .add("field1", f1)
-                .add("field2", f2)
-                .build()
-            val request = Request.Builder()
-                .url("${webAddress}update")
-                .post(formBody)
-                .build()
-            executeRequest(request, "POST Update")
-        }
+            val field1 =
+                editTextField1.text
+                    .toString()
+                    .trim()
 
-        // 讀取資料 (Read Last 3)
-        buttonGetData.setOnClickListener {
-            lifecycleScope.launch {
-                val data1 = fetchData(getField1Data)
-                val data2 = fetchData(getField2Data)
-                textViewData.text = "Field 1 (Last 3):\n$data1\n\nField 2 (Last 3):\n$data2"
+            val field2 =
+                editTextField2.text
+                    .toString()
+                    .trim()
+
+            // 防止空白資料
+            if (field1.isEmpty() || field2.isEmpty()) {
+
+                textViewData.text =
+                    "Field 1、Field 2 不可空白"
+
+                return@setOnClickListener
             }
+
+            // ========================================================
+            // ★ 重要修正：
+            // 對參數做 URL Encode
+            // ========================================================
+
+            val encodedField1 =
+                URLEncoder.encode(
+                    field1,
+                    "UTF-8"
+                )
+
+            val encodedField2 =
+                URLEncoder.encode(
+                    field2,
+                    "UTF-8"
+                )
+
+            val encodedApiKey =
+                URLEncoder.encode(
+                    WRITE_API_KEY,
+                    "UTF-8"
+                )
+
+            // ========================================================
+            // ★ 改用 update.json
+            // ========================================================
+
+            val urlString =
+                "$WEB_ADDRESS/update.json" +
+                        "?api_key=$encodedApiKey" +
+                        "&field1=$encodedField1" +
+                        "&field2=$encodedField2"
+
+            Log.d(
+                TAG,
+                "GET URL = $urlString"
+            )
+
+            HttpGetUpdate(
+                urlString
+            ).start()
+        }
+
+        // ============================================================
+        // ② Set-Post
+        //
+        // 使用 HTTP POST 寫入
+        // ============================================================
+
+        buttonPostSet.setOnClickListener {
+
+            val field1 =
+                editTextField1.text
+                    .toString()
+                    .trim()
+
+            val field2 =
+                editTextField2.text
+                    .toString()
+                    .trim()
+
+            if (field1.isEmpty() || field2.isEmpty()) {
+
+                textViewData.text =
+                    "Field 1、Field 2 不可空白"
+
+                return@setOnClickListener
+            }
+
+            HttpPostData(
+                field1,
+                field2
+            ).start()
+        }
+
+        // ============================================================
+        // ③ Get Data
+        //
+        // 從 ThingSpeak 讀取最近資料
+        // ============================================================
+
+        buttonGetData.setOnClickListener {
+
+            textViewData.text =
+                "正在讀取 ThingSpeak..."
+
+            HttpGetFeeds(
+                GET_FEEDS_URL
+            ).start()
         }
     }
 
 
-    inner private class HttpGetData() : Thread() {
+    // ================================================================
+    //
+    // Get-Set
+    //
+    // HTTP GET 寫入 ThingSpeak
+    //
+    // ================================================================
+
+    private inner class HttpGetUpdate(
+        private val targetUrl: String
+    ) : Thread() {
 
         override fun run() {
 
-            thingSpeakUrl.append(webAddress)
-            thingSpeakUrl.append(
-                getApiKey + field1 + field1Data + field2 + field2Data
-            )
+            var resultText = ""
 
-            Log.d("main", "thingSpeakURL = $thingSpeakUrl")
+            var responseCode = 0
 
             try {
-                url = URL(thingSpeakUrl.toString())
-                conn = url.openConnection() as HttpURLConnection
 
-                conn.requestMethod = "GET"
-                conn.connectTimeout = 10000
-                conn.readTimeout = 10000
+                Log.d(
+                    TAG,
+                    "GET Request = $targetUrl"
+                )
 
-                code = conn.responseCode
+                val url =
+                    URL(targetUrl)
 
-                Log.d("main", "get code = $code")
+                val conn =
+                    url.openConnection()
+                            as HttpURLConnection
 
-            } catch (e: MalformedURLException) {
+                // ====================================================
+                // ★ 明確指定 GET
+                // ====================================================
 
-                Log.d("main", "mal error : $e")
+                conn.requestMethod =
+                    "GET"
 
-            } catch (e: IOException) {
+                // ====================================================
+                // ★ 補 User-Agent
+                //
+                // 避免某些 HTTP Request 被伺服器拒絕
+                // ====================================================
 
-                Log.d("main", "IO error : $e")
-            }
+                conn.setRequestProperty(
+                    "User-Agent",
+                    "Mozilla/5.0 Android ThingSpeak App"
+                )
 
-            if (code == HttpURLConnection.HTTP_OK) {
+                conn.setRequestProperty(
+                    "Accept",
+                    "application/json"
+                )
 
-                val inputStream = conn.getInputStream()
-                val reader = InputStreamReader(inputStream)
+                conn.connectTimeout =
+                    10000
 
-                getData = reader.readText()
+                conn.readTimeout =
+                    10000
 
-                Log.d("main", "getData = $getData")
+                conn.useCaches =
+                    false
 
-                inputStream.close()
+                conn.doInput =
+                    true
 
-                runOnUiThread {
+                // ====================================================
+                // 取得 HTTP Status Code
+                // ====================================================
 
-                    textViewData.text = "write number = $getData "
+                responseCode =
+                    conn.responseCode
+
+                Log.d(
+                    TAG,
+                    "GET Response Code = $responseCode"
+                )
+
+                // ====================================================
+                // HTTP 200
+                // ====================================================
+
+                if (
+                    responseCode ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    val reader =
+                        InputStreamReader(
+                            conn.inputStream
+                        )
+
+                    resultText =
+                        reader.readText()
+
+                    reader.close()
+
+                } else {
+
+                    // =================================================
+                    // ★ 錯誤時把 ThingSpeak 回傳內容也讀出來
+                    // =================================================
+
+                    val stream =
+                        conn.errorStream
+
+                    resultText =
+                        if (stream != null) {
+
+                            val reader =
+                                InputStreamReader(
+                                    stream
+                                )
+
+                            val error =
+                                reader.readText()
+
+                            reader.close()
+
+                            error
+
+                        } else {
+
+                            "No error body"
+                        }
                 }
-            }
-        }
-    }
 
+                conn.disconnect()
 
-
-
-    // 請將 MainActivity.kt 中的 executeRequest 方法稍微修改，加入 Log 輸出
-    private fun executeRequest(request: Request, actionName: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // 輸出網址到 Logcat，方便測試
-                Log.d("main", "ThingSpeak URL: ${request.url}")
-
-                val response = client.newCall(request).execute()
-                val responseBody = response.body?.string() ?: "Empty"
-                withContext(Dispatchers.Main) {
-                    // 如果是 0，代表被伺服器拒絕（通常是太頻繁）
-                    textViewData.text = "$actionName Result: $responseBody"
-                    if (responseBody == "0") {
-                        textViewData.append("\n(請等待 15 秒後再試)")
-                    }
-                }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    textViewData.text = "$actionName Error: ${e.message}"
+
+                Log.e(
+                    TAG,
+                    "GET Update Error",
+                    e
+                )
+
+                resultText =
+                    e.message ?: "Unknown Error"
+            }
+
+            // ========================================================
+            // 回 UI Thread
+            // ========================================================
+
+            val finalResult =
+                resultText
+
+            val finalCode =
+                responseCode
+
+            runOnUiThread {
+
+                // ====================================================
+                // 成功
+                // ====================================================
+
+                if (
+                    finalCode ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    try {
+
+                        // update.json 成功會回傳 JSON
+                        val json =
+                            JSONObject(
+                                finalResult
+                            )
+
+                        val entryId =
+                            json.optInt(
+                                "entry_id",
+                                0
+                            )
+
+                        val field1 =
+                            json.optString(
+                                "field1",
+                                ""
+                            )
+
+                        val field2 =
+                            json.optString(
+                                "field2",
+                                ""
+                            )
+
+                        textViewData.text =
+                            "GET Update 成功\n" +
+                                    "HTTP Code = $finalCode\n" +
+                                    "write number = $entryId\n" +
+                                    "Field 1 = $field1\n" +
+                                    "Field 2 = $field2"
+
+                        textViewData.setTextColor(
+                            Color.parseColor(
+                                "#3F51B5"
+                            )
+                        )
+
+                        textViewData.textSize =
+                            22f
+
+                    } catch (e: Exception) {
+
+                        textViewData.text =
+                            "GET Update 成功\n" +
+                                    "HTTP Code = $finalCode\n" +
+                                    "Response:\n" +
+                                    finalResult
+                    }
+
+                } else {
+
+                    // =================================================
+                    // HTTP 400 / 401 / 404...
+                    // =================================================
+
+                    textViewData.text =
+                        "GET Update 失敗\n" +
+                                "HTTP Code = $finalCode\n" +
+                                "Server Response:\n" +
+                                finalResult
                 }
             }
         }
     }
 
-    private suspend fun fetchData(url: String): String = withContext(Dispatchers.IO) {
-        try {
-            val request = Request.Builder().url(url).build()
-            val response = client.newCall(request).execute()
-            response.body?.string() ?: "No data"
-        } catch (e: Exception) {
-            "Error: ${e.message}"
+
+    // ================================================================
+    //
+    // Set-Post
+    //
+    // HTTP POST 寫入 ThingSpeak
+    //
+    // ================================================================
+
+    private inner class HttpPostData(
+        private val field1: String,
+        private val field2: String
+    ) : Thread() {
+
+        override fun run() {
+
+            var resultText = ""
+
+            var responseCode = 0
+
+            try {
+
+                // ====================================================
+                // POST 使用 update.json
+                // ====================================================
+
+                val targetUrl =
+                    "$WEB_ADDRESS/update.json"
+
+                val url =
+                    URL(targetUrl)
+
+                val conn =
+                    url.openConnection()
+                            as HttpURLConnection
+
+                conn.requestMethod =
+                    "POST"
+
+                conn.doOutput =
+                    true
+
+                conn.doInput =
+                    true
+
+                conn.connectTimeout =
+                    10000
+
+                conn.readTimeout =
+                    10000
+
+                conn.useCaches =
+                    false
+
+                // ====================================================
+                // POST Content-Type
+                // ====================================================
+
+                conn.setRequestProperty(
+                    "Content-Type",
+                    "application/x-www-form-urlencoded"
+                )
+
+                conn.setRequestProperty(
+                    "Accept",
+                    "application/json"
+                )
+
+                conn.setRequestProperty(
+                    "User-Agent",
+                    "Mozilla/5.0 Android ThingSpeak App"
+                )
+
+                // ====================================================
+                // POST Body
+                // ====================================================
+
+                val postData =
+                    "api_key=" +
+                            URLEncoder.encode(
+                                WRITE_API_KEY,
+                                "UTF-8"
+                            ) +
+                            "&field1=" +
+                            URLEncoder.encode(
+                                field1,
+                                "UTF-8"
+                            ) +
+                            "&field2=" +
+                            URLEncoder.encode(
+                                field2,
+                                "UTF-8"
+                            )
+
+                Log.d(
+                    TAG,
+                    "POST Data = $postData"
+                )
+
+                // ====================================================
+                // 寫出 POST Body
+                // ====================================================
+
+                val writer =
+                    OutputStreamWriter(
+                        conn.outputStream
+                    )
+
+                writer.write(
+                    postData
+                )
+
+                writer.flush()
+
+                writer.close()
+
+                // ====================================================
+                // HTTP Status
+                // ====================================================
+
+                responseCode =
+                    conn.responseCode
+
+                Log.d(
+                    TAG,
+                    "POST Response Code = $responseCode"
+                )
+
+                if (
+                    responseCode ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    val reader =
+                        InputStreamReader(
+                            conn.inputStream
+                        )
+
+                    resultText =
+                        reader.readText()
+
+                    reader.close()
+
+                } else {
+
+                    val stream =
+                        conn.errorStream
+
+                    resultText =
+                        if (stream != null) {
+
+                            val reader =
+                                InputStreamReader(
+                                    stream
+                                )
+
+                            val error =
+                                reader.readText()
+
+                            reader.close()
+
+                            error
+
+                        } else {
+
+                            "No error body"
+                        }
+                }
+
+                conn.disconnect()
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    TAG,
+                    "POST Error",
+                    e
+                )
+
+                resultText =
+                    e.message ?: "Unknown Error"
+            }
+
+            val finalResult =
+                resultText
+
+            val finalCode =
+                responseCode
+
+            runOnUiThread {
+
+                if (
+                    finalCode ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    try {
+
+                        val json =
+                            JSONObject(
+                                finalResult
+                            )
+
+                        val entryId =
+                            json.optInt(
+                                "entry_id",
+                                0
+                            )
+
+                        val f1 =
+                            json.optString(
+                                "field1",
+                                ""
+                            )
+
+                        val f2 =
+                            json.optString(
+                                "field2",
+                                ""
+                            )
+
+                        textViewData.text =
+                            "POST Update 成功\n" +
+                                    "HTTP Code = $finalCode\n" +
+                                    "write number = $entryId\n" +
+                                    "Field 1 = $f1\n" +
+                                    "Field 2 = $f2"
+
+                    } catch (e: Exception) {
+
+                        textViewData.text =
+                            "POST Update 成功\n" +
+                                    "HTTP Code = $finalCode\n" +
+                                    finalResult
+                    }
+
+                } else {
+
+                    textViewData.text =
+                        "POST Update 失敗\n" +
+                                "HTTP Code = $finalCode\n" +
+                                finalResult
+                }
+            }
+        }
+    }
+
+
+    // ================================================================
+    //
+    // Get Data
+    //
+    // 讀取 ThingSpeak feeds.json
+    //
+    // ================================================================
+
+    private inner class HttpGetFeeds(
+        private val targetUrl: String
+    ) : Thread() {
+
+        override fun run() {
+
+            var resultText = ""
+
+            var responseCode = 0
+
+            try {
+
+                Log.d(
+                    TAG,
+                    "Feeds URL = $targetUrl"
+                )
+
+                val url =
+                    URL(targetUrl)
+
+                val conn =
+                    url.openConnection()
+                            as HttpURLConnection
+
+                conn.requestMethod =
+                    "GET"
+
+                conn.connectTimeout =
+                    10000
+
+                conn.readTimeout =
+                    10000
+
+                conn.useCaches =
+                    false
+
+                conn.setRequestProperty(
+                    "User-Agent",
+                    "Mozilla/5.0 Android ThingSpeak App"
+                )
+
+                conn.setRequestProperty(
+                    "Accept",
+                    "application/json"
+                )
+
+                responseCode =
+                    conn.responseCode
+
+                if (
+                    responseCode ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    val reader =
+                        InputStreamReader(
+                            conn.inputStream
+                        )
+
+                    resultText =
+                        reader.readText()
+
+                    reader.close()
+
+                } else {
+
+                    val stream =
+                        conn.errorStream
+
+                    resultText =
+                        if (stream != null) {
+
+                            val reader =
+                                InputStreamReader(
+                                    stream
+                                )
+
+                            val error =
+                                reader.readText()
+
+                            reader.close()
+
+                            error
+
+                        } else {
+
+                            "No error body"
+                        }
+                }
+
+                conn.disconnect()
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    TAG,
+                    "Get Feeds Error",
+                    e
+                )
+
+                resultText =
+                    e.message ?: "Unknown Error"
+            }
+
+            val finalResult =
+                resultText
+
+            val finalCode =
+                responseCode
+
+            runOnUiThread {
+
+                if (
+                    finalCode ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    try {
+
+                        val jsonObject =
+                            JSONObject(
+                                finalResult
+                            )
+
+                        val feeds =
+                            jsonObject.getJSONArray(
+                                "feeds"
+                            )
+
+                        if (
+                            feeds.length() > 0
+                        ) {
+
+                            // =========================================
+                            // 最後一筆 = 最新資料
+                            // =========================================
+
+                            val lastFeed =
+                                feeds.getJSONObject(
+                                    feeds.length() - 1
+                                )
+
+                            val field1 =
+                                lastFeed.optString(
+                                    "field1",
+                                    "0"
+                                )
+
+                            val field2 =
+                                lastFeed.optString(
+                                    "field2",
+                                    "0"
+                                )
+
+                            val entryId =
+                                lastFeed.optInt(
+                                    "entry_id",
+                                    0
+                                )
+
+                            // =========================================
+                            // 回填 EditText
+                            // =========================================
+
+                            editTextField1.setText(
+                                field1
+                            )
+
+                            editTextField2.setText(
+                                field2
+                            )
+
+                            // =========================================
+                            // 顯示 write number
+                            // =========================================
+
+                            textViewData.text =
+                                "Get Data 成功\n" +
+                                        "write number = $entryId\n" +
+                                        "Field 1 = $field1\n" +
+                                        "Field 2 = $field2"
+
+                            textViewData.setTextColor(
+                                Color.parseColor(
+                                    "#3F51B5"
+                                )
+                            )
+
+                            textViewData.textSize =
+                                22f
+
+                        } else {
+
+                            textViewData.text =
+                                "ThingSpeak 目前沒有資料"
+                        }
+
+                    } catch (e: Exception) {
+
+                        textViewData.text =
+                            "JSON 解析失敗\n" +
+                                    "${e.message}\n\n" +
+                                    finalResult
+                    }
+
+                } else {
+
+                    textViewData.text =
+                        "Get Data 失敗\n" +
+                                "HTTP Code = $finalCode\n" +
+                                finalResult
+                }
+            }
         }
     }
 }
