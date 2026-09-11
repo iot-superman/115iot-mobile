@@ -1,0 +1,38 @@
+<div>
+    {% comment %} <form action="/post/" method="POST"> {% endcomment %}
+    <form action="{% url 'post' %}" method="POST">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>*姓名</th><td><input type="text" id="cname" name="cname" required placeholder="請輸入姓名"></td>
+            </tr>
+            <tr>
+                <th>*性別</th>
+                <td>
+                    <input type="radio" id="csex_m" name="csex" value="M" checked>男
+                    <input type="radio" id="csex_f" name="csex" value="F">女
+                </td>
+            </tr>
+            <tr>
+                <th>*生日</th><td><input type="date" id="cbirthday" name="cbirthday" required></td>
+            </tr>
+            <tr>
+                <th>*信箱</th><td><input type="email" id="cemail" name="cemail" required placeholder="請輸入mail"></td>
+            </tr>
+            <tr>
+                <th>&nbsp;&nbsp;電話</th><td><input type="text" id="cphone" name="cphone"></td>
+            </tr>
+            <tr>
+                <th>&nbsp;&nbsp;地址</th><td><input type="text" id="caddr" name="caddr"></td>
+            </tr>
+            <tr>
+                <th colspan="2" style="text-align:center;">
+                    <input type="submit" name="button" id="button" value="儲存">
+                    <input type="reset" name="button2" id="button2" value="清除">
+                </th>
+
+            </tr>
+        </table>
+
+    </form>
+</div>

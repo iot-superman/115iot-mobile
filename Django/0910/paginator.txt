@@ -1,0 +1,11 @@
+    # 說明:
+    # page_obj 是一個包含該頁資料的物件
+    # page_obj.number 目前頁碼
+    # page_obj.paginator.num_pages 總頁數
+    # page_obj.paginator.page_range 所有可用的頁碼（從 1 開始）
+    # page_obj.previous_page_number 上一頁的頁碼
+    # page_obj.next_page_number 下一頁的頁碼
+
+    # page_obj.has_next 是否有下一頁
+    # page_obj.has_previous 是否有上一頁
+    # page_obj.object_list 該頁的資料
