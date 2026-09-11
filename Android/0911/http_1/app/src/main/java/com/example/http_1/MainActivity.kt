@@ -11,10 +11,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.gson.Gson
 import org.json.JSONObject
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLEncoder
 
@@ -229,9 +232,131 @@ class MainActivity : AppCompatActivity() {
             textViewData.text =
                 "正在讀取 ThingSpeak..."
 
-            HttpGetFeeds(
-                GET_FEEDS_URL
-            ).start()
+            HttpField1Data().start()
+        }
+    }
+
+
+    private inner class HttpField1Data : Thread() {
+
+        override fun run() {
+
+            super.run()
+
+            var url: URL? = null
+
+            var conn: HttpURLConnection? = null
+
+            var code: Int = 0
+
+            var getData: String = ""
+
+            // 讀取 Field 1 的網址
+            val field1Url =
+                "$WEB_ADDRESS/channels/$CHANNEL_ID/fields/1.json" +
+                        "?api_key=$READ_API_KEY&results=3"
+
+            try {
+
+                url = URL(field1Url)
+
+                Log.d(
+                    "main",
+                    "get data url : $url"
+                )
+
+                conn =
+                    url.openConnection()
+                            as HttpURLConnection
+
+                conn.requestMethod =
+                    "GET"
+
+                conn.connectTimeout =
+                    10000
+
+                conn.readTimeout =
+                    10000
+
+                code = conn.responseCode
+
+                Log.d(
+                    "main",
+                    "get code : $code"
+                )
+
+                if (
+                    code ==
+                    HttpURLConnection.HTTP_OK
+                ) {
+
+                    val inputStream =
+                        conn.inputStream
+
+                    val reader =
+                        InputStreamReader(
+                            inputStream
+                        )
+
+                    getData =
+                        reader.readText()
+
+                    Log.d(
+                        "main",
+                        "getData : $getData"
+                    )
+
+                    inputStream.close()
+                }
+
+            } catch (e: MalformedURLException) {
+
+                Log.d(
+                    "main",
+                    "mal error : $e"
+                )
+
+            } catch (e: IOException) {
+
+                Log.d(
+                    "main",
+                    "IO error : $e"
+                )
+            } finally {
+
+                conn?.disconnect()
+            }
+
+            runOnUiThread {
+
+                textViewData.text = "field 1 data:\n$getData"
+
+                val gson = Gson()
+                val response = gson.fromJson(getData, MyData_1::class.java)
+
+                Log.d("main", "response = $response")
+
+                textViewData.text =
+                    "Channel name = ${response.channel.name}\n\n"
+
+                textViewData.append(
+                    "Field data :\n"
+                )
+                for (field in response.feeds) {
+
+                    textViewData.append(
+                        "created_at : ${field.created_at}\n"
+                    )
+
+                    textViewData.append(
+                        "entry_id : ${field.entry_id}\n"
+                    )
+
+                    textViewData.append(
+                        "field1 : ${field.field1}\n\n"
+                    )
+                }
+            }
         }
     }
 
