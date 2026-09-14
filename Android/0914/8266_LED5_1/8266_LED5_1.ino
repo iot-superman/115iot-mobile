@@ -4,6 +4,7 @@
 // ========================================
 // 載入老師的 HTML 網頁
 // ========================================
+#include "Switch_page.h"
 #include "root.h"
 
 
@@ -37,6 +38,9 @@ ESP8266WebServer server(80);
 void handleRoot();
 void handleLedOn();
 void handleLedOff();
+void handleLedOn_num();
+void handleLedOff_num();
+void controlLED(String ledNum, String ledStatus);
 void handleLedOn1();
 void handleLedOn2();
 void handleLedOn3();
@@ -96,13 +100,44 @@ void setup() {
 
 
   // ========================================
-  // LED 狀態切換
+  // 開機自測 (HIGH Active: HIGH=亮, LOW=熄)
+  // 流程：
+  //   1. 先全部熄滅
+  //   2. LED1 → LED2 → LED3 → LED4 → LED5 依次亮起
+  //   3. LED5 → LED4 → LED3 → LED2 → LED1 依次關閉
   // ========================================
-  digitalWrite(LED1, HIGH);
+
+  // 步驟 1：全部熄滅
+  digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);
   digitalWrite(LED3, LOW);
   digitalWrite(LED4, LOW);
   digitalWrite(LED5, LOW);
+  delay(500);
+
+  // 步驟 2：LED1 → LED5 依次亮起 (每顆間隔 500ms)
+  digitalWrite(LED1, HIGH);
+  delay(500);
+  digitalWrite(LED2, HIGH);
+  delay(500);
+  digitalWrite(LED3, HIGH);
+  delay(500);
+  digitalWrite(LED4, HIGH);
+  delay(500);
+  digitalWrite(LED5, HIGH);
+  delay(500);
+
+  // 步驟 3：LED5 → LED1 依次關閉 (每顆間隔 500ms)
+  digitalWrite(LED5, LOW);
+  delay(500);
+  digitalWrite(LED4, LOW);
+  delay(500);
+  digitalWrite(LED3, LOW);
+  delay(500);
+  digitalWrite(LED2, LOW);
+  delay(500);
+  digitalWrite(LED1, LOW);
+  delay(500);
 
 
   // ========================================
@@ -164,6 +199,15 @@ void setup() {
   server.on("/off", handleLedOff);
 
   // ========================================
+  // 設定查詢參數路由（?led=N 寫法）
+  // 瀏覽器輸入：
+  // http://ESP8266_IP/ledon?led=3
+  // http://ESP8266_IP/ledoff?led=5
+  // ========================================
+  server.on("/ledon", handleLedOn_num);
+  server.on("/ledoff", handleLedOff_num);
+
+  // ========================================
   // 設定 /on/1 ~ /on/5 路由
   // 瀏覽器輸入：
   // http://ESP8266_IP/on/1  → LED1 亮
@@ -189,7 +233,7 @@ void setup() {
   server.on("/off/4", handleLedOff4);
   server.on("/off/5", handleLedOff5);
 
-
+  server.on("/switch", handleSwitch);
   // ========================================
   // 啟動 Web Server
   // ========================================
@@ -208,6 +252,104 @@ void loop() {
   // 處理瀏覽器 HTTP Request
   // ========================================
   server.handleClient();
+}
+void handleSwitch()
+{
+  Serial.println("Switch control");
+  if (server.method()==HTTP_POST){
+    if (server.hasArg("led") && server.hasArg("state")) {
+      String ledNum = server.arg("led");
+      String ledStatus = server.arg("state");
+      controlLED(ledNum, ledStatus);
+      server.send(200, "text/html", "LED " + ledNum + " is " + ledStatus);
+    } else {
+      server.send(400, "text/html", "Error: missing led or state");
+    }
+  }else{
+    Serial.println("show  switch page");
+    String data = Switch_page;
+    server.send(200,"text/html",data);
+    
+  }
+}
+
+// ========================================
+// 查詢參數開燈 - /ledon?led=N
+// ========================================
+void handleLedOn_num()
+{
+  Serial.println("Led number on");
+  if (server.method() == HTTP_GET) {
+    if (server.hasArg("led")) {
+      String ledNum = server.arg("led");
+      String ledStatus = "on";
+      controlLED(ledNum, ledStatus);
+      server.send(200, "text/html", "LED on : " + ledNum);
+    } else {
+      server.send(200, "text/html", "Error: missing ?led=N");
+    }
+  }
+}
+
+
+// ========================================
+// 查詢參數關燈 - /ledoff?led=N
+// ========================================
+void handleLedOff_num()
+{
+  Serial.println("Led number off");
+  if (server.method() == HTTP_GET) {
+    if (server.hasArg("led")) {
+      String ledNum = server.arg("led");
+      String ledStatus = "off";
+      controlLED(ledNum, ledStatus);
+      server.send(200, "text/html", "LED off : " + ledNum);
+    } else {
+      server.send(200, "text/html", "Error: missing ?led=N");
+    }
+  }
+}
+
+
+// ========================================
+// 控制 LED 共用函式
+// 所有 LED 皆是 HIGH = 亮、LOW = 熄（低態驅動）, but led1 low active
+// ========================================
+void controlLED(String ledNum, String ledStatus)
+{
+  int ledNo = ledNum.toInt();
+  switch (ledNo) {
+    case 1:
+      if (ledStatus == "on")
+        digitalWrite(LED1, LOW);
+      else
+        digitalWrite(LED1, HIGH);
+      break;
+    case 2:
+      if (ledStatus == "on")
+        digitalWrite(LED2, HIGH);
+      else
+        digitalWrite(LED2, LOW);
+      break;
+    case 3:
+      if (ledStatus == "on")
+        digitalWrite(LED3, HIGH);
+      else
+        digitalWrite(LED3, LOW);
+      break;
+    case 4:
+      if (ledStatus == "on")
+        digitalWrite(LED4, HIGH);
+      else
+        digitalWrite(LED4, LOW);
+      break;
+    case 5:
+      if (ledStatus == "on")
+        digitalWrite(LED5, HIGH);
+      else
+        digitalWrite(LED5, LOW);
+      break;
+  }
 }
 
 
