@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Bulb -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z" />
+    <!-- Radiating Rays -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M12,0L12,1.5M12,22.5L12,24M4.22,4.22L5.28,5.28M18.72,18.72L19.78,19.78M0,12L1.5,12M22.5,12L24,12M4.22,19.78L5.28,18.72M18.72,5.28L19.78,4.22"
+        android:strokeWidth="1.5"
+        android:strokeColor="#4CAF50"
+        android:strokeLineCap="round"/>
+</vector>

@@ -1,10 +1,11 @@
 package com.example.http_2
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,9 +16,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
@@ -25,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var editTextIP: EditText
     private lateinit var textViewResponse: TextView
     private lateinit var switches: List<SwitchMaterial>
+    private lateinit var ledImages: List<ImageView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,59 +53,77 @@ class MainActivity : AppCompatActivity() {
             findViewById(R.id.switch5)
         )
 
+        ledImages = listOf(
+            findViewById(R.id.imageLed1),
+            findViewById(R.id.imageLed2),
+            findViewById(R.id.imageLed3),
+            findViewById(R.id.imageLed4),
+            findViewById(R.id.imageLed5)
+        )
+
         buttonLink.setOnClickListener {
-            Toast.makeText(this, "Base URL set to: ${editTextIP.text}", Toast.LENGTH_SHORT).show()
+            textViewResponse.text = "Home control link ok"
         }
 
         switches.forEachIndexed { index, switch ->
             val ledNum = index + 1
             switch.setOnCheckedChangeListener { _, isChecked ->
                 val state = if (isChecked) "on" else "off"
-                sendPostRequest(ledNum, state)
+                
+                // 動態切換燈泡圖示 (開燈有光芒, 關燈沒有)
+                if (isChecked) {
+                    ledImages[index].setImageResource(R.drawable.ic_led_on)
+                } else {
+                    ledImages[index].setImageResource(R.drawable.ic_led_off)
+                }
+
+                val baseUrl = editTextIP.text.toString().trim()
+                val targetUrl = if (baseUrl.endsWith("/switch")) baseUrl else "$baseUrl/switch"
+                
+                lifecycleScope.launch {
+                    val res = httpPost(targetUrl, "led=$ledNum&state=$state")
+                    textViewResponse.text = res
+                }
             }
         }
     }
 
-    private fun sendPostRequest(ledNum: Int, state: String) {
-        val baseUrl = editTextIP.text.toString().trim()
-        if (baseUrl.isEmpty()) {
-            Toast.makeText(this, "Please enter IP address", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Ensure URL ends with /switch
-        val targetUrl = if (baseUrl.endsWith("/switch")) baseUrl else "$baseUrl/switch"
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val result = try {
-                val url = URL(targetUrl)
-                val conn = url.openConnection() as HttpURLConnection
+    private suspend fun httpPost(urlString: String, params: String): String {
+        return withContext(Dispatchers.IO) {
+            val sb = StringBuilder()
+            var conn: HttpURLConnection? = null
+            try {
+                val url = URL(urlString)
+                conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
                 conn.doOutput = true
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
 
-                val body = "led=$ledNum&state=$state"
                 val writer = OutputStreamWriter(conn.outputStream)
-                writer.write(body)
+                writer.write(params)
                 writer.flush()
                 writer.close()
 
-                val responseCode = conn.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
+                if (conn.responseCode == HttpURLConnection.HTTP_OK) {
                     val reader = BufferedReader(InputStreamReader(conn.inputStream))
-                    val response = reader.readLine()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        sb.append(line)
+                    }
                     reader.close()
-                    "Success: $response"
                 } else {
-                    "Error: $responseCode"
+                    return@withContext "Error: ${conn.responseCode}"
                 }
-            } catch (e: Exception) {
-                "Exception: ${e.message}"
+            } catch (e: MalformedURLException) {
+                return@withContext "URL Error"
+            } catch (e: IOException) {
+                return@withContext "IO Error"
+            } finally {
+                conn?.disconnect()
             }
-
-            withContext(Dispatchers.Main) {
-                textViewResponse.text = result
-            }
+            sb.toString()
         }
     }
 }
