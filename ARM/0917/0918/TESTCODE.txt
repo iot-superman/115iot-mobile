@@ -1,0 +1,37 @@
+import ssl
+import urllib.request
+import json
+
+open_data_url = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0001-001?Authorization=CWA-DAB12FF1-EF3D-4328-A3C3-41E7774A7356&format=JSON'
+
+
+# 可以在 urlopen 函數中使用 context 參數來指定一個未經驗證的 SSL 上下文
+context = ssl._create_unverified_context()
+with urllib.request.urlopen(open_data_url, context=context) as response:
+    html = response.read()
+
+location  = json.loads(html)
+location  = location ["records"]["Station"]
+
+################################################################
+# for i in location :
+#     name = i['locationName']                    # 測站地點
+#     city = i['parameter'][0]['parameterValue']  # 城市
+#     area = i['parameter'][2]['parameterValue']  # 行政區
+#     print(city, area, name)
+
+################################################################
+for i in location:
+    name = i['StationName']                    # 測站地點
+    city = i['GeoInfo']['CountyName']  # 城市
+    area = i['GeoInfo']['TownName']  # 行政區
+    temp = i['WeatherElement']['AirTemperature']  # 氣溫
+    humd = i['WeatherElement']['RelativeHumidity']  # 相對濕度
+    weather = i['WeatherElement']['Weather'] # 天氣
+    if area=="楊梅區":
+        print(city, area, name, f'{temp} 度', f'相對濕度 {humd}%',f'天氣 {weather}')
+
+        
+
+# json formatter for chrome
+# https://chromewebstore.google.com/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa 
