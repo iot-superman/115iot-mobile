@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ContactsApp</string>
+    <string name="contacts_title">聯絡人清單</string>
+    <string name="search_hint">搜尋姓名</string>
+    <string name="permission_denied">未授權讀取聯絡人，無法顯示資料</string>
+    <string name="no_phone">無電話</string>
+    <string name="no_email">無 Email</string>
+    <string name="avatar_placeholder">人</string>
+</resources>
