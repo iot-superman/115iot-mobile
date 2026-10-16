@@ -1,0 +1,5 @@
+X_projected2 = np.dot(X_centered, pc1)
+print("\n" + "=" * 50)
+print("步驟 8：投影到第一主成分後的資料")
+print("=" * 50)
+print(X_projected2)

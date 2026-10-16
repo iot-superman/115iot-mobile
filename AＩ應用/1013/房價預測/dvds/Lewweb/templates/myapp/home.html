@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>房價預測網站</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        form p {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background-color: #2563eb;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 24px;
+            padding: 16px;
+            background-color: #eff6ff;
+            border-radius: 8px;
+        }
+        .errorlist {
+            color: #b91c1c;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>房價預測網站</h1>
+        <p>請輸入房屋條件，系統會使用 Linear Regression 模型預測房價。</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">開始預測</button>
+        </form>
+
+        {% if prediction is not None %}
+            <div class="result">
+                <h2>預測結果</h2>
+                <p>行政區：{{ selected_district }}</p>
+                <p>預測房價：{{ prediction }} 萬元</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

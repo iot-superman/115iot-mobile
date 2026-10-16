@@ -1,0 +1,1 @@
+user_order_count = user_order_detail[["user_id", "order_id"]].drop_duplicates().groupby("user_id").size().reset_index(name="order_count")
