@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/main"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Relay即時控制"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="30dp" />
+
+    <Button
+        android:id="@+id/btnRelay1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="relay1：關閉" />
+
+    <Button
+        android:id="@+id/btnRelay2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="relay2：關閉" />
+
+    <Button
+        android:id="@+id/btnRelay3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="relay3：關閉" />
+
+    <Button
+        android:id="@+id/btnRelay4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="relay4：關閉" />
+
+    <TextView
+        android:id="@+id/txtMqttStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MQTT：尚未連線"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginTop="30dp" />
+
+</LinearLayout>
